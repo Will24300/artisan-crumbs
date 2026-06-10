@@ -1,14 +1,15 @@
 import { Search, ShoppingCart, User } from "lucide-react";
 import iconImg from "../assets/Icon.png";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
     <nav className="flex justify-between items-center py-5 px-15 border-b border-gray-200">
       <div className="flex justify-between items-center gap-10">
-        <div className="flex items-center gap-1">
+        <Link to="/" className="flex items-center gap-1">
           <img src={iconImg} alt="bread icon" />
           <h2 className="font-bold text-xl">Artisan Crumbs</h2>
-        </div>
+        </Link>
         <ul className="flex justify-between items-center gap-5 text-[#334155] text-[15px]">
           <li className="cursor-pointer">Shop</li>
           <li className="cursor-pointer">Daily Specials</li>
