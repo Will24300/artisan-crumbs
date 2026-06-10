@@ -59,7 +59,7 @@ function Footer() {
           <p>Join our list for fresh updates and weekly recipes.</p>
           <form className="flex flex-col justify-start">
             <input
-              type="mail"
+              type="email"
               placeholder="Your email"
               className="bg-white outline-none pl-4 py-4 rounded-4xl border border-gray-200 text-black"
             />
