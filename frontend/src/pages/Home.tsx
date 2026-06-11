@@ -1,3 +1,4 @@
+import DailySpecial from "../components/DailySpecial";
 import Hero from "../components/Hero";
 import OurPhilosophy from "../components/OurPhilosophy";
 
@@ -6,6 +7,7 @@ function Home() {
     <div>
       <Hero />
       <OurPhilosophy />
+      <DailySpecial />
     </div>
   );
 }

@@ -25,7 +25,7 @@ function Hero() {
             Shop Now
           </button>
           <button className="hidden lg:block bg-white/10 backdrop-blur-md py-2.5 px-7 cursor-pointer rounded-2xl font-bold">
-            View Menu
+            Our Story
           </button>
         </div>
       </div>
