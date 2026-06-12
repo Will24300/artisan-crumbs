@@ -26,9 +26,9 @@ function Navbar() {
             className="bg-transparent outline-none text-[14px]"
           />
         </div>
-        <div className="bg-[#F1F5F9] p-2 rounded-3xl cursor-pointer">
+        <Link to="cart" className="bg-[#F1F5F9] p-2 rounded-3xl cursor-pointer">
           <ShoppingCart size={17} />
-        </div>
+        </Link>
         <div className="bg-[#F1F5F9] p-2 rounded-3xl cursor-pointer">
           <User size={17} />
         </div>

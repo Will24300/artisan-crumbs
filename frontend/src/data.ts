@@ -1,6 +1,9 @@
 import daily1 from "./assets/daily1.png";
 import daily2 from "./assets/daily2.png";
 import daily3 from "./assets/daily3.png";
+import baker1 from "./assets/baker1.jpg";
+import baker2 from "./assets/baker2.jpg";
+import baker3 from "./assets/baker3.jpg";
 
 interface DailySpecialItems {
   id: string | number;
@@ -9,6 +12,13 @@ interface DailySpecialItems {
   tag?: "LIMITED" | "CHEF'S CHOICE";
   description: string;
   price: number;
+}
+
+interface BakerItems {
+  id: string | number;
+  name: string;
+  speciality: string;
+  image: string;
 }
 
 export const dailySpecialData: DailySpecialItems[] = [
@@ -37,5 +47,26 @@ export const dailySpecialData: DailySpecialItems[] = [
       "Bursting with flavor, featuring hand-picked mountain berries on a buttery shortbread crust",
     image: daily3,
     tag: "CHEF'S CHOICE",
+  },
+];
+
+export const bakersData: BakerItems[] = [
+  {
+    id: 1,
+    name: "Thomas Miller",
+    speciality: "Head Baker & Founder",
+    image: baker1,
+  },
+  {
+    id: 2,
+    name: "Elena Rossi",
+    speciality: "Master Pastry Chef",
+    image: baker2,
+  },
+  {
+    id: 3,
+    name: "David Chen",
+    speciality: "Sourdough Specialist",
+    image: baker3,
   },
 ];
