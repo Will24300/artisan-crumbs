@@ -1,5 +1,11 @@
+import { Link } from "react-router-dom";
+
 function Shop() {
-  return <div>Shop</div>;
+  return (
+    <section>
+      <Link to="/">Back</Link>
+    </section>
+  );
 }
 
 export default Shop;
