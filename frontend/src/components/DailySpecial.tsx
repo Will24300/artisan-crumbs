@@ -3,7 +3,7 @@ import { dailySpecialData } from "../data";
 
 function DailySpecial() {
   return (
-    <section className="bg-[#f8f8f8] -mx-15 mb-20 p-15">
+    <section className="bg-[#F8F7F5] -mx-15 mb-20 p-15">
       <h2 className="text-[#F4AF25] font-bold text-[14px]">
         FRESH FROM THE OVEN
       </h2>

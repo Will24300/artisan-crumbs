@@ -7,6 +7,10 @@ import baker3 from "./assets/baker/baker3.jpg";
 import ingredient1 from "./assets/ingredients-img/ing1.png";
 import ingredient2 from "./assets/ingredients-img/ing2.png";
 import ingredient3 from "./assets/ingredients-img/ing3.png";
+import star from "./assets/testimonials-img/star.png";
+import user1 from "./assets/testimonials-img/user1.png";
+import user2 from "./assets/testimonials-img/user2.png";
+import user3 from "./assets/testimonials-img/user3.png";
 
 interface DailySpecialItems {
   id: string | number;
@@ -29,6 +33,16 @@ interface IngredientItems {
   image: string;
   name: string;
   description: string;
+}
+
+interface TestimonialsItems {
+  id: string | number;
+  star: string;
+  ratings: number;
+  comment: string;
+  image: string;
+  name: string;
+  detail: string;
 }
 
 export const dailySpecialData: DailySpecialItems[] = [
@@ -102,5 +116,35 @@ export const ingredientData: IngredientItems[] = [
     description:
       "Fresh berries, nuts, and herbs from the Sweetwater Valley farmer's market.",
     image: ingredient3,
+  },
+];
+
+export const testimonialData: TestimonialsItems[] = [
+  {
+    id: 1,
+    star: star,
+    ratings: 5,
+    comment: `"The sourdough here is life-changing. I come every Saturday morning for a loaf and a croissant. The atmosphere is just so warm and welcoming."`,
+    image: user1,
+    name: "Sarah Jenkins",
+    detail: "LOCAL GUIDE",
+  },
+  {
+    id: 2,
+    star: star,
+    ratings: 4,
+    comment: `"The custom cake they made for my daughter's birthday was stunning and delicious. Not too sweet, perfectly balanced flavors."`,
+    image: user2,
+    name: "Marcus Thorne",
+    detail: "VERIFIED CUSTOMER",
+  },
+  {
+    id: 3,
+    star: star,
+    ratings: 5,
+    comment: `"Best coffee in the neighborhood paired with a cinnamon bun? Yes please. This has become my favorite remote working spot."`,
+    image: user3,
+    name: "Elena Rodriguez",
+    detail: "PASTRY ENTHUSIAST",
   },
 ];

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function Visit() {
   return (
-    <section className="bg-[#ffe8bb] flex justify-between items-center p-10 my-10 rounded-2xl">
+    <section className="bg-[#fdf2dc] flex justify-between items-center p-10 my-10 rounded-2xl">
       <div>
         <h2 className="text-[30px] font-bold">Visit Our Bakery</h2>
         <p className="text-[#475569] text-[16px] my-3">
