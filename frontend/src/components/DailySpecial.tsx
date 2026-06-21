@@ -30,7 +30,7 @@ function DailySpecial() {
               <div className="flex justify-between items-center mt-3">
                 <h2 className="text-[20px] font-bold">{product.name}</h2>
                 <p className="text-[18px] text-[#F4AF25] font-bold">
-                  ${product.price}
+                  ${product.price.toFixed(2)}
                 </p>
               </div>
               <p className="text-[#64748B] text-[14px]">

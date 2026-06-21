@@ -45,6 +45,20 @@ interface TestimonialsItems {
   detail: string;
 }
 
+export interface BakeryItem {
+  id: string | number;
+  name: string;
+  img: string;
+  price: number;
+  description: string;
+}
+
+export interface BakeryMenu {
+  breads: BakeryItem[];
+  pastries: BakeryItem[];
+  cakes: BakeryItem[];
+}
+
 export const dailySpecialData: DailySpecialItems[] = [
   {
     id: 1,
@@ -58,7 +72,7 @@ export const dailySpecialData: DailySpecialItems[] = [
   {
     id: 2,
     name: "Rustic Rye Loaf",
-    price: 8,
+    price: 8.0,
     description:
       "Hearty and wholesome 48-hour fermented sourdough rye with a thick, crunchy crust.",
     image: daily2,
@@ -148,3 +162,108 @@ export const testimonialData: TestimonialsItems[] = [
     detail: "PASTRY ENTHUSIAST",
   },
 ];
+
+export const bakeryMenu: BakeryMenu = {
+  breads: [
+    {
+      id: "b1",
+      name: "Artisan Sourdough",
+      img: "/images/breads/sourdough.jpg",
+      price: 6.5,
+      description:
+        "Naturally leavened with a crisp, blistered crust and a tangy, chewy interior.",
+    },
+    {
+      id: "b2",
+      name: "French Baguette",
+      img: "/images/breads/baguette.jpg",
+      price: 3.75,
+      description:
+        "Traditional Parisian style baguette with a golden crust and airy crumb.",
+    },
+    {
+      id: "b3",
+      name: "Whole Wheat Seeded loaf",
+      img: "/images/breads/seeded-loaf.jpg",
+      price: 5.95,
+      description:
+        "Hearty 100% whole wheat bread packed with toasted sunflower, flax, and sesame seeds.",
+    },
+    {
+      id: "b4",
+      name: "Buttery Brioche",
+      img: "/images/breads/brioche.jpg",
+      price: 7.25,
+      description:
+        "Rich, tender, and golden bread made with real butter and fresh eggs.",
+    },
+  ],
+  pastries: [
+    {
+      id: "p1",
+      name: "Butter Croissant",
+      img: "/images/pastries/croissant.jpg",
+      price: 4.0,
+      description:
+        "Classic French pastry with flaky, paper-thin layers and a rich buttery flavor.",
+    },
+    {
+      id: "p2",
+      name: "Pain au Chocolat",
+      img: "/images/pastries/pain-au-chocolat.jpg",
+      price: 4.5,
+      description:
+        "Flaky croissant dough wrapped around two bars of premium dark chocolate.",
+    },
+    {
+      id: "p3",
+      name: "Almond Danished",
+      img: "/images/pastries/almond-danish.jpg",
+      price: 4.75,
+      description:
+        "Sweet pastry filled with creamy almond frangipane and topped with sliced almonds.",
+    },
+    {
+      id: "p4",
+      name: "Cinnamon Roll",
+      img: "/images/pastries/cinnamon-roll.jpg",
+      price: 5.0,
+      description:
+        "Soft, gooey dough swirled with Ceylon cinnamon and smothered in cream cheese icing.",
+    },
+  ],
+  cakes: [
+    {
+      id: "c1",
+      name: "Signature Red Velvet",
+      img: "/images/cakes/red-velvet.jpg",
+      price: 45.0,
+      description:
+        "Layers of cocoa-infused red velvet cake filled and frosted with tangy cream cheese frosting.",
+    },
+    {
+      id: "c2",
+      name: "Double Chocolate Fudge",
+      img: "/images/cakes/chocolate-fudge.jpg",
+      price: 48.0,
+      description:
+        "Rich, decadent chocolate sponge layered with a smooth Belgian chocolate ganache.",
+    },
+    {
+      id: "c3",
+      name: "Classic Strawberry Shortcake",
+      img: "/images/cakes/strawberry-shortcake.jpg",
+      price: 42.0,
+      description:
+        "Light vanilla sponge cake layered with fresh strawberries and whipped fresh cream.",
+    },
+    {
+      id: "c4",
+      name: "Zesty Lemon Blueberry Cake",
+      img: "/images/cakes/lemon-blueberry.jpg",
+      price: 46.0,
+      description:
+        "Bright lemon cake studded with fresh blueberries, layered with a tart lemon curd.",
+    },
+  ],
+};
