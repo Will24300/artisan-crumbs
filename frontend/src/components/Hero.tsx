@@ -1,4 +1,5 @@
 import hero_bg from "../assets/hero-bg.jpg";
+import { Link } from "react-router-dom";
 
 function Hero() {
   return (
@@ -21,10 +22,13 @@ function Hero() {
           pastries, made with traditional techniques every single morning.
         </p>
         <div className="mt-2 lg:mt-5 flex flex-col lg:flex-row justify-center items-center gap-4 lg:gap-10">
-          <button className="bg-[#F4AF25] w-full lg:w-auto py-3.5 lg:py-2.5 px-7 cursor-pointer rounded-xl font-bold text-lg lg:text-base shadow-lg shadow-[#D46211]/20">
+          <Link
+            to="/shop"
+            className="bg-[#F4AF25] w-full lg:w-auto py-3.5 lg:py-2.5 px-7 cursor-pointer rounded-xl font-bold text-lg lg:text-base shadow-lg shadow-[#D46211]/20 text-center text-black hover:bg-[#E5A10F] transition-colors"
+          >
             Shop Now
-          </button>
-          <button className="hidden lg:block bg-white/10 backdrop-blur-md py-2.5 px-7 cursor-pointer rounded-2xl font-bold">
+          </Link>
+          <button className="hidden lg:block bg-white/10 backdrop-blur-md py-2.5 px-7 cursor-pointer rounded-2xl font-bold hover:bg-white/20 transition-colors">
             Our Story
           </button>
         </div>

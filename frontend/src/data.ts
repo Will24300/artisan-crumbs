@@ -11,6 +11,30 @@ import star from "./assets/testimonials-img/star.png";
 import user1 from "./assets/testimonials-img/user1.png";
 import user2 from "./assets/testimonials-img/user2.png";
 import user3 from "./assets/testimonials-img/user3.png";
+import cake1 from "./assets/cakes/cake1.png";
+import cake2 from "./assets/cakes/cake2.png";
+import cake3 from "./assets/cakes/cake3.png";
+import cake4 from "./assets/cakes/cake4.png";
+import cake5 from "./assets/cakes/cake5.png";
+import cake6 from "./assets/cakes/cake6.png";
+import muffin1 from "./assets/muffins/muffin1.jpeg";
+import muffin2 from "./assets/muffins/muffin2.jpeg";
+import muffin3 from "./assets/muffins/muffin3.jpeg";
+import muffin4 from "./assets/muffins/muffin4.jpeg";
+import muffin5 from "./assets/muffins/muffin5.jpeg";
+import muffin6 from "./assets/muffins/muffin6.jpeg";
+import croissant1 from "./assets/croissants/croissant1.jpeg";
+import croissant2 from "./assets/croissants/croissant2.jpeg";
+import croissant3 from "./assets/croissants/croissant3.jpeg";
+import bread1 from "./assets/breads/bread1.jpeg";
+import bread2 from "./assets/breads/bread2.jpeg";
+import bread3 from "./assets/breads/bread3.jpeg";
+import bread4 from "./assets/breads/bread4.jpeg";
+import tart1 from "./assets/tarts/tart1.jpeg";
+import tart2 from "./assets/tarts/tart2.jpeg";
+import tart3 from "./assets/tarts/tart3.jpeg";
+import tart4 from "./assets/tarts/tart4.jpeg";
+import tart5 from "./assets/tarts/tart5.jpeg";
 
 interface DailySpecialItems {
   id: string | number;
@@ -51,12 +75,6 @@ export interface BakeryItem {
   img: string;
   price: number;
   description: string;
-}
-
-export interface BakeryMenu {
-  breads: BakeryItem[];
-  pastries: BakeryItem[];
-  cakes: BakeryItem[];
 }
 
 export const dailySpecialData: DailySpecialItems[] = [
@@ -163,107 +181,272 @@ export const testimonialData: TestimonialsItems[] = [
   },
 ];
 
-export const bakeryMenu: BakeryMenu = {
-  breads: [
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  image: any; // Type as 'string' if these are image URL paths, or 'any' if they are imported assets
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  products: Product[];
+}
+
+export interface MenuData {
+  categories: Category[];
+}
+
+export const data: MenuData = {
+  categories: [
     {
-      id: "b1",
-      name: "Artisan Sourdough",
-      img: "/images/breads/sourdough.jpg",
-      price: 6.5,
-      description:
-        "Naturally leavened with a crisp, blistered crust and a tangy, chewy interior.",
+      id: 1,
+      name: "Cake",
+      products: [
+        {
+          id: 101,
+          name: "Chocolate Fudge Cake",
+          price: 24.99,
+          description: "Rich chocolate cake with fudge frosting",
+          image: cake1,
+        },
+        {
+          id: 102,
+          name: "Red Velvet Cake",
+          price: 26.99,
+          description: "Classic red velvet with cream cheese frosting",
+          image: cake2,
+        },
+        {
+          id: 103,
+          name: "Carrot Cake",
+          price: 22.99,
+          description: "Moist carrot cake with cream cheese frosting",
+          image: cake3,
+        },
+        {
+          id: 104,
+          name: "Cheesecake",
+          price: 28.99,
+          description: "Classic New York style cheesecake",
+          image: cake4,
+        },
+        {
+          id: 105,
+          name: "Lemon Drizzle Cake",
+          price: 23.99,
+          description: "Zesty lemon cake with a tangy drizzle glaze",
+          image: cake5,
+        },
+        {
+          id: 106,
+          name: "Vanilla Sponge Cake",
+          price: 21.99,
+          description:
+            "Light and fluffy vanilla cake with buttercream frosting",
+          image: cake6,
+        },
+      ],
     },
     {
-      id: "b2",
-      name: "French Baguette",
-      img: "/images/breads/baguette.jpg",
-      price: 3.75,
-      description:
-        "Traditional Parisian style baguette with a golden crust and airy crumb.",
+      id: 2,
+      name: "Muffins",
+      products: [
+        {
+          id: 201,
+          name: "Blueberry Muffin",
+          price: 3.99,
+          description: "Fresh blueberries in every bite",
+          image: muffin6,
+        },
+        {
+          id: 202,
+          name: "Chocolate Chip Muffin",
+          price: 3.99,
+          description: "Loaded with chocolate chips",
+          image: muffin5,
+        },
+        {
+          id: 203,
+          name: "Lemon Poppy Seed Muffin",
+          price: 3.89,
+          description: "Tangy lemon with poppy seeds",
+          image: muffin3,
+        },
+        {
+          id: 204,
+          name: "Banana Nut Muffin",
+          price: 3.79,
+          description: "Classic banana with walnuts",
+          image: muffin4,
+        },
+        {
+          id: 205,
+          name: "Cinnamon Swirl Muffin",
+          price: 4.29,
+          description: "Sweet cinnamon swirls in a soft muffin",
+          image: muffin2,
+        },
+        {
+          id: 206,
+          name: "Pumpkin Spice Muffin",
+          price: 4.49,
+          description: "Seasonal pumpkin flavor with warm spices",
+          image: muffin1,
+        },
+      ],
     },
     {
-      id: "b3",
-      name: "Whole Wheat Seeded loaf",
-      img: "/images/breads/seeded-loaf.jpg",
-      price: 5.95,
-      description:
-        "Hearty 100% whole wheat bread packed with toasted sunflower, flax, and sesame seeds.",
+      id: 3,
+      name: "Croissant",
+      products: [
+        {
+          id: 301,
+          name: "Butter Croissant",
+          price: 3.49,
+          description: "Classic French butter croissant",
+          image: croissant1,
+        },
+        {
+          id: 302,
+          name: "Chocolate Croissant",
+          price: 3.99,
+          description: "Buttery croissant with chocolate filling",
+          image: croissant2,
+        },
+        {
+          id: 303,
+          name: "Almond Croissant",
+          price: 4.29,
+          description: "Croissant filled with almond cream",
+          image: croissant3,
+        },
+      ],
     },
     {
-      id: "b4",
-      name: "Buttery Brioche",
-      img: "/images/breads/brioche.jpg",
-      price: 7.25,
-      description:
-        "Rich, tender, and golden bread made with real butter and fresh eggs.",
-    },
-  ],
-  pastries: [
-    {
-      id: "p1",
-      name: "Butter Croissant",
-      img: "/images/pastries/croissant.jpg",
-      price: 4.0,
-      description:
-        "Classic French pastry with flaky, paper-thin layers and a rich buttery flavor.",
-    },
-    {
-      id: "p2",
-      name: "Pain au Chocolat",
-      img: "/images/pastries/pain-au-chocolat.jpg",
-      price: 4.5,
-      description:
-        "Flaky croissant dough wrapped around two bars of premium dark chocolate.",
-    },
-    {
-      id: "p3",
-      name: "Almond Danished",
-      img: "/images/pastries/almond-danish.jpg",
-      price: 4.75,
-      description:
-        "Sweet pastry filled with creamy almond frangipane and topped with sliced almonds.",
-    },
-    {
-      id: "p4",
-      name: "Cinnamon Roll",
-      img: "/images/pastries/cinnamon-roll.jpg",
-      price: 5.0,
-      description:
-        "Soft, gooey dough swirled with Ceylon cinnamon and smothered in cream cheese icing.",
-    },
-  ],
-  cakes: [
-    {
-      id: "c1",
-      name: "Signature Red Velvet",
-      img: "/images/cakes/red-velvet.jpg",
-      price: 45.0,
-      description:
-        "Layers of cocoa-infused red velvet cake filled and frosted with tangy cream cheese frosting.",
+      id: 4,
+      name: "Bread",
+      products: [
+        {
+          id: 401,
+          name: "Sourdough Bread",
+          price: 5.99,
+          description: "Traditional sourdough with crispy crust",
+          image: bread1,
+        },
+        {
+          id: 402,
+          name: "Whole Wheat Bread",
+          price: 4.99,
+          description: "Healthy whole wheat bread",
+          image: bread2,
+        },
+        {
+          id: 403,
+          name: "Flat Bread",
+          price: 3.49,
+          description: "Soft flatbread topped with garlic and fresh herbs",
+          image: bread3,
+        },
+        {
+          id: 404,
+          name: "Brioche Loaf",
+          price: 6.49,
+          description: "Rich and buttery brioche",
+          image: bread4,
+        },
+      ],
     },
     {
-      id: "c2",
-      name: "Double Chocolate Fudge",
-      img: "/images/cakes/chocolate-fudge.jpg",
-      price: 48.0,
-      description:
-        "Rich, decadent chocolate sponge layered with a smooth Belgian chocolate ganache.",
+      id: 5,
+      name: "Tart",
+      products: [
+        {
+          id: 501,
+          name: "Fruit Tart",
+          price: 5.99,
+          description: "Assorted fresh fruits on custard",
+          image: tart1,
+        },
+        {
+          id: 502,
+          name: "Apple Tart",
+          price: 6.49,
+          description: "A rustic tart with sliced apples ",
+          image: tart4,
+        },
+        {
+          id: 503,
+          name: "Lemon Tart",
+          price: 5.79,
+          description: "Tangy lemon curd in sweet pastry",
+          image: tart2,
+        },
+        {
+          id: 504,
+          name: "Berry Tart",
+          price: 6.29,
+          description: "Mixed berries on vanilla cream",
+          image: tart3,
+        },
+        {
+          id: 505,
+          name: "Almond Jam Tart",
+          price: 5.49,
+          description: "A delightful tart with a flaky pastry crust",
+          image: tart5,
+        },
+      ],
     },
     {
-      id: "c3",
-      name: "Classic Strawberry Shortcake",
-      img: "/images/cakes/strawberry-shortcake.jpg",
-      price: 42.0,
-      description:
-        "Light vanilla sponge cake layered with fresh strawberries and whipped fresh cream.",
-    },
-    {
-      id: "c4",
-      name: "Zesty Lemon Blueberry Cake",
-      img: "/images/cakes/lemon-blueberry.jpg",
-      price: 46.0,
-      description:
-        "Bright lemon cake studded with fresh blueberries, layered with a tart lemon curd.",
+      id: 6,
+      name: "Favorite",
+      products: [
+        {
+          id: 101,
+          name: "Chocolate Fudge Cake",
+          price: 24.99,
+          description: "Rich chocolate cake with fudge frosting",
+          image: cake1,
+        },
+        {
+          id: 201,
+          name: "Blueberry Muffin",
+          price: 3.99,
+          description: "Fresh blueberries in every bite",
+          image: muffin1,
+        },
+        {
+          id: 301,
+          name: "Butter Croissant",
+          price: 3.49,
+          description: "Classic French butter croissant",
+          image: croissant1,
+        },
+        {
+          id: 401,
+          name: "Sourdough Bread",
+          price: 5.99,
+          description: "Traditional sourdough with crispy crust",
+          image: bread1,
+        },
+        {
+          id: 303,
+          name: "Almond Croissant",
+          price: 4.29,
+          description: "Croissant filled with almond cream",
+          image: croissant3,
+        },
+        {
+          id: 503,
+          name: "Lemon Tart",
+          price: 5.79,
+          description: "Tangy lemon curd in sweet pastry",
+          image: tart3,
+        },
+      ],
     },
   ],
 };
