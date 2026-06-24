@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../features/cart";
 import { dailySpecialData } from "../data";
 
 function DailySpecial() {
+  const dispatch = useDispatch();
+
   return (
     <section className="bg-[#F8F7F5] -mx-15 mb-20 p-15">
       <h2 className="text-[#F4AF25] font-bold text-[14px]">
@@ -17,7 +21,7 @@ function DailySpecial() {
         {dailySpecialData.map((product) => (
           <div key={product.id}>
             <div
-              className="relative bg-no-repeat bg-cover bg-center h-100  rounded-2xl"
+              className="relative group bg-no-repeat bg-cover bg-center h-100  rounded-2xl"
               style={{ backgroundImage: `url(${product.image})` }}
             >
               {product.tag && (
@@ -25,6 +29,16 @@ function DailySpecial() {
                   {product.tag}
                 </h3>
               )}
+
+              <div className="absolute inset-0 flex items-center justify-center">
+                <button
+                  onClick={() => dispatch(addToCart(product.id))}
+                  className="opacity-0 group-hover:opacity-100 bg-[#F59E0B] text-white px-4 py-2 rounded-full font-semibold transition-opacity"
+                  aria-label={`Add ${product.name} to cart`}
+                >
+                  Add to cart
+                </button>
+              </div>
             </div>
             <div>
               <div className="flex justify-between items-center mt-3">

@@ -1,5 +1,5 @@
-import React from "react";
-import { Search, ShoppingCart, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import iconImg from "../assets/Icon.png";
@@ -18,80 +18,187 @@ interface RootState {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
-  // Get cart count from Redux
+  const [isFloating, setIsFloating] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setIsFloating(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const reduxCartItems = useSelector((state: RootState) => state.cart.items);
   const reduxCartCount = reduxCartItems.reduce(
     (sum, item) => sum + item.quantity,
     0,
   );
-
-  // Use Redux cart count if prop not provided
   const cartCount = propCartCount ?? reduxCartCount;
 
   return (
-    <nav className="flex justify-between items-center py-3.5 px-10 bg-white border-b border-gray-200">
-      {/* Left Section */}
-      <div className="flex items-center gap-8">
-        <Link
-          to="/"
-          className="flex items-center gap-1.5 font-bold text-[17px] text-gray-900"
-        >
-          <img
-            src={iconImg}
-            alt="bread icon"
-            className="w-7 h-7 object-contain"
-          />
-          <h2>Artisan Crumbs</h2>
-        </Link>
-        <ul className="flex items-center gap-5 text-[#334155] text-sm font-medium">
-          <Link
-            to="/shop"
-            className="cursor-pointer hover:text-gray-900 transition-colors"
-          >
-            Shop
-          </Link>
-          <li className="cursor-pointer hover:text-gray-900 transition-colors">
-            Daily Specials
-          </li>
-          <li className="cursor-pointer hover:text-gray-900 transition-colors">
-            Our Story
-          </li>
-          <li className="cursor-pointer hover:text-gray-900 transition-colors">
-            Contact
-          </li>
-        </ul>
+    <nav className="w-full bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
+        <div className="flex items-center justify-between h-16">
+          {/* Left: Logo */}
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src={iconImg}
+                alt="logo"
+                className="h-8 w-8 object-contain"
+              />
+              <span className="font-bold text-lg text-gray-900">
+                Artisan Crumbs
+              </span>
+            </Link>
+          </div>
+
+          {/* Center: Nav Links (hidden on tablet and below) */}
+          <ul className="hidden lg:flex items-center gap-6 text-sm text-gray-700">
+            <li>
+              <Link
+                to="/shop"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Shop
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/specials"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Daily Specials
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Our Story
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/contact"
+                className="hover:text-gray-900 transition-colors"
+              >
+                Contact
+              </Link>
+            </li>
+          </ul>
+
+          {/* Right: actions */}
+          <div className="flex items-center gap-3">
+            {/* Search - hide on very small screens */}
+            <div className="hidden md:flex items-center gap-2 bg-[#F1F5F9] py-1 px-3 rounded-full text-[#94A3B8]">
+              <Search size={16} />
+              <input
+                type="search"
+                placeholder="Search pastries..."
+                className="bg-transparent outline-none text-sm text-[#334155] w-32 placeholder:text-[#94A3B8]"
+              />
+            </div>
+
+            {/* Cart */}
+            <Link
+              to="/cart"
+              className={`flex items-center gap-2 font-semibold text-sm py-1.5 px-3 rounded-full transition-colors ${
+                cartCount > 0
+                  ? "bg-[#F59E0B] text-gray-900 hover:bg-[#D97706]"
+                  : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
+              } ${isFloating ? "fixed top-4 right-4 z-50 shadow-lg" : ""}`}
+              style={isFloating ? { transform: "translateZ(0)" } : undefined}
+              aria-label={`Cart with ${cartCount} items`}
+            >
+              <ShoppingCart size={16} />
+              <span className="text-sm">Cart ({cartCount})</span>
+            </Link>
+
+            {/* Profile */}
+            <Link
+              to="/account"
+              className="hidden md:inline-block bg-[#F1F5F9] p-2 rounded-full text-[#334155] hover:bg-gray-200"
+            >
+              <User size={16} />
+            </Link>
+
+            {/* Mobile menu button */}
+            <button
+              className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-2.5">
-        {/* Search Bar */}
-        <div className="flex items-center gap-1.5 bg-[#F1F5F9] py-1.5 px-4 rounded-full text-[#94A3B8]">
-          <Search size={16} />
-          <input
-            type="text"
-            placeholder="Search pastries..."
-            className="bg-transparent outline-none text-xs text-[#334155] w-28 placeholder:text-[#94A3B8]"
-          />
-        </div>
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-gray-100 bg-white">
+          <div className="px-4 pt-4 pb-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <Search size={16} />
+              <input
+                type="search"
+                placeholder="Search pastries..."
+                className="w-full bg-transparent outline-none text-sm text-[#334155] placeholder:text-[#94A3B8]"
+              />
+            </div>
 
-        {/* Dynamic Cart Button */}
-        <Link
-          to="/cart"
-          className={`flex items-center gap-1.5 font-semibold text-xs py-1.5 px-3.5 rounded-full transition-colors ${
-            cartCount > 0
-              ? "bg-[#F59E0B] text-gray-900 hover:bg-[#D97706]"
-              : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
-          }`}
-        >
-          <ShoppingCart size={16} />
-          <span>Cart ({cartCount})</span>
-        </Link>
+            <Link
+              to="/shop"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-700 hover:text-gray-900"
+            >
+              Shop
+            </Link>
+            <Link
+              to="/specials"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-700 hover:text-gray-900"
+            >
+              Daily Specials
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-700 hover:text-gray-900"
+            >
+              Our Story
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-700 hover:text-gray-900"
+            >
+              Contact
+            </Link>
 
-        {/* Profile Button */}
-        <div className="bg-[#F1F5F9] p-2 rounded-full cursor-pointer text-[#334155] hover:bg-gray-200 transition-colors">
-          <User size={16} />
+            <div className="pt-2 border-t border-gray-100">
+              <Link
+                to="/cart"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 font-semibold py-2"
+              >
+                <ShoppingCart size={16} />
+                <span>Cart ({cartCount})</span>
+              </Link>
+              <Link
+                to="/account"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 py-2"
+              >
+                <User size={16} />
+                <span>Account</span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

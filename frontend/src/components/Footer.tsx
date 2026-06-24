@@ -5,8 +5,8 @@ import { ChevronsLeftRightEllipsis, Mail, Share2 } from "lucide-react";
 function Footer() {
   return (
     <footer className="bg-[#F1F5F9] text-[#94A3B8] p-10">
-      <div className="border-b border-gray-200 pb-10 flex justify-between  gap-10">
-        <div className="flex flex-col justify-start gap-5 w-1/4  ">
+      <div className="border-b border-gray-200 pb-10 flex flex-col lg:flex-row justify-between gap-10">
+        <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <div className="flex items-center gap-1 text-black">
             <img src={iconImg} alt="bread icon" />
             <h2 className="font-bold text-xl">Artisan Crumbs</h2>
@@ -36,7 +36,7 @@ function Footer() {
             </Link>
           </div>
         </div>
-        <div className="flex flex-col justify-start gap-5 w-1/4">
+        <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <h2 className="font-bold text-[18px] text-black">Quick Links</h2>
           <ul className="space-y-2">
             <li>Shop Online</li>
@@ -45,7 +45,7 @@ function Footer() {
             <li>Careers</li>
           </ul>
         </div>
-        <div className="flex flex-col justify-start gap-5 w-1/4">
+        <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <h2 className="font-bold text-[18px] text-black">Help </h2>
           <ul className="space-y-2">
             <li>Order Status</li>
@@ -54,7 +54,7 @@ function Footer() {
             <li>Contact Support</li>
           </ul>
         </div>
-        <div className="flex flex-col justify-start gap-5 w-1/4">
+        <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <h2 className="font-bold text-[18px] text-black">Newsletter </h2>
           <p>Join our list for fresh updates and weekly recipes.</p>
           <form className="flex flex-col justify-start">

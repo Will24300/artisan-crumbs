@@ -29,11 +29,36 @@ const cartSlicer = createSlice({
     },
     removeFromCart: (state, action: PayloadAction<string | number>) => {
       state.items = state.items.filter(
+        (item) => item.productId !== action.payload,
+      );
+    },
+    incrementQuantity: (state, action: PayloadAction<string | number>) => {
+      const item = state.items.find(
         (item) => item.productId === action.payload,
       );
+      if (item) {
+        item.quantity += 1;
+      }
+    },
+    decrementQuantity: (state, action: PayloadAction<string | number>) => {
+      const item = state.items.find(
+        (item) => item.productId === action.payload,
+      );
+      if (item && item.quantity > 1) {
+        item.quantity -= 1;
+      }
+    },
+    removeAllFromCart: (state) => {
+      state.items = [];
     },
   },
 });
 
-export const { addToCart, removeFromCart } = cartSlicer.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  incrementQuantity,
+  decrementQuantity,
+  removeAllFromCart,
+} = cartSlicer.actions;
 export default cartSlicer.reducer;

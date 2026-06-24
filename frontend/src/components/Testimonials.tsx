@@ -8,7 +8,7 @@ function Testimonials() {
       <h2 className="text-[#F4AF25] font-bold text-[14px]">TESTIMONIALS</h2>
       <div className="flex justify-between items-center">
         <h1 className="text-[36px] font-bold">What Our Community is Saying</h1>
-        <Link to="" className="text-[#F4AF25] font-bold text-[16px]">
+        <Link to="contact" className="text-[#F4AF25] font-bold text-[16px]">
           Leave a comment
         </Link>
       </div>

@@ -1,8 +1,13 @@
 import { useSelector, useDispatch } from "react-redux";
-import { removeFromCart } from "../features/cart";
-import { data } from "../data";
+import {
+  removeFromCart,
+  incrementQuantity,
+  decrementQuantity,
+  removeAllFromCart,
+} from "../features/cart";
+import { data, dailySpecialData } from "../data";
 import { Link, useSearchParams } from "react-router-dom";
-import { X } from "lucide-react";
+import { X, Plus, Minus } from "lucide-react";
 
 interface RootState {
   cart: {
@@ -22,6 +27,7 @@ function Cart() {
   // Find product details for each cart item
   const cartProducts = cartItems
     .map((cartItem) => {
+      // Search main menu categories first
       for (const category of data.categories) {
         const product = category.products.find(
           (p) => p.id === cartItem.productId,
@@ -30,6 +36,21 @@ function Cart() {
           return { ...product, quantity: cartItem.quantity };
         }
       }
+
+      // Then search daily specials
+      const daily = dailySpecialData.find((p) => p.id === cartItem.productId);
+      if (daily) {
+        // Normalize property names to match menu products
+        return {
+          id: daily.id,
+          name: daily.name,
+          price: daily.price,
+          description: daily.description,
+          image: daily.image,
+          quantity: cartItem.quantity,
+        };
+      }
+
       return null;
     })
     .filter((item) => item !== null);
@@ -43,12 +64,24 @@ function Cart() {
     dispatch(removeFromCart(productId));
   };
 
+  const handleIncrement = (productId: string | number) => {
+    dispatch(incrementQuantity(productId));
+  };
+
+  const handleDecrement = (productId: string | number) => {
+    dispatch(decrementQuantity(productId));
+  };
+
+  const handleClearCart = () => {
+    dispatch(removeAllFromCart());
+  };
+
   return (
     <section className="py-9 px-10 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <Link
           to={`/shop?filter=${filter}`}
-          className="text-[#F59E0B] font-medium text-sm mb-6 inline-block hover:underline"
+          className="cursor-pointer text-[#F59E0B] font-medium text-sm mb-6 inline-block hover:underline"
         >
           ← Back to Shop
         </Link>
@@ -62,7 +95,7 @@ function Cart() {
             <p className="text-[#64748B] text-lg mb-4">Your cart is empty</p>
             <Link
               to="/shop"
-              className="inline-block bg-[#F59E0B] text-gray-900 font-medium py-2.5 px-6 rounded-full hover:bg-[#D97706] transition-colors"
+              className="cursor-pointer inline-block bg-[#F59E0B] text-gray-900 font-medium py-2.5 px-6 rounded-full hover:bg-[#D97706] transition-colors"
             >
               Continue Shopping
             </Link>
@@ -75,7 +108,7 @@ function Cart() {
                 {cartProducts.map((item) => (
                   <div
                     key={item?.id}
-                    className="flex gap-4 p-5 border-b border-gray-200 last:border-b-0"
+                    className="flex gap-4 p-5 border-b border-gray-200 last:border-b-0 items-center"
                   >
                     <img
                       src={item?.image}
@@ -93,20 +126,49 @@ function Cart() {
                         <span className="text-[#F59E0B] font-bold">
                           ${(item?.price || 0).toFixed(2)}
                         </span>
-                        <span className="text-sm text-gray-600">
-                          Qty: {item?.quantity}
-                        </span>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
+                          <button
+                            onClick={() => handleDecrement(item?.id || 0)}
+                            className="cursor-pointer p-1 hover:bg-gray-200 rounded-full transition-colors"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={16} className="text-gray-600" />
+                          </button>
+                          <span className="text-sm font-semibold text-gray-900 w-8 text-center">
+                            {item?.quantity}
+                          </span>
+                          <button
+                            onClick={() => handleIncrement(item?.id || 0)}
+                            className="cursor-pointer p-1 hover:bg-gray-200 rounded-full transition-colors"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={16} className="text-gray-600" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <button
                       onClick={() => handleRemove(item?.id || 0)}
-                      className="text-[#64748B] hover:text-red-600 transition-colors p-2"
+                      className="cursor-pointer text-[#64748B] hover:text-red-600 transition-colors p-2"
+                      aria-label="Remove item"
                     >
                       <X size={18} />
                     </button>
                   </div>
                 ))}
               </div>
+
+              {/* Clear Cart Button */}
+              {cartProducts.length > 0 && (
+                <button
+                  onClick={handleClearCart}
+                  className="cursor-pointer mt-4 text-red-600 font-medium text-sm hover:text-red-700 transition-colors"
+                >
+                  Clear Cart
+                </button>
+              )}
             </div>
 
             {/* Order Summary */}
@@ -139,12 +201,12 @@ function Cart() {
                     ${(totalPrice * 1.1).toFixed(2)}
                   </span>
                 </div>
-                <button className="w-full bg-gray-900 text-white font-medium py-3 rounded-full hover:bg-gray-800 transition-colors mb-3">
+                <button className="cursor-pointer w-full bg-gray-900 text-white font-medium py-3 rounded-full hover:bg-gray-800 transition-colors mb-3">
                   Checkout
                 </button>
                 <Link
                   to="/shop"
-                  className="block text-center text-[#334155] font-medium py-2.5 hover:bg-gray-100 rounded-full transition-colors"
+                  className="cursor-pointer block text-center text-[#334155] font-medium py-2.5 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   Continue Shopping
                 </Link>

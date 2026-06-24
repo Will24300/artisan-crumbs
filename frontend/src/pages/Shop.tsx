@@ -77,15 +77,15 @@ export const Shop: React.FC<ShopProps> = ({
   }, [activeFilter]);
 
   return (
-    <section className="py-9 px-10">
+    <section className="py-9 px-4 sm:px-6 lg:px-10">
       {/* Hero Header Area */}
       <div className="mb-9">
-        <h1 className="text-4xl font-extrabold text-gray-900 leading-tight mb-2">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-2">
           Our Bakery <span className="text-[#F59E0B]">Fresh</span> Daily
         </h1>
 
         <div className="flex justify-between items-end flex-wrap gap-4">
-          <p className="text-sm text-[#64748B] max-w-[300px] leading-relaxed">
+          <p className="text-sm text-[#64748B] max-w-full sm:max-w-[300px] leading-relaxed">
             Handcrafted with organic flour and local ingredients. Experience the
             art of traditional baking.
           </p>
@@ -117,7 +117,7 @@ export const Shop: React.FC<ShopProps> = ({
             className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
           >
             {/* Image Container */}
-            <div className="relative h-[180px] w-full bg-gray-100 overflow-hidden">
+            <div className="relative h-[180px] sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
               <img
                 src={product.image}
                 alt={product.name}
