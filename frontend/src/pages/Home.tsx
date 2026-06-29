@@ -10,8 +10,12 @@ function Home() {
   return (
     <div>
       <Hero />
-      <OurPhilosophy />
-      <DailySpecial />
+      <div id="our-story">
+        <OurPhilosophy />
+      </div>
+      <div id="daily-specials">
+        <DailySpecial />
+      </div>
       <Bakers />
       <Visit />
       <Ingredients />

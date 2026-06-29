@@ -17,11 +17,11 @@ function DailySpecial() {
           View All items
         </Link>
       </div>
-      <div className="grid grid-cols-3 gap-15 mt-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
         {dailySpecialData.map((product) => (
           <div key={product.id}>
             <div
-              className="relative group bg-no-repeat bg-cover bg-center h-100  rounded-2xl"
+              className="relative group bg-no-repeat bg-cover bg-center h-80 sm:h-96 rounded-2xl"
               style={{ backgroundImage: `url(${product.image})` }}
             >
               {product.tag && (

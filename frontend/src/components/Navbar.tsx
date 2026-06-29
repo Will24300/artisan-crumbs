@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import iconImg from "../assets/Icon.png";
 
@@ -20,12 +20,26 @@ interface RootState {
 export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const [isFloating, setIsFloating] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const currentHash = location.hash;
 
   useEffect(() => {
     const onScroll = () => setIsFloating(window.scrollY > 80);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const activeNavClass = "text-[#F4AF25] border border-[#F4AF25] rounded-full px-3 py-1 transition-colors";
+  const defaultNavClass = "hover:text-gray-900 transition-colors px-3 py-1";
+  const getNavLinkClass = (to: string) => {
+    const hash = to.includes("#") ? to.substring(to.indexOf("#")) : "";
+    if (hash) {
+      return location.pathname === "/" && currentHash === hash
+        ? activeNavClass
+        : defaultNavClass;
+    }
+    return location.pathname === to ? activeNavClass : defaultNavClass;
+  };
 
   const reduxCartItems = useSelector((state: RootState) => state.cart.items);
   const reduxCartCount = reduxCartItems.reduce(
@@ -55,34 +69,22 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
           {/* Center: Nav Links (hidden on tablet and below) */}
           <ul className="hidden lg:flex items-center gap-6 text-sm text-gray-700">
             <li>
-              <Link
-                to="/shop"
-                className="hover:text-gray-900 transition-colors"
-              >
+              <Link to="/shop" className={getNavLinkClass("/shop")}>
                 Shop
               </Link>
             </li>
             <li>
-              <Link
-                to="/specials"
-                className="hover:text-gray-900 transition-colors"
-              >
+              <Link to="/#daily-specials" className={getNavLinkClass("/#daily-specials")}>
                 Daily Specials
               </Link>
             </li>
             <li>
-              <Link
-                to="/about"
-                className="hover:text-gray-900 transition-colors"
-              >
+              <Link to="/#our-story" className={getNavLinkClass("/#our-story")}>
                 Our Story
               </Link>
             </li>
             <li>
-              <Link
-                to="/contact"
-                className="hover:text-gray-900 transition-colors"
-              >
+              <Link to="/contact" className={getNavLinkClass("/contact")}>
                 Contact
               </Link>
             </li>
@@ -152,28 +154,28 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             <Link
               to="/shop"
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-gray-700 hover:text-gray-900"
+              className={`block py-2 rounded-md ${getNavLinkClass("/shop")} text-left`}
             >
               Shop
             </Link>
             <Link
-              to="/specials"
+              to="/#daily-specials"
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-gray-700 hover:text-gray-900"
+              className={`block py-2 rounded-md ${getNavLinkClass("/#daily-specials")} text-left`}
             >
               Daily Specials
             </Link>
             <Link
-              to="/about"
+              to="/#our-story"
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-gray-700 hover:text-gray-900"
+              className={`block py-2 rounded-md ${getNavLinkClass("/#our-story")} text-left`}
             >
               Our Story
             </Link>
             <Link
               to="/contact"
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-gray-700 hover:text-gray-900"
+              className={`block py-2 rounded-md ${getNavLinkClass("/contact")} text-left`}
             >
               Contact
             </Link>
