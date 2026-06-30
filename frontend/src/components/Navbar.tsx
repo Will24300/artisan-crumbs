@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../features/auth";
 import iconImg from "../assets/Icon.png";
 
 interface NavbarProps {
@@ -15,7 +16,19 @@ interface RootState {
       quantity: number;
     }>;
   };
+  auth: {
+    user: {
+      name: string;
+      role: string;
+    } | null;
+  };
 }
+
+const getColorFromName = (name: string) => {
+  const hash = Array.from(name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const hue = hash % 360;
+  return `hsl(${hue}, 75%, 45%)`;
+};
 
 export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const [isFloating, setIsFloating] = useState(false);
@@ -42,11 +55,24 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   };
 
   const reduxCartItems = useSelector((state: RootState) => state.cart.items);
+  const authUser = useSelector((state: RootState) => state.auth.user);
   const reduxCartCount = reduxCartItems.reduce(
     (sum, item) => sum + item.quantity,
     0,
   );
   const cartCount = propCartCount ?? reduxCartCount;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const profileColor = useMemo(
+    () => (authUser ? getColorFromName(authUser.name) : "#F1F5F9"),
+    [authUser],
+  );
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
 
   return (
     <nav className="w-full bg-white border-b border-gray-200">
@@ -117,13 +143,27 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               <span className="text-sm">Cart ({cartCount})</span>
             </Link>
 
-            {/* Profile */}
-            <Link
-              to="/account"
-              className="hidden md:inline-block bg-[#F1F5F9] p-2 rounded-full text-[#334155] hover:bg-gray-200"
-            >
-              <User size={16} />
-            </Link>
+            {authUser ? (
+              <div className="hidden md:flex items-center gap-3">
+                <span className="text-sm text-[#334155]">Hey! {authUser.name}</span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="hidden lg:inline-flex items-center justify-center rounded-full h-10 w-10 text-white font-bold"
+                  style={{ backgroundColor: profileColor }}
+                  aria-label="Logout"
+                >
+                  {authUser.name.charAt(0).toUpperCase()}
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden md:inline-flex items-center gap-2 bg-[#F1F5F9] p-2 rounded-full text-[#334155] hover:bg-gray-200"
+              >
+                <span>Login</span>
+              </Link>
+            )}
 
             {/* Mobile menu button */}
             <button
@@ -189,14 +229,30 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 <ShoppingCart size={16} />
                 <span>Cart ({cartCount})</span>
               </Link>
-              <Link
-                to="/account"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 py-2"
-              >
-                <User size={16} />
-                <span>Account</span>
-              </Link>
+              {authUser ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(logout());
+                    setMobileOpen(false);
+                    navigate("/");
+                  }}
+                  className="flex items-center gap-2 py-2 text-left w-full"
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white" style={{ backgroundColor: profileColor }}>
+                    {authUser.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span>Logout</span>
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 py-2"
+                >
+                  <span>Login</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

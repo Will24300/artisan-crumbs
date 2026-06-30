@@ -6,7 +6,7 @@ import {
   removeAllFromCart,
 } from "../features/cart";
 import { data, dailySpecialData } from "../data";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus } from "lucide-react";
 
 interface RootState {
@@ -16,13 +16,25 @@ interface RootState {
       quantity: number;
     }>;
   };
+  auth: {
+    token: string | null;
+    user: {
+      id: string;
+      role?: string;
+      name: string;
+      email: string;
+    } | null;
+  };
 }
 
 function Cart() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
   const [searchParams] = useSearchParams();
   const filter = searchParams.get("filter") || "all";
+  const navigate = useNavigate();
 
   // Find product details for each cart item
   const cartProducts = cartItems
@@ -74,6 +86,46 @@ function Cart() {
 
   const handleClearCart = () => {
     dispatch(removeAllFromCart());
+  };
+
+  const handleCheckout = async () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const payload = {
+      items: cartProducts.map(p => ({
+        productId: String(p?.id),
+        name: p?.name,
+        quantity: p?.quantity,
+        price: p?.price,
+      })),
+      totalAmount: totalPrice * 1.1, // Total including tax (subtotal * 1.1)
+    };
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(errorData.error || "Failed to place order.");
+        return;
+      }
+
+      alert("Order placed successfully!");
+      dispatch(removeAllFromCart());
+      navigate("/");
+    } catch {
+      alert("Unable to connect to the server.");
+    }
   };
 
   return (
@@ -201,7 +253,21 @@ function Cart() {
                     ${(totalPrice * 1.1).toFixed(2)}
                   </span>
                 </div>
-                <button className="cursor-pointer w-full bg-gray-900 text-white font-medium py-3 rounded-full hover:bg-gray-800 transition-colors mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!authUser) {
+                      navigate("/login");
+                      return;
+                    }
+                    if (authUser.role === "admin") {
+                      alert("Administrators cannot place orders.");
+                      return;
+                    }
+                    handleCheckout();
+                  }}
+                  className="cursor-pointer w-full bg-gray-900 text-white font-medium py-3 rounded-full hover:bg-gray-800 transition-colors mb-3"
+                >
                   Checkout
                 </button>
                 <Link

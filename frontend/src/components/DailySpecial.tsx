@@ -1,10 +1,28 @@
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../features/cart";
 import { dailySpecialData } from "../data";
 
+interface RootState {
+  auth: {
+    user: {
+      name: string;
+    } | null;
+  };
+}
+
 function DailySpecial() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const authUser = useSelector((state: RootState) => state.auth.user);
+
+  const handleAdd = (productId: string | number) => {
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
+    dispatch(addToCart(productId));
+  };
 
   return (
     <section className="bg-[#F8F7F5] -mx-15 mb-20 p-15">
@@ -32,7 +50,7 @@ function DailySpecial() {
 
               <div className="absolute inset-0 flex items-center justify-center">
                 <button
-                  onClick={() => dispatch(addToCart(product.id))}
+                  onClick={() => handleAdd(product.id)}
                   className="opacity-0 group-hover:opacity-100 bg-[#F59E0B] text-white px-4 py-2 rounded-full font-semibold transition-opacity"
                   aria-label={`Add ${product.name} to cart`}
                 >

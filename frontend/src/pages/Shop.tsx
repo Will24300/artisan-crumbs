@@ -1,9 +1,15 @@
 import React, { useMemo } from "react";
 import { ShoppingCart } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
 import { data } from "../data";
+
+interface RootState {
+  auth: {
+    user: { id: string; role?: string } | null;
+  };
+}
 
 export type CategoryFilter =
   | "all"
@@ -40,9 +46,26 @@ export const Shop: React.FC<ShopProps> = ({
 
   // Use Redux for cart if callback not provided
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const authUser = useSelector((state: RootState) => state.auth.user);
+
+  React.useEffect(() => {
+    if (!authUser) {
+      navigate("/login");
+    }
+  }, [authUser, navigate]);
+
   const onAddToCart =
     propOnAddToCart ??
     ((productId: string | number) => {
+      if (!authUser) {
+        navigate("/login");
+        return;
+      }
+      if (authUser.role === "admin") {
+        alert("Administrators cannot place orders.");
+        return;
+      }
       dispatch(addToCart(productId));
     });
 
@@ -85,7 +108,7 @@ export const Shop: React.FC<ShopProps> = ({
         </h1>
 
         <div className="flex justify-between items-end flex-wrap gap-4">
-          <p className="text-sm text-[#64748B] max-w-full sm:max-w-[300px] leading-relaxed">
+          <p className="text-sm text-[#64748B] max-w-full sm:max-w-75 leading-relaxed">
             Handcrafted with organic flour and local ingredients. Experience the
             art of traditional baking.
           </p>
@@ -110,14 +133,14 @@ export const Shop: React.FC<ShopProps> = ({
       </div>
 
       {/* 3. Product Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[18px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
         {displayedProducts.map((product, index) => (
           <div
             key={`${product.id}-${index}`}
             className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
           >
             {/* Image Container */}
-            <div className="relative h-[180px] sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
+            <div className="relative h-45 sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
               <img
                 src={product.image}
                 alt={product.name}
@@ -133,7 +156,7 @@ export const Shop: React.FC<ShopProps> = ({
             </div>
 
             {/* Body Content Container */}
-            <div className="p-3.5 flex flex-col flex-grow justify-between">
+            <div className="p-3.5 flex flex-col grow justify-between">
               <div>
                 <div className="flex justify-between items-baseline gap-2 mb-1.5">
                   <span className="font-bold text-sm text-gray-900 line-clamp-1">
