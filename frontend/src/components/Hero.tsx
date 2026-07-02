@@ -28,9 +28,9 @@ function Hero() {
           >
             Shop Now
           </Link>
-          <button className="hidden lg:block bg-white/10 backdrop-blur-md py-2.5 px-7 cursor-pointer rounded-2xl font-bold hover:bg-white/20 transition-colors">
+          <Link to="/#our-story" className="hidden lg:block bg-white/10 backdrop-blur-md py-2.5 px-7 cursor-pointer rounded-2xl font-bold hover:bg-white/20 transition-colors">
             Our Story
-          </button>
+          </Link>
         </div>
       </div>
     </section>

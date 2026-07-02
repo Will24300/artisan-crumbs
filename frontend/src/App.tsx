@@ -21,9 +21,9 @@ const router = createBrowserRouter(
         <Route index element={<Home />} />
         <Route path="shop" element={<Shop />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="login" element={<Login />} />
         <Route path="account" element={<Account />} />
       </Route>
+      <Route path="login" element={<Login />} />
       <Route path="admin" element={<AdminDashboard />} />
       <Route path="cart" element={<Cart />} />
       <Route path="*" element={<ErrorPage />} />

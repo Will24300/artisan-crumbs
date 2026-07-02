@@ -39,19 +39,19 @@ function Footer() {
         <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <h2 className="font-bold text-[18px] text-black">Quick Links</h2>
           <ul className="space-y-2">
-            <li>Shop Online</li>
-            <li>Wholesale</li>
-            <li>Gift Cards</li>
-            <li>Careers</li>
+            <li><Link to="/shop" className="hover:text-gray-700 transition-colors">Shop Online</Link></li>
+            <li><Link to="/contact" className="hover:text-gray-700 transition-colors">Wholesale</Link></li>
+            <li><Link to="/shop" className="hover:text-gray-700 transition-colors">Gift Cards</Link></li>
+            <li><Link to="/contact" className="hover:text-gray-700 transition-colors">Careers</Link></li>
           </ul>
         </div>
         <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">
           <h2 className="font-bold text-[18px] text-black">Help </h2>
           <ul className="space-y-2">
-            <li>Order Status</li>
-            <li>Shipping Info</li>
-            <li>Returns</li>
-            <li>Contact Support</li>
+            <li><Link to="/account" className="hover:text-gray-700 transition-colors">Order Status</Link></li>
+            <li><Link to="/contact" className="hover:text-gray-700 transition-colors">Shipping Info</Link></li>
+            <li><Link to="/contact" className="hover:text-gray-700 transition-colors">Returns</Link></li>
+            <li><Link to="/contact" className="hover:text-gray-700 transition-colors">Contact Support</Link></li>
           </ul>
         </div>
         <div className="flex flex-col justify-start gap-5 w-full lg:w-1/4">

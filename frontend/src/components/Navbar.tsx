@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, LayoutDashboard } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth";
@@ -33,6 +33,7 @@ const getColorFromName = (name: string) => {
 export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const [isFloating, setIsFloating] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const location = useLocation();
   const currentHash = location.hash;
 
@@ -56,6 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
 
   const reduxCartItems = useSelector((state: RootState) => state.cart.items);
   const authUser = useSelector((state: RootState) => state.auth.user);
+  const isAdmin = authUser?.role === "admin";
   const reduxCartCount = reduxCartItems.reduce(
     (sum, item) => sum + item.quantity,
     0,
@@ -114,6 +116,18 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 Contact
               </Link>
             </li>
+            {/* Dashboard link — only visible to admins */}
+            {isAdmin && (
+              <li>
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-1.5 ${getNavLinkClass("/admin")}`}
+                >
+                  <LayoutDashboard size={15} />
+                  Dashboard
+                </Link>
+              </li>
+            )}
           </ul>
 
           {/* Right: actions */}
@@ -128,33 +142,73 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               />
             </div>
 
-            {/* Cart */}
-            <Link
-              to="/cart"
-              className={`flex items-center gap-2 font-semibold text-sm py-1.5 px-3 rounded-full transition-colors ${
-                cartCount > 0
-                  ? "bg-[#F59E0B] text-gray-900 hover:bg-[#D97706]"
-                  : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
-              } ${isFloating ? "fixed top-4 right-4 z-50 shadow-lg" : ""}`}
-              style={isFloating ? { transform: "translateZ(0)" } : undefined}
-              aria-label={`Cart with ${cartCount} items`}
-            >
-              <ShoppingCart size={16} />
-              <span className="text-sm">Cart ({cartCount})</span>
-            </Link>
+            {/* Cart — hidden for admin users */}
+            {!isAdmin && (
+              <Link
+                to="/cart"
+                className={`flex items-center gap-2 font-semibold text-sm py-1.5 px-3 rounded-full transition-colors ${
+                  cartCount > 0
+                    ? "bg-[#F59E0B] text-gray-900 hover:bg-[#D97706]"
+                    : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
+                } ${isFloating ? "fixed top-4 right-4 z-50 shadow-lg" : ""}`}
+                style={isFloating ? { transform: "translateZ(0)" } : undefined}
+                aria-label={`Cart with ${cartCount} items`}
+              >
+                <ShoppingCart size={16} />
+                <span className="text-sm">Cart ({cartCount})</span>
+              </Link>
+            )}
 
             {authUser ? (
-              <div className="hidden md:flex items-center gap-3">
-                <span className="text-sm text-[#334155]">Hey! {authUser.name}</span>
+              <div className="hidden md:flex items-center gap-3 relative">
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="hidden lg:inline-flex items-center justify-center rounded-full h-10 w-10 text-white font-bold"
+                  onClick={() => setProfileDropdownOpen((v) => !v)}
+                  className="hidden lg:inline-flex items-center justify-center rounded-full h-10 w-10 text-white font-bold cursor-pointer transition transform hover:scale-105"
                   style={{ backgroundColor: profileColor }}
-                  aria-label="Logout"
+                  aria-label="Toggle user menu"
+                  title={`Logged in as ${authUser.name}`}
                 >
                   {authUser.name.charAt(0).toUpperCase()}
                 </button>
+                {profileDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 top-12 w-48 bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {authUser.name}
+                        </p>
+                        <p className="text-xs text-gray-400 capitalize">
+                          {authUser.role}
+                        </p>
+                      </div>
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-amber-50 hover:text-amber-600 transition"
+                        >
+                          <LayoutDashboard size={14} />
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <Link
@@ -220,15 +274,30 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               Contact
             </Link>
 
-            <div className="pt-2 border-t border-gray-100">
+            {/* Dashboard link for admin (mobile) */}
+            {isAdmin && (
               <Link
-                to="/cart"
+                to="/admin"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 font-semibold py-2"
+                className={`flex items-center gap-2 py-2 rounded-md ${getNavLinkClass("/admin")} text-left`}
               >
-                <ShoppingCart size={16} />
-                <span>Cart ({cartCount})</span>
+                <LayoutDashboard size={16} />
+                Dashboard
               </Link>
+            )}
+
+            <div className="pt-2 border-t border-gray-100">
+              {/* Cart — hidden for admin in mobile too */}
+              {!isAdmin && (
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 font-semibold py-2"
+                >
+                  <ShoppingCart size={16} />
+                  <span>Cart ({cartCount})</span>
+                </Link>
+              )}
               {authUser ? (
                 <button
                   type="button"

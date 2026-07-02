@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 import { authenticateToken } from "../middleware/auth.js";
 import type { AuthRequest } from "../middleware/auth.js";
 
@@ -18,6 +19,27 @@ router.post("/", authenticateToken, async (req: AuthRequest, res) => {
     const { items, totalAmount } = req.body;
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Cart is empty" });
+    }
+
+    // Check stock availability for all items
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res.status(404).json({ error: `Product ${item.name} not found` });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ 
+          error: `Insufficient stock for ${item.name}. Only ${product.stock} available.` 
+        });
+      }
+    }
+
+    // Deduct stock for each item
+    for (const item of items) {
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { stock: -item.quantity } }
+      );
     }
 
     const order = await Order.create({

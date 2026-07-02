@@ -19,7 +19,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { name, description, price, category, image, tags } = req.body;
+    const { name, description, price, category, image, tags, stock } = req.body;
     const product = await Product.createProduct({
       name,
       description,
@@ -27,6 +27,7 @@ router.post("/", authenticateToken, requireAdmin, async (req, res) => {
       category,
       image,
       tags: tags || [],
+      stock: stock || 0,
     });
     res.status(201).json(product);
   } catch (error: any) {

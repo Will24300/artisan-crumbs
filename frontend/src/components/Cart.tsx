@@ -5,9 +5,20 @@ import {
   decrementQuantity,
   removeAllFromCart,
 } from "../features/cart";
-import { data, dailySpecialData } from "../data";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus } from "lucide-react";
+
+interface ApiProduct {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  tags?: string[];
+  stock: number;
+}
 
 interface RootState {
   cart: {
@@ -34,36 +45,36 @@ function Cart() {
   const token = useSelector((state: RootState) => state.auth.token);
   const [searchParams] = useSearchParams();
   const filter = searchParams.get("filter") || "all";
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Suppress unused variable warnings
+  void loading;
+  void error;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Unable to fetch products");
+        return res.json();
+      })
+      .then((data: ApiProduct[]) => {
+        setProducts(data || []);
+        setError(null);
+      })
+      .catch(() => setError("Failed to load product details."))
+      .finally(() => setLoading(false));
+  }, []);
 
   // Find product details for each cart item
   const cartProducts = cartItems
     .map((cartItem) => {
-      // Search main menu categories first
-      for (const category of data.categories) {
-        const product = category.products.find(
-          (p) => p.id === cartItem.productId,
-        );
-        if (product) {
-          return { ...product, quantity: cartItem.quantity };
-        }
-      }
-
-      // Then search daily specials
-      const daily = dailySpecialData.find((p) => p.id === cartItem.productId);
-      if (daily) {
-        // Normalize property names to match menu products
-        return {
-          id: daily.id,
-          name: daily.name,
-          price: daily.price,
-          description: daily.description,
-          image: daily.image,
-          quantity: cartItem.quantity,
-        };
-      }
-
-      return null;
+      const product = products.find((p) => p._id === cartItem.productId);
+      if (!product) return null;
+      return { ...product, quantity: cartItem.quantity };
     })
     .filter((item) => item !== null);
 
@@ -77,6 +88,13 @@ function Cart() {
   };
 
   const handleIncrement = (productId: string | number) => {
+    const product = products.find((p) => p._id === productId);
+    const cartItem = cartItems.find((item) => item.productId === productId);
+    if (!product) return;
+    if (cartItem && cartItem.quantity >= product.stock) {
+      alert("Cannot add more than available stock.");
+      return;
+    }
     dispatch(incrementQuantity(productId));
   };
 
@@ -94,12 +112,17 @@ function Cart() {
       return;
     }
 
+    if (cartProducts.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
+
     const payload = {
-      items: cartProducts.map(p => ({
-        productId: String(p?.id),
-        name: p?.name,
-        quantity: p?.quantity,
-        price: p?.price,
+      items: cartProducts.map((p) => ({
+        productId: p._id,
+        name: p.name,
+        quantity: p.quantity,
+        price: p.price,
       })),
       totalAmount: totalPrice * 1.1, // Total including tax (subtotal * 1.1)
     };
@@ -159,7 +182,7 @@ function Cart() {
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                 {cartProducts.map((item) => (
                   <div
-                    key={item?.id}
+                    key={item?._id}
                     className="flex gap-4 p-5 border-b border-gray-200 last:border-b-0 items-center"
                   >
                     <img
@@ -182,7 +205,7 @@ function Cart() {
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
                           <button
-                            onClick={() => handleDecrement(item?.id || 0)}
+                            onClick={() => handleDecrement(item?._id || 0)}
                             className="cursor-pointer p-1 hover:bg-gray-200 rounded-full transition-colors"
                             aria-label="Decrease quantity"
                           >
@@ -192,7 +215,7 @@ function Cart() {
                             {item?.quantity}
                           </span>
                           <button
-                            onClick={() => handleIncrement(item?.id || 0)}
+                            onClick={() => handleIncrement(item?._id || 0)}
                             className="cursor-pointer p-1 hover:bg-gray-200 rounded-full transition-colors"
                             aria-label="Increase quantity"
                           >
@@ -202,7 +225,7 @@ function Cart() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleRemove(item?.id || 0)}
+                      onClick={() => handleRemove(item?._id || 0)}
                       className="cursor-pointer text-[#64748B] hover:text-red-600 transition-colors p-2"
                       aria-label="Remove item"
                     >

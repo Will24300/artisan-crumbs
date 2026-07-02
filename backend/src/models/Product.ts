@@ -7,6 +7,7 @@ export interface IProduct {
   category: string;
   image: string;
   tags: string[];
+  stock: number;
   createdAt: Date;
 }
 
@@ -25,6 +26,7 @@ const productSchema = new Schema<IProductDocument, IProductModel>(
     category: { type: String, required: true, trim: true },
     image: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
+    stock: { type: Number, required: true, default: 0, min: 0 },
     createdAt: { type: Date, default: () => new Date() },
   },
   { timestamps: true },

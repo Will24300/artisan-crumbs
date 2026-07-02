@@ -1,9 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
-import { data } from "../data";
 
 interface RootState {
   auth: {
@@ -11,14 +10,18 @@ interface RootState {
   };
 }
 
-export type CategoryFilter =
-  | "all"
-  | "Cake"
-  | "Muffins"
-  | "Croissant"
-  | "Bread"
-  | "Tart"
-  | "Favorite";
+interface ApiProduct {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  tags?: string[];
+  stock: number;
+}
+
+export type CategoryFilter = string;
 
 interface ShopProps {
   activeFilter?: CategoryFilter;
@@ -32,6 +35,9 @@ export const Shop: React.FC<ShopProps> = ({
   onAddToCart: propOnAddToCart,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get filter from URL params or use default
   const filterFromUrl = (searchParams.get("filter") as CategoryFilter) || "all";
@@ -43,6 +49,21 @@ export const Shop: React.FC<ShopProps> = ({
     ((filter: CategoryFilter) => {
       setSearchParams({ filter });
     });
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Unable to fetch products");
+        return res.json();
+      })
+      .then((data: ApiProduct[]) => {
+        setProducts(data || []);
+        setError(null);
+      })
+      .catch(() => setError("Error loading products. Please try again later."))
+      .finally(() => setLoading(false));
+  }, []);
 
   // Use Redux for cart if callback not provided
   const dispatch = useDispatch();
@@ -66,38 +87,31 @@ export const Shop: React.FC<ShopProps> = ({
         alert("Administrators cannot place orders.");
         return;
       }
+      const product = products.find((p) => p._id === productId);
+      if (!product || product.stock === 0) {
+        alert("This product is out of stock.");
+        return;
+      }
       dispatch(addToCart(productId));
     });
 
-  console.log("Data loaded:", data);
-  console.log("Categories:", data?.categories);
-  console.log("Active filter:", activeFilter);
-  // 1. Get unique categories dynamically from your data structure
   const filterCategories = useMemo(() => {
-    const list: { label: string; value: CategoryFilter }[] = [
+    const categories = Array.from(new Set(products.map((product) => product.category)));
+    return [
       { label: "All Items", value: "all" },
+      ...categories.map((category) => ({ label: category, value: category as CategoryFilter })),
     ];
+  }, [products]);
 
-    data.categories.forEach((cat) => {
-      list.push({ label: cat.name, value: cat.name as CategoryFilter });
-    });
-
-    return list;
-  }, []);
-
-  // 2. Derive the visible products based on the active filter state
   const displayedProducts = useMemo(() => {
     if (activeFilter === "all") {
-      // Flattens all product arrays into one single list
-      return data.categories.flatMap((cat) => cat.products);
+      return products;
     }
-
-    // Find specific category matching the current active string
-    const targetCategory = data.categories.find(
-      (cat) => cat.name === activeFilter,
-    );
-    return targetCategory ? targetCategory.products : [];
-  }, [activeFilter]);
+    if (activeFilter === "Favorite") {
+      return products.filter((product) => product.tags?.includes("favorite"));
+    }
+    return products.filter((product) => product.category === activeFilter);
+  }, [activeFilter, products]);
 
   return (
     <section className="py-9 px-4 sm:px-6 lg:px-10">
@@ -134,54 +148,76 @@ export const Shop: React.FC<ShopProps> = ({
 
       {/* 3. Product Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
-        {displayedProducts.map((product, index) => (
-          <div
-            key={`${product.id}-${index}`}
-            className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
-          >
-            {/* Image Container */}
-            <div className="relative h-45 sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-              {/* Highlight special items if active category is Favorite */}
-              {activeFilter === "Favorite" && (
-                <span className="absolute top-2.5 left-2.5 bg-[#F59E0B] text-amber-950 text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
-                  Fav
-                </span>
-              )}
-            </div>
-
-            {/* Body Content Container */}
-            <div className="p-3.5 flex flex-col grow justify-between">
-              <div>
-                <div className="flex justify-between items-baseline gap-2 mb-1.5">
-                  <span className="font-bold text-sm text-gray-900 line-clamp-1">
-                    {product.name}
+        {loading ? (
+          <div className="col-span-full text-center py-10 text-gray-500">Loading products...</div>
+        ) : error ? (
+          <div className="col-span-full text-center py-10 text-red-500">{error}</div>
+        ) : displayedProducts.length === 0 ? (
+          <div className="col-span-full text-center py-10 text-gray-500">No products available.</div>
+        ) : (
+          displayedProducts.map((product) => (
+            <div
+              key={product._id}
+              className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
+            >
+              {/* Image Container */}
+              <div className="relative h-45 sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                {/* Highlight special items if active category is Favorite */}
+                {activeFilter === "Favorite" && (
+                  <span className="absolute top-2.5 left-2.5 bg-[#F59E0B] text-amber-950 text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
+                    Fav
                   </span>
-                  <span className="text-[#F59E0B] font-bold text-sm">
-                    ${product.price.toFixed(2)}
+                )}
+                {/* Out of Stock Badge */}
+                {product.stock === 0 && (
+                  <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
+                    Out of Stock
                   </span>
-                </div>
-                <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-4">
-                  {product.description}
-                </p>
+                )}
               </div>
 
-              {/* Action Button */}
-              <button
-                onClick={() => onAddToCart(product.id)}
-                className="w-full bg-gray-900 text-white rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors hover:bg-gray-800 flex items-center justify-center gap-1.5"
-              >
-                <ShoppingCart size={14} />
-                Add to Cart
-              </button>
+              {/* Body Content Container */}
+              <div className="p-3.5 flex flex-col grow justify-between">
+                <div>
+                  <div className="flex justify-between items-baseline gap-2 mb-1.5">
+                    <span className="font-bold text-sm text-gray-900 line-clamp-1">
+                      {product.name}
+                    </span>
+                    <span className="text-[#F59E0B] font-bold text-sm">
+                      ${product.price.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-2">
+                    {product.description}
+                  </p>
+                  <p className="text-xs text-gray-500 mb-4">
+                    {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                  </p>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() => onAddToCart(product._id)}
+                  disabled={product.stock === 0}
+                  className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+                    product.stock === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-900 text-white hover:bg-gray-800"
+                  }`}
+                >
+                  <ShoppingCart size={14} />
+                  {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </section>
   );
