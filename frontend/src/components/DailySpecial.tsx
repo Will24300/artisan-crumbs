@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../features/cart";
 import { dailySpecialData } from "../data";
+import { toast } from "react-toastify";
 
 interface RootState {
   auth: {
@@ -22,6 +23,10 @@ function DailySpecial() {
       return;
     }
     dispatch(addToCart(productId));
+    const product = dailySpecialData.find((item) => item.id === productId);
+    if (product) {
+      toast.success(`${product.name} added to your cart!`);
+    }
   };
 
   return (
@@ -39,7 +44,7 @@ function DailySpecial() {
         {dailySpecialData.map((product) => (
           <div key={product.id}>
             <div
-              className="relative group bg-no-repeat bg-cover bg-center h-80 sm:h-96 rounded-2xl"
+              className="relative group bg-no-repeat bg-cover bg-center h-100 rounded-2xl overflow-hidden"
               style={{ backgroundImage: `url(${product.image})` }}
             >
               {product.tag && (

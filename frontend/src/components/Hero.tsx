@@ -5,7 +5,7 @@ function Hero() {
   return (
     <section
       style={{ backgroundImage: `url(${hero_bg})` }}
-      className="bg-cover bg-top lg:bg-center bg-no-repeat h-[85vh] lg:h-[80vh] my-0 lg:my-10 text-white rounded-none lg:rounded-[30px] flex justify-start lg:justify-center items-end lg:items-center relative pb-10 lg:pb-0"
+      className="bg-cover bg-top lg:bg-center bg-no-repeat h-[75vh] sm:h-[80vh] lg:h-[80vh] my-0 lg:my-10 text-white rounded-none lg:rounded-[30px] flex justify-start lg:justify-center items-end lg:items-center relative pb-10 lg:pb-0"
     >
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/50 lg:bg-black/40 rounded-none lg:rounded-[30px]"></div>

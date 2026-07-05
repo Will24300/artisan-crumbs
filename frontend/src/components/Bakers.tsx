@@ -16,7 +16,7 @@ function Bakers() {
         {bakersData.map((baker) => (
           <div key={baker.id}>
             <div
-              className="relative bg-no-repeat bg-cover bg-center h-72 sm:h-80 rounded-2xl"
+              className="relative bg-no-repeat bg-cover bg-center h-100  rounded-2xl overflow-hidden"
               style={{ backgroundImage: `url(${baker.image})` }}
             ></div>
             <div className="mt-3">

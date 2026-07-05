@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface ApiProduct {
   _id: string;
@@ -62,7 +63,10 @@ function Cart() {
         return res.json();
       })
       .then((data: ApiProduct[]) => {
-        setProducts(data || []);
+        setProducts((data || []).map((product) => {
+          const rawStock = (product as any).stock ?? (product as any).countInStock ?? (product as any).quantity ?? 0;
+          return { ...product, stock: Number(rawStock) || 0 } as ApiProduct;
+        }));
         setError(null);
       })
       .catch(() => setError("Failed to load product details."))
@@ -92,7 +96,7 @@ function Cart() {
     const cartItem = cartItems.find((item) => item.productId === productId);
     if (!product) return;
     if (cartItem && cartItem.quantity >= product.stock) {
-      alert("Cannot add more than available stock.");
+      toast.error("Cannot add more than available stock.");
       return;
     }
     dispatch(incrementQuantity(productId));
@@ -113,7 +117,7 @@ function Cart() {
     }
 
     if (cartProducts.length === 0) {
-      alert("Your cart is empty.");
+      toast.error("Your cart is empty.");
       return;
     }
 
@@ -139,15 +143,15 @@ function Cart() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert(errorData.error || "Failed to place order.");
+        toast.error(errorData.error || "Failed to place order.");
         return;
       }
 
-      alert("Order placed successfully!");
+      toast.success("Order placed successfully!");
       dispatch(removeAllFromCart());
       navigate("/");
     } catch {
-      alert("Unable to connect to the server.");
+      toast.error("Unable to connect to the server.");
     }
   };
 
@@ -284,7 +288,7 @@ function Cart() {
                       return;
                     }
                     if (authUser.role === "admin") {
-                      alert("Administrators cannot place orders.");
+                      toast.error("Administrators cannot place orders.");
                       return;
                     }
                     handleCheckout();

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import {
   Plus,
   Edit2,
@@ -836,7 +837,7 @@ function AdminDashboard() {
               className="hidden"
               onChange={(e) => {
                 if (e.target.files?.[0])
-                  alert(
+                  toast.info(
                     `Bulk upload for "${e.target.files[0].name}" received.\nBackend CSV parsing integration can be added in /api/products/bulk.`
                   );
               }}
@@ -1958,7 +1959,7 @@ function AdminDashboard() {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           if (file.size > 5 * 1024 * 1024) {
-                            alert("Image must be under 5MB");
+                            toast.error("Image must be under 5MB");
                             return;
                           }
                           const reader = new FileReader();

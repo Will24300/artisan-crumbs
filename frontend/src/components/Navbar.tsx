@@ -213,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:inline-flex items-center gap-2 bg-[#F1F5F9] p-2 rounded-full text-[#334155] hover:bg-gray-200"
+                className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white px-5 py-2 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 hover:scale-105"
               >
                 <span>Login</span>
               </Link>
@@ -317,7 +317,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 py-2"
+                  className="flex items-center gap-2 py-2 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white px-4 py-2 rounded-full font-semibold text-sm"
                 >
                   <span>Login</span>
                 </Link>

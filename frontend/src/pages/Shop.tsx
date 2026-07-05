@@ -3,6 +3,7 @@ import { ShoppingCart } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
+import { toast } from "react-toastify";
 
 interface RootState {
   auth: {
@@ -58,7 +59,13 @@ export const Shop: React.FC<ShopProps> = ({
         return res.json();
       })
       .then((data: ApiProduct[]) => {
-        setProducts(data || []);
+        setProducts((data || []).map((product) => {
+          const rawStock = (product as any).stock ?? (product as any).countInStock ?? (product as any).quantity ?? 0;
+          return {
+            ...product,
+            stock: Number(rawStock) || 0,
+          } as ApiProduct;
+        }));
         setError(null);
       })
       .catch(() => setError("Error loading products. Please try again later."))
@@ -84,15 +91,19 @@ export const Shop: React.FC<ShopProps> = ({
         return;
       }
       if (authUser.role === "admin") {
-        alert("Administrators cannot place orders.");
+        toast.error("Administrators cannot place orders.");
         return;
       }
       const product = products.find((p) => p._id === productId);
       if (!product || product.stock === 0) {
-        alert("This product is out of stock.");
+        toast.error("This product is out of stock.");
         return;
       }
       dispatch(addToCart(productId));
+      toast.success(`${product.name} added to your cart!`, {
+        autoClose: 3000,
+        onClick: () => navigate("/cart"),
+      });
     });
 
   const filterCategories = useMemo(() => {
@@ -161,7 +172,7 @@ export const Shop: React.FC<ShopProps> = ({
               className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
             >
               {/* Image Container */}
-              <div className="relative h-45 sm:h-56 md:h-44 lg:h-48 w-full bg-gray-100 overflow-hidden">
+              <div className="relative h-80 lg:h-48 w-full bg-gray-100 overflow-hidden">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -196,9 +207,9 @@ export const Shop: React.FC<ShopProps> = ({
                   <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-2">
                     {product.description}
                   </p>
-                  <p className="text-xs text-gray-500 mb-4">
-                    {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
-                  </p>
+                  {product.stock > 0 && (
+                    <p className="text-xs text-gray-500 mb-4">{`${product.stock} in stock`}</p>
+                  )}
                 </div>
 
                 {/* Action Button */}
@@ -212,7 +223,7 @@ export const Shop: React.FC<ShopProps> = ({
                   }`}
                 >
                   <ShoppingCart size={14} />
-                  {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                  {product.stock === 0 ? "Unavailable" : "Add to Cart"}
                 </button>
               </div>
             </div>

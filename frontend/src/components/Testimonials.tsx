@@ -15,8 +15,12 @@ function Testimonials() {
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
-        {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="bg-[#F8F7F5] p-7 rounded-2xl">
+        {testimonials.map((testimonial, i) => (
+          <div
+            key={testimonial.id}
+            className="bg-[#F8F7F5] p-7 rounded-2xl fade-in-up"
+            style={{ animationDelay: `${i * 120}ms` }}
+          >
             <div className="flex flex-wrap gap-1">
               {[...Array(testimonial.ratings)].map((_, index) => (
                 <img key={index} src={testimonial.star} alt="" />
@@ -28,8 +32,8 @@ function Testimonials() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <img
                 src={testimonial.image}
-                alt="user icon"
-                className="rounded-4xl w-16 h-16 object-cover"
+                alt={testimonial.name}
+                className="rounded-4xl w-14 h-14 sm:w-16 sm:h-16 object-cover float-slow"
               />
               <div>
                 <h2 className="font-bold text-[16px]">{testimonial.name}</h2>

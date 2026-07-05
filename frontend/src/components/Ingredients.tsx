@@ -14,8 +14,8 @@ function Ingredients() {
             key={ingredient.id}
             className="flex flex-col justify-center items-center text-center bg-white rounded-2xl p-5 gap-4"
           >
-            <div className="bg-[#fdf2dc] p-4 rounded-full">
-              <img src={ingredient.image} alt="" />
+            <div className="bg-[#fdf2dc] p-4 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+              <img src={ingredient.image} alt={ingredient.name} className="w-full h-full object-contain" />
             </div>
             <h2 className="text-[20px] font-bold">{ingredient.name}</h2>
             <p className="text-[#64748B] text-[14px] leading-relaxed">

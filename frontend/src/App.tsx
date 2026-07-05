@@ -11,6 +11,7 @@ import Layout from "./components/Layout";
 import ErrorPage from "./pages/Error";
 import Cart from "./components/Cart";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Account from "./pages/Account";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
         <Route path="account" element={<Account />} />
       </Route>
       <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
       <Route path="admin" element={<AdminDashboard />} />
       <Route path="cart" element={<Cart />} />
       <Route path="*" element={<ErrorPage />} />
