@@ -910,9 +910,14 @@ function AdminDashboard() {
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-                  <span className="text-amber-600 font-bold text-base">
-                    ${product.price.toFixed(2)}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-amber-600 font-bold text-base">
+                      ${product.price.toFixed(2)}
+                    </span>
+                    <span className="text-[11px] font-semibold text-gray-500 mt-0.5">
+                      Stock: <span className={product.stock === 0 ? "text-red-500" : "text-gray-700"}>{product.stock}</span>
+                    </span>
+                  </div>
                   {product.tags && product.tags.length > 0 && (
                     <div className="flex gap-1">
                       {product.tags.slice(0, 1).map((tag) => (

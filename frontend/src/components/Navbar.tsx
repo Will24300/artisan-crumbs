@@ -102,8 +102,8 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               </Link>
             </li>
             <li>
-              <Link to="/#daily-specials" className={getNavLinkClass("/#daily-specials")}>
-                Daily Specials
+              <Link to="/#top-selling" className={getNavLinkClass("/#top-selling")}>
+                Top Selling
               </Link>
             </li>
             <li>
@@ -253,11 +253,11 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               Shop
             </Link>
             <Link
-              to="/#daily-specials"
+              to="/#top-selling"
               onClick={() => setMobileOpen(false)}
-              className={`block py-2 rounded-md ${getNavLinkClass("/#daily-specials")} text-left`}
+              className={`block py-2 rounded-md ${getNavLinkClass("/#top-selling")} text-left`}
             >
-              Daily Specials
+              Top Selling
             </Link>
             <Link
               to="/#our-story"

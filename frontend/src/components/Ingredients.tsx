@@ -5,7 +5,7 @@ function Ingredients() {
   return (
     <section className="bg-[#F8F7F5] -mx-15 my-20 p-6 sm:p-10">
       <div className="text-center">
-        <h3 className="text-[14px] text-[#F4AF25] font-bold">QUALITY FIRST</h3>
+        <h3 className="text-[14px] text-[#D46211] font-bold">QUALITY FIRST</h3>
         <h2 className="text-[36px] sm:text-[40px] font-bold">Featured Ingredients</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">

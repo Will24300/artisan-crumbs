@@ -35,7 +35,7 @@ function Contact() {
                   id="contact-name"
                   type="text"
                   placeholder="Volonte Rwicha"
-                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#F4AF25] bg-[#FDFDFD]"
+                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] bg-[#FDFDFD]"
                 />
               </div>
               <div>
@@ -49,7 +49,7 @@ function Contact() {
                   id="contact-email"
                   type="email"
                   placeholder="volonte@example.com"
-                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#F4AF25] bg-[#FDFDFD]"
+                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] bg-[#FDFDFD]"
                 />
               </div>
             </div>
@@ -63,7 +63,7 @@ function Contact() {
               </label>
               <select
                 id="contact-subject"
-                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#F4AF25] bg-[#FDFDFD] cursor-pointer"
+                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] bg-[#FDFDFD] cursor-pointer"
               >
                 <option>General Inquiry</option>
                 <option>Pre-order for Event</option>
@@ -84,13 +84,13 @@ function Contact() {
                 id="contact-message"
                 placeholder="How can we help you today?"
                 rows={5}
-                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#F4AF25] bg-[#FDFDFD] resize-y"
+                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] bg-[#FDFDFD] resize-y"
               />
             </div>
 
             <button
               onClick={() => setSent(true)}
-              className="w-full bg-[#F4AF25] hover:bg-[#dca920] text-[#0F172A] font-bold py-3.5 rounded-full text-sm tracking-wide transition-colors cursor-pointer"
+              className="w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3.5 rounded-full text-sm tracking-wide transition-colors cursor-pointer"
             >
               {sent ? "Message Sent!" : "Send Message"}
             </button>
@@ -140,7 +140,7 @@ function Contact() {
                   href="https://www.google.com/maps/search/?api=1&query=University+of+Kigali+ULK+Kigali+Rwanda"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex cursor-pointer justify-center rounded-full bg-[#F4AF25] px-4 py-2 text-sm font-bold text-[#0F172A] hover:bg-[#dca920] transition-colors"
+                  className="inline-flex cursor-pointer justify-center rounded-full bg-[#D46211] px-4 py-2 text-sm font-bold text-white hover:bg-[#b04f0b] transition-colors"
                 >
                   Get Directions
                 </a>

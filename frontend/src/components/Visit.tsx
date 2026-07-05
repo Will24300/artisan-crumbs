@@ -6,7 +6,7 @@ function Visit() {
   const getDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${address}`;
 
   return (
-    <section className="bg-[#fdf2dc] flex flex-col gap-8 p-8 my-10 rounded-2xl lg:flex-row lg:items-center lg:justify-between">
+    <section className="bg-[#FFF4EB] flex flex-col gap-8 p-8 my-10 rounded-2xl lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 className="text-[28px] sm:text-[30px] font-bold">Visit Our Bakery</h2>
         <p className="text-[#475569] text-[16px] my-3 leading-relaxed">
@@ -19,7 +19,7 @@ function Visit() {
           rel="noopener noreferrer"
           className="flex justify-start items-center gap-2 hover:underline"
         >
-          <MapPin className="text-[#F4AF25]" /> View on Map
+          <MapPin className="text-[#D46211]" /> View on Map
         </a>
       </div>
 
@@ -28,7 +28,7 @@ function Visit() {
           href={getDirectionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full sm:w-auto bg-[#F4AF25] py-3 px-5 rounded-2xl font-semibold text-[16px] text-center hover:bg-[#dca022] transition-colors"
+          className="w-full sm:w-auto bg-[#D46211] py-3 px-5 rounded-2xl font-semibold text-[16px] text-center text-white hover:bg-[#b04f0b] transition-colors"
         >
           Get Directions
         </a>

@@ -5,7 +5,7 @@ function Bakers() {
     <section className="py-10">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="text-[#F4AF25] font-bold text-[14px]">THE TEAM</h2>
+          <h2 className="text-[#D46211] font-bold text-[14px]">THE TEAM</h2>
           <h1 className="text-[32px] sm:text-[36px] font-bold">Meet the Bakers</h1>
         </div>
         <p className="text-[#64748B] text-[16px] max-w-2xl">
@@ -21,7 +21,7 @@ function Bakers() {
             ></div>
             <div className="mt-3">
               <h2 className="text-[20px] font-bold">{baker.name}</h2>
-              <p className="text-[#F4AF25] font-medium text-[16px]">
+              <p className="text-[#D46211] font-medium text-[16px]">
                 {baker.speciality}
               </p>
             </div>

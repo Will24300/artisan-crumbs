@@ -6,6 +6,7 @@ const productSchema = new Schema({
     category: { type: String, required: true, trim: true },
     image: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
+    stock: { type: Number, required: true, default: 0, min: 0 },
     createdAt: { type: Date, default: () => new Date() },
 }, { timestamps: true });
 productSchema.statics.createProduct = function (data) {

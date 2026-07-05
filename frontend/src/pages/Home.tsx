@@ -1,5 +1,5 @@
 import Bakers from "../components/Bakers";
-import DailySpecial from "../components/DailySpecial";
+import TopSelling from "../components/TopSelling";
 import Hero from "../components/Hero";
 import Ingredients from "../components/Ingredients";
 import OurPhilosophy from "../components/OurPhilosophy";
@@ -13,8 +13,8 @@ function Home() {
       <div id="our-story">
         <OurPhilosophy />
       </div>
-      <div id="daily-specials">
-        <DailySpecial />
+      <div id="top-selling">
+        <TopSelling />
       </div>
       <Bakers />
       <Visit />

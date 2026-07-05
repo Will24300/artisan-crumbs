@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
 interface RootState {
   auth: {
@@ -167,9 +168,13 @@ export const Shop: React.FC<ShopProps> = ({
           <div className="col-span-full text-center py-10 text-gray-500">No products available.</div>
         ) : (
           displayedProducts.map((product) => (
-            <div
+            <motion.div
               key={product._id}
               className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
               {/* Image Container */}
               <div className="relative h-80 lg:h-48 w-full bg-gray-100 overflow-hidden">
@@ -207,9 +212,6 @@ export const Shop: React.FC<ShopProps> = ({
                   <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-2">
                     {product.description}
                   </p>
-                  {product.stock > 0 && (
-                    <p className="text-xs text-gray-500 mb-4">{`${product.stock} in stock`}</p>
-                  )}
                 </div>
 
                 {/* Action Button */}
@@ -226,7 +228,7 @@ export const Shop: React.FC<ShopProps> = ({
                   {product.stock === 0 ? "Unavailable" : "Add to Cart"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>

@@ -4,13 +4,13 @@ import { testimonialData } from "../data";
 function Testimonials() {
   const testimonials = testimonialData;
   return (
-    <section className="my-15">
+    <section className=" bg-[#D46211] -mx-15 px-15 py-20">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-[#F4AF25] font-bold text-[14px]">TESTIMONIALS</h2>
-          <h1 className="text-[32px] sm:text-[36px] font-bold">What Our Community is Saying</h1>
+          <h2 className="text-white font-bold">TESTIMONIALS</h2>
+          <h1 className="text-[32px] sm:text-[36px] font-bold text-black">What Our Community is Saying</h1>
         </div>
-        <Link to="contact" className="text-[#F4AF25] font-bold text-[16px]">
+        <Link to="contact" className="text-black font-bold text-[16px]">
           Leave a comment
         </Link>
       </div>
