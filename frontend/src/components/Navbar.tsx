@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const activeNavClass = "text-[#F4AF25] border border-[#F4AF25] rounded-full px-3 py-1 transition-colors";
+  const activeNavClass = "text-[#D46211] border border-[#D46211] rounded-full px-3 py-1 transition-colors";
   const defaultNavClass = "hover:text-gray-900 transition-colors px-3 py-1";
   const getNavLinkClass = (to: string) => {
     const hash = to.includes("#") ? to.substring(to.indexOf("#")) : "";

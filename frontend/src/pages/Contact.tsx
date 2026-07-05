@@ -102,7 +102,7 @@ function Contact() {
               {/* Store Hours */}
               <div className="bg-[#FEF9EC] border border-[#FDE9A2] rounded-[30px] p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Clock size={18} color="#F59E0B" />
+                  <Clock size={18} color="#D46211" />
                   <span className="text-xs font-bold text-[#78350F] uppercase tracking-[0.08em]">
                     Store Hours
                   </span>
@@ -126,7 +126,7 @@ function Contact() {
               {/* Our Location */}
               <div className="bg-[#FEF9EC] border border-[#FDE9A2] rounded-[30px] p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <MapPin size={18} color="#F59E0B" />
+                  <MapPin size={18} color="#D46211" />
                   <span className="text-xs font-bold text-[#78350F] uppercase tracking-[0.08em]">
                     Our Location
                   </span>

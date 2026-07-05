@@ -130,7 +130,7 @@ export const Shop: React.FC<ShopProps> = ({
       {/* Hero Header Area */}
       <div className="mb-9">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-2">
-          Our Bakery <span className="text-[#F59E0B]">Fresh</span> Daily
+          Our Bakery <span className="text-[#D46211]">Fresh</span> Daily
         </h1>
 
         <div className="flex justify-between items-end flex-wrap gap-4">
@@ -147,7 +147,7 @@ export const Shop: React.FC<ShopProps> = ({
                 onClick={() => onFilterChange(cat.value)}
                 className={`py-1.5 px-4 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                   activeFilter === cat.value
-                    ? "bg-[#F59E0B] text-gray-900"
+                    ? "bg-[#D46211] text-white"
                     : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
                 }`}
               >
@@ -205,7 +205,7 @@ export const Shop: React.FC<ShopProps> = ({
                     <span className="font-bold text-sm text-gray-900 line-clamp-1">
                       {product.name}
                     </span>
-                    <span className="text-[#F59E0B] font-bold text-sm">
+                    <span className="text-[#D46211] font-bold text-sm">
                       ${product.price.toFixed(2)}
                     </span>
                   </div>
@@ -218,10 +218,10 @@ export const Shop: React.FC<ShopProps> = ({
                 <button
                   onClick={() => onAddToCart(product._id)}
                   disabled={product.stock === 0}
-                  className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+                  className={`w-full rounded-full py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                     product.stock === 0
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-gray-900 text-white hover:bg-gray-800"
+                      : "bg-[#FFF4EB] text-[#D46211] hover:bg-[#D46211] hover:text-white"
                   }`}
                 >
                   <ShoppingCart size={14} />

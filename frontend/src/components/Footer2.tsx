@@ -117,7 +117,7 @@ export default function Footer2() {
             </div>
 
             <div className="mt-16 pt-8 border-t border-white/5 text-center text-xs">
-                <p>© 2026 Sweet Delights Bakery. All rights reserved. Handcrafted with love.</p>
+                <p>© 2026 Artisan Crumbs Bakery. All rights reserved. Handcrafted with love.</p>
             </div>
         </footer>
     );

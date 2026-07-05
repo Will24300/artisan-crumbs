@@ -4,7 +4,7 @@ import { testimonialData } from "../data";
 function Testimonials() {
   const testimonials = testimonialData;
   return (
-    <section className=" bg-[#D46211] -mx-15 px-15 py-20">
+    <section className=" bg-[#D46211] -mx-5 md:-mx-10 lg:-mx-15 px-10 py-15">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-white font-bold">TESTIMONIALS</h2>
@@ -18,7 +18,7 @@ function Testimonials() {
         {testimonials.map((testimonial, i) => (
           <div
             key={testimonial.id}
-            className="bg-[#F8F7F5] p-7 rounded-2xl fade-in-up"
+            className="bg-white/10 backdrop-blur-md border border-white/20 p-7 rounded-2xl fade-in-up"
             style={{ animationDelay: `${i * 120}ms` }}
           >
             <div className="flex flex-wrap gap-1">
@@ -26,7 +26,7 @@ function Testimonials() {
                 <img key={index} src={testimonial.star} alt="" />
               ))}
             </div>
-            <p className="text-[#334155] text-[16px] italic mt-5 mb-10 leading-relaxed">
+            <p className="text-white/90 text-[16px] italic mt-5 mb-10 leading-relaxed">
               {testimonial.comment}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -36,8 +36,8 @@ function Testimonials() {
                 className="rounded-4xl w-14 h-14 sm:w-16 sm:h-16 object-cover float-slow"
               />
               <div>
-                <h2 className="font-bold text-[16px]">{testimonial.name}</h2>
-                <p className="text-[#64748B] text-[12px]">
+                <h2 className="font-bold text-[16px] text-white">{testimonial.name}</h2>
+                <p className="text-white/70 text-[12px]">
                   {testimonial.detail}
                 </p>
               </div>
