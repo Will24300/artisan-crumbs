@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../features/cart";
 import { motion, useInView } from "framer-motion";
 import { toast } from "react-toastify";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, PackageSearch, AlertTriangle, ArrowUpRight } from "lucide-react";
 
 interface RootState {
   auth: {
@@ -91,83 +91,127 @@ function TopSelling() {
   };
 
   return (
-    <section className="bg-[#F8F7F5] -mx-15 mb-20 p-15" ref={ref}>
+    <section
+      className="bg-[#F8F7F5] -mx-4 sm:-mx-6 md:-mx-10 lg:-mx-15 px-4 sm:px-6 md:px-10 lg:px-15 py-15"
+      ref={ref}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-[#D46211] font-bold text-[14px]">
-          CUSTOMER FAVORITES
-        </h2>
-        <div className="flex justify-between items-center">
-          <h1 className="text-[36px] font-bold">Top Selling</h1>
-          <Link to="shop" className="text-[#D46211] font-bold text-[16px]">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="h-px w-6 bg-[#D46211]" />
+          <h2 className="text-[#D46211] font-bold text-[13px] tracking-[0.15em] uppercase">
+            Customer Favorites
+          </h2>
+        </div>
+        <div className="flex justify-between items-end gap-4">
+          <h1 className="font-serif text-[28px] xs:text-[32px] sm:text-[36px] font-bold text-[#241812]">
+            Top Selling
+          </h1>
+          <Link
+            to="shop"
+            className="group hidden sm:flex items-center gap-1 text-[#D46211] font-bold text-[15px] shrink-0"
+          >
             View All items
+            <ArrowUpRight
+              size={16}
+              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            />
           </Link>
         </div>
       </motion.div>
 
       {loading ? (
-        <div className="text-center py-10 text-gray-500">Loading top products...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10 mt-10">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl overflow-hidden border border-gray-200 animate-pulse"
+            >
+              <div className="h-72 bg-gray-200" />
+              <div className="px-3.5 py-5 space-y-3">
+                <div className="h-3 w-16 bg-gray-200 rounded" />
+                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                <div className="h-3 w-full bg-gray-200 rounded" />
+                <div className="h-9 w-full bg-gray-200 rounded-full mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : error ? (
-        <div className="text-center py-10 text-red-500">{error}</div>
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <AlertTriangle size={28} className="text-red-400" />
+          <p className="text-red-500 font-medium">{error}</p>
+          <p className="text-[#64748B] text-sm">Refresh the page to try again.</p>
+        </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-10 text-gray-500">No products available.</div>
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <PackageSearch size={28} className="text-[#64748B]" />
+          <p className="text-[#241812] font-medium">No products yet</p>
+          <p className="text-[#64748B] text-sm">Check back soon — new bakes are added often.</p>
+        </div>
       ) : (
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 mt-10"
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10 mt-10"
           variants={staggerContainer}
           initial="initial"
           whileInView="whileInView"
           viewport={{ once: true, margin: "-100px" }}
         >
           {products.map((product) => (
-            <motion.div 
-              key={product._id} 
+            <motion.div
+              key={product._id}
               variants={fadeInUp}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
+              className="group bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
               {/* Image Container */}
-              <div className="relative h-80 lg:h-80 w-full bg-gray-100 overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                {/* Out of Stock Badge */}
-                {product.stock === 0 && (
-                  <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
-                    Out of Stock
+              <div className="relative">
+                <div className="h-72 w-full bg-gray-100 overflow-hidden rounded-t-2xl">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+
+                  {product.stock === 0 && (
+                    <span className="absolute top-2.5 right-2.5 bg-[#241812] text-white text-[10px] font-bold py-1 px-2.5 rounded-full uppercase tracking-wider">
+                      Out of Stock
+                    </span>
+                  )}
+                </div>
+
+                {/* Price sticker — now a sibling, not clipped by the image's overflow-hidden */}
+                <div className="absolute -bottom-4 left-4 bg-white border-2 border-[#D46211] rounded-full px-3.5 py-1.5 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
+                  <span className="text-[#D46211] font-bold text-sm whitespace-nowrap">
+                    ${product.price.toFixed(2)}
                   </span>
-                )}
+                </div>
               </div>
 
               {/* Body Content Container */}
-              <div className="px-3.5 py-5 flex flex-col grow justify-between">
+              <div className="px-3.5 pt-6 pb-5 flex flex-col grow justify-between">
                 <div>
-                  <div className="flex justify-between items-baseline gap-2 mb-1.5">
-                    <span className="font-bold text-sm text-gray-900 line-clamp-1 col-span-2">
-                      {product.name}
-                    </span>
-                    <span className="text-[#D46211] font-bold text-sm shrink-0">
-                      ${product.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-2">
+                  <span className="text-[#D46211] text-[11px] font-bold uppercase tracking-wider">
+                    {product.category}
+                  </span>
+                  <h3 className="font-bold text-[15px] text-[#241812] line-clamp-1 mt-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mt-1.5 mb-4">
                     {product.description}
                   </p>
                 </div>
 
-                {/* Action Button */}
                 <button
                   onClick={() => handleAdd(product._id)}
                   disabled={product.stock === 0}
                   className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                     product.stock === 0
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-[#FFF4EB] text-[#D46211] hover:bg-[#D46211] hover:text-white"
                   }`}
                 >

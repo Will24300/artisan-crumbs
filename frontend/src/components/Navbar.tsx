@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShoppingCart, Menu, X, LayoutDashboard } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth";
@@ -27,24 +27,27 @@ interface RootState {
 const getColorFromName = (name: string) => {
   const hash = Array.from(name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const hue = hash % 360;
-  return `hsl(${hue}, 75%, 45%)`;
+  return `hsl(${hue}, 70%, 42%)`;
 };
 
 export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
-  const [isFloating, setIsFloating] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const location = useLocation();
   const currentHash = location.hash;
 
   useEffect(() => {
-    const onScroll = () => setIsFloating(window.scrollY > 80);
+    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const activeNavClass = "text-[#D46211] border border-[#D46211] rounded-full px-3 py-1 transition-colors";
-  const defaultNavClass = "hover:text-gray-900 transition-colors px-3 py-1";
+  const activeNavClass =
+    "text-white bg-[#D46211] rounded-full px-4 py-1.5 transition-colors";
+  const defaultNavClass =
+    "text-gray-600 hover:text-[#241812] rounded-full px-4 py-1.5 transition-colors";
   const getNavLinkClass = (to: string) => {
     const hash = to.includes("#") ? to.substring(to.indexOf("#")) : "";
     if (hash) {
@@ -77,25 +80,27 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   };
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200">
+    <nav
+      className={`sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md transition-shadow duration-300 ${
+        isScrolled ? "shadow-[0_4px_20px_rgba(36,24,18,0.06)] border-b border-transparent" : "border-b border-gray-100"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
         <div className="flex items-center justify-between h-16">
           {/* Left: Logo */}
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <img
-                src={iconImg}
-                alt="logo"
-                className="h-8 w-8 object-contain"
-              />
-              <span className="font-bold text-lg text-gray-900">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FFF4EB] overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
+                <img src={iconImg} alt="" className="h-6 w-6 object-contain" />
+              </span>
+              <span className="font-serif font-bold text-lg text-[#241812]">
                 Artisan Crumbs
               </span>
             </Link>
           </div>
 
           {/* Center: Nav Links (hidden on tablet and below) */}
-          <ul className="hidden lg:flex items-center gap-6 text-sm text-gray-700">
+          <ul className="hidden lg:flex items-center gap-1 text-sm font-medium">
             <li>
               <Link to="/shop" className={getNavLinkClass("/shop")}>
                 Shop
@@ -116,7 +121,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 Contact
               </Link>
             </li>
-            {/* Dashboard link — only visible to admins */}
             {isAdmin && (
               <li>
                 <Link
@@ -133,12 +137,12 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
           {/* Right: actions */}
           <div className="flex items-center gap-3">
             {/* Search - hide on very small screens */}
-            <div className="hidden md:flex items-center gap-2 bg-[#F1F5F9] py-1 px-3 rounded-full text-[#94A3B8]">
-              <Search size={16} />
+            <div className="hidden md:flex items-center gap-2 bg-[#F8F7F5] py-2 px-3.5 rounded-full text-[#94A3B8] border border-transparent focus-within:border-[#D46211]/40 focus-within:bg-white transition-colors">
+              <Search size={15} className="shrink-0" />
               <input
                 type="search"
                 placeholder="Search pastries..."
-                className="bg-transparent outline-none text-sm text-[#334155] w-32 placeholder:text-[#94A3B8]"
+                className="bg-transparent outline-none text-sm text-[#334155] w-28 lg:w-36 placeholder:text-[#94A3B8]"
               />
             </div>
 
@@ -146,16 +150,15 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             {!isAdmin && (
               <Link
                 to="/cart"
-                className={`flex items-center gap-2 font-semibold text-sm py-1.5 px-3 rounded-full transition-colors ${
-                  cartCount > 0
-                    ? "bg-[#F59E0B] text-gray-900 hover:bg-[#D97706]"
-                    : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
-                } ${isFloating ? "fixed top-4 right-4 z-50 shadow-lg" : ""}`}
-                style={isFloating ? { transform: "translateZ(0)" } : undefined}
+                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#F8F7F5] text-[#241812] hover:bg-[#FFF4EB] hover:text-[#D46211] transition-colors"
                 aria-label={`Cart with ${cartCount} items`}
               >
-                <ShoppingCart size={16} />
-                <span className="text-sm">Cart ({cartCount})</span>
+                <ShoppingCart size={18} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#D46211] text-white text-[10px] font-bold leading-none">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             )}
 
@@ -164,7 +167,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 <button
                   type="button"
                   onClick={() => setProfileDropdownOpen((v) => !v)}
-                  className="hidden lg:inline-flex items-center justify-center rounded-full h-10 w-10 text-white font-bold cursor-pointer transition transform hover:scale-105"
+                  className="hidden lg:inline-flex items-center justify-center rounded-full h-10 w-10 text-white font-bold text-sm cursor-pointer transition-transform duration-200 hover:scale-105 ring-2 ring-white shadow-sm"
                   style={{ backgroundColor: profileColor }}
                   aria-label="Toggle user menu"
                   title={`Logged in as ${authUser.name}`}
@@ -177,22 +180,30 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-12 w-48 bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
-                          {authUser.name}
-                        </p>
-                        <p className="text-xs text-gray-400 capitalize">
-                          {authUser.role}
-                        </p>
+                    <div className="absolute right-0 top-12 w-52 bg-white rounded-2xl border border-gray-100 shadow-[0_16px_40px_rgba(36,24,18,0.12)] z-50 p-2">
+                      <div className="flex items-center gap-2.5 px-2 py-2.5 border-b border-gray-100 mb-1">
+                        <span
+                          className="flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold shrink-0"
+                          style={{ backgroundColor: profileColor }}
+                        >
+                          {authUser.name.charAt(0).toUpperCase()}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#241812] truncate">
+                            {authUser.name}
+                          </p>
+                          <p className="text-xs text-[#64748B] capitalize">
+                            {authUser.role}
+                          </p>
+                        </div>
                       </div>
                       {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-amber-50 hover:text-amber-600 transition"
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-[#475569] hover:bg-[#FFF4EB] hover:text-[#D46211] transition-colors"
                         >
-                          <LayoutDashboard size={14} />
+                          <LayoutDashboard size={15} />
                           Admin Dashboard
                         </Link>
                       )}
@@ -202,8 +213,9 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                           setProfileDropdownOpen(false);
                           handleLogout();
                         }}
-                        className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        className="w-full text-left flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                       >
+                        <LogOut size={15} />
                         Logout
                       </button>
                     </div>
@@ -213,15 +225,15 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white px-5 py-2 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 hover:scale-105"
+                className="hidden md:inline-flex items-center gap-2 bg-[#D46211] hover:bg-[#b04f0b] text-white px-5 py-2 rounded-full font-semibold text-sm transition-colors"
               >
-                <span>Login</span>
+                Login
               </Link>
             )}
 
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-full text-[#241812] hover:bg-[#F8F7F5] transition-colors"
               onClick={() => setMobileOpen((v) => !v)}
               aria-expanded={mobileOpen}
               aria-label="Toggle menu"
@@ -235,9 +247,9 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
       {/* Mobile menu panel */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 pt-4 pb-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <Search size={16} />
+          <div className="px-4 pt-4 pb-6 space-y-1">
+            <div className="flex items-center gap-2 bg-[#F8F7F5] rounded-full py-2.5 px-4 mb-3">
+              <Search size={16} className="text-[#94A3B8]" />
               <input
                 type="search"
                 placeholder="Search pastries..."
@@ -248,54 +260,52 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             <Link
               to="/shop"
               onClick={() => setMobileOpen(false)}
-              className={`block py-2 rounded-md ${getNavLinkClass("/shop")} text-left`}
+              className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/shop")} text-left`}
             >
               Shop
             </Link>
             <Link
               to="/#top-selling"
               onClick={() => setMobileOpen(false)}
-              className={`block py-2 rounded-md ${getNavLinkClass("/#top-selling")} text-left`}
+              className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/#top-selling")} text-left`}
             >
               Top Selling
             </Link>
             <Link
               to="/#our-story"
               onClick={() => setMobileOpen(false)}
-              className={`block py-2 rounded-md ${getNavLinkClass("/#our-story")} text-left`}
+              className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/#our-story")} text-left`}
             >
               Our Story
             </Link>
             <Link
               to="/contact"
               onClick={() => setMobileOpen(false)}
-              className={`block py-2 rounded-md ${getNavLinkClass("/contact")} text-left`}
+              className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/contact")} text-left`}
             >
               Contact
             </Link>
 
-            {/* Dashboard link for admin (mobile) */}
             {isAdmin && (
               <Link
                 to="/admin"
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2 py-2 rounded-md ${getNavLinkClass("/admin")} text-left`}
+                className={`flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/admin")} text-left`}
               >
                 <LayoutDashboard size={16} />
                 Dashboard
               </Link>
             )}
 
-            <div className="pt-2 border-t border-gray-100">
-              {/* Cart — hidden for admin in mobile too */}
+            <div className="pt-3 mt-2 border-t border-gray-100 space-y-1">
               {!isAdmin && (
                 <Link
                   to="/cart"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 font-semibold py-2"
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-[#475569] hover:bg-[#F8F7F5]"
                 >
                   <ShoppingCart size={16} />
-                  <span>Cart ({cartCount})</span>
+                  Cart ({cartCount})
                 </Link>
               )}
               {authUser ? (
@@ -306,20 +316,18 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                     setMobileOpen(false);
                     navigate("/");
                   }}
-                  className="flex items-center gap-2 py-2 text-left w-full"
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-left w-full text-red-600 hover:bg-red-50"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white" style={{ backgroundColor: profileColor }}>
-                    {authUser.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span>Logout</span>
+                  <LogOut size={16} />
+                  Logout
                 </button>
               ) : (
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 py-2 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white px-4 py-2 rounded-full font-semibold text-sm"
+                  className="flex items-center justify-center gap-2 mt-2 bg-[#D46211] hover:bg-[#b04f0b] text-white px-4 py-2.5 rounded-full font-semibold text-sm transition-colors"
                 >
-                  <span>Login</span>
+                  Login
                 </Link>
               )}
             </div>

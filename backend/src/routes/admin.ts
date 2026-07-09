@@ -11,7 +11,7 @@ router.use(authenticateToken, requireAdmin);
 router.get("/dashboard", async (_req, res) => {
   try {
     const users = await User.find().select("name email role createdAt");
-    const products = await Product.find().select("name category price description image tags createdAt");
+    const products = await Product.find().select("name category price description image tags stock createdAt");
     const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
     res.json({
       users,
@@ -64,15 +64,30 @@ router.patch("/orders/:id/status", async (req, res) => {
     if (!["accepted", "declined"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
+    
+    const existingOrder = await Order.findById(req.params.id);
+    if (!existingOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Restore stock if the order is being declined
+    if (existingOrder.status !== "declined" && status === "declined") {
+      for (const item of existingOrder.items) {
+        await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+      }
+    } 
+    // Deduct stock if a declined order is being accepted/reverted
+    else if (existingOrder.status === "declined" && status !== "declined") {
+      for (const item of existingOrder.items) {
+        await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } });
+      }
+    }
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true }
     ).populate("user", "name email");
-
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
 
     res.json(order);
   } catch (error: any) {

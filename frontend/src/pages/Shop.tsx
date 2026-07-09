@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, PackageSearch, AlertTriangle, Heart } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
@@ -31,6 +31,16 @@ interface ShopProps {
   onAddToCart?: (productId: string | number) => void;
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
 export const Shop: React.FC<ShopProps> = ({
   activeFilter: propActiveFilter,
   onFilterChange: propOnFilterChange,
@@ -41,11 +51,9 @@ export const Shop: React.FC<ShopProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get filter from URL params or use default
   const filterFromUrl = (searchParams.get("filter") as CategoryFilter) || "all";
   const activeFilter = propActiveFilter ?? filterFromUrl;
 
-  // Update URL when filter changes
   const onFilterChange =
     propOnFilterChange ??
     ((filter: CategoryFilter) => {
@@ -73,7 +81,6 @@ export const Shop: React.FC<ShopProps> = ({
       .finally(() => setLoading(false));
   }, []);
 
-  // Use Redux for cart if callback not provided
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const authUser = useSelector((state: RootState) => state.auth.user);
@@ -128,27 +135,32 @@ export const Shop: React.FC<ShopProps> = ({
   return (
     <section className="py-9 px-4 sm:px-6 lg:px-10">
       {/* Hero Header Area */}
-      <div className="mb-9">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-2">
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="h-px w-6 bg-[#D46211]" />
+          <span className="text-[#D46211] font-bold text-[13px] tracking-[0.15em] uppercase">
+            The Shop
+          </span>
+        </div>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#241812] leading-tight mb-2">
           Our Bakery <span className="text-[#D46211]">Fresh</span> Daily
         </h1>
 
-        <div className="flex justify-between items-end flex-wrap gap-4">
+        <div className="flex justify-between items-end flex-wrap gap-4 mt-4">
           <p className="text-sm text-[#64748B] max-w-full sm:max-w-75 leading-relaxed">
             Handcrafted with organic flour and local ingredients. Experience the
             art of traditional baking.
           </p>
 
-          {/* Render Filter Buttons dynamically from your dataset */}
           <div className="flex gap-2 flex-wrap">
             {filterCategories.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => onFilterChange(cat.value)}
-                className={`py-1.5 px-4 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                className={`py-1.5 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                   activeFilter === cat.value
                     ? "bg-[#D46211] text-white"
-                    : "bg-[#F1F5F9] text-[#334155] hover:bg-gray-200"
+                    : "bg-[#F8F7F5] text-[#475569] hover:bg-[#FFF4EB] hover:text-[#D46211]"
                 }`}
               >
                 {cat.label}
@@ -156,71 +168,110 @@ export const Shop: React.FC<ShopProps> = ({
             ))}
           </div>
         </div>
+
+        {!loading && !error && (
+          <p className="text-xs text-[#94A3B8] mt-4">
+            Showing {displayedProducts.length} {displayedProducts.length === 1 ? "item" : "items"}
+          </p>
+        )}
       </div>
 
-      {/* 3. Product Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
-        {loading ? (
-          <div className="col-span-full text-center py-10 text-gray-500">Loading products...</div>
-        ) : error ? (
-          <div className="col-span-full text-center py-10 text-red-500">{error}</div>
-        ) : displayedProducts.length === 0 ? (
-          <div className="col-span-full text-center py-10 text-gray-500">No products available.</div>
-        ) : (
-          displayedProducts.map((product) => (
+      {/* Product Grid Layout */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl overflow-hidden border border-gray-200 animate-pulse"
+            >
+              <div className="h-80 lg:h-48 bg-gray-200" />
+              <div className="p-3.5 space-y-2.5">
+                <div className="h-3 w-12 bg-gray-200 rounded" />
+                <div className="h-3.5 w-3/4 bg-gray-200 rounded" />
+                <div className="h-2.5 w-full bg-gray-200 rounded" />
+                <div className="h-8 w-full bg-gray-200 rounded-full mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
+          <AlertTriangle size={28} className="text-red-400" />
+          <p className="text-red-500 font-medium">{error}</p>
+          <p className="text-[#64748B] text-sm">Refresh the page to try again.</p>
+        </div>
+      ) : displayedProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
+          <PackageSearch size={28} className="text-[#64748B]" />
+          <p className="text-[#241812] font-medium">No products found</p>
+          <p className="text-[#64748B] text-sm">Try a different category.</p>
+        </div>
+      ) : (
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {displayedProducts.map((product) => (
             <motion.div
               key={product._id}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
+              variants={cardVariants}
+              className="group bg-white rounded-2xl border border-gray-200 flex flex-col justify-between"
+              whileHover={{ y: -6, transition: { duration: 0.2 } }}
             >
               {/* Image Container */}
-              <div className="relative h-80 lg:h-48 w-full bg-gray-100 overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                {/* Highlight special items if active category is Favorite */}
-                {activeFilter === "Favorite" && (
-                  <span className="absolute top-2.5 left-2.5 bg-[#F59E0B] text-amber-950 text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
-                    Fav
+              <div className="relative">
+                <div className="h-80 lg:h-48 w-full bg-gray-100 overflow-hidden rounded-t-2xl">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+
+                  {activeFilter === "Favorite" && (
+                    <span className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-[#F59E0B] text-amber-950 text-[10px] font-bold py-1 px-2.5 rounded-full uppercase tracking-wider">
+                      <Heart size={10} fill="currentColor" />
+                      Fav
+                    </span>
+                  )}
+
+                  {product.stock === 0 && (
+                    <span className="absolute top-2.5 right-2.5 bg-[#241812] text-white text-[10px] font-bold py-1 px-2.5 rounded-full uppercase tracking-wider">
+                      Out of Stock
+                    </span>
+                  )}
+                </div>
+
+                {/* Price sticker — sibling of the clipped image div, never gets cut off */}
+                <div className="absolute -bottom-3.5 left-3.5 bg-white border-2 border-[#D46211] rounded-full px-3 py-1 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
+                  <span className="text-[#D46211] font-bold text-xs whitespace-nowrap">
+                    ${product.price.toFixed(2)}
                   </span>
-                )}
-                {/* Out of Stock Badge */}
-                {product.stock === 0 && (
-                  <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-bold py-0.5 px-2 rounded uppercase tracking-wider">
-                    Out of Stock
-                  </span>
-                )}
+                </div>
               </div>
 
               {/* Body Content Container */}
-              <div className="p-3.5 flex flex-col grow justify-between">
+              <div className="px-3.5 pt-6 pb-3.5 flex flex-col grow justify-between">
                 <div>
-                  <div className="flex justify-between items-baseline gap-2 mb-1.5">
-                    <span className="font-bold text-sm text-gray-900 line-clamp-1">
-                      {product.name}
-                    </span>
-                    <span className="text-[#D46211] font-bold text-sm">
-                      ${product.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mb-2">
+                  <span className="text-[#D46211] text-[10px] font-bold uppercase tracking-wider">
+                    {product.category}
+                  </span>
+                  <h2 className="font-bold text-sm text-[#241812] line-clamp-1 mt-0.5">
+                    {product.name}
+                  </h2>
+                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mt-1.5 mb-3">
                     {product.description}
                   </p>
                 </div>
 
-                {/* Action Button */}
                 <button
                   onClick={() => onAddToCart(product._id)}
                   disabled={product.stock === 0}
                   className={`w-full rounded-full py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                     product.stock === 0
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-[#FFF4EB] text-[#D46211] hover:bg-[#D46211] hover:text-white"
                   }`}
                 >
@@ -229,9 +280,9 @@ export const Shop: React.FC<ShopProps> = ({
                 </button>
               </div>
             </motion.div>
-          ))
-        )}
-      </div>
+          ))}
+        </motion.div>
+      )}
     </section>
   );
 };

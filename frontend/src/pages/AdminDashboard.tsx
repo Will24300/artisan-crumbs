@@ -471,7 +471,42 @@ function AdminDashboard() {
     [activeOrders.length]
   );
 
-  const mockStockLevels = [2, 15, 0, 8, 1, 22, 5, 30, 3, 18];
+  // Inventory derived stats (uses real p.stock from DB)
+  const outOfStock = useMemo(() => products.filter((p) => p.stock === 0), [products]);
+  const lowStock = useMemo(() => products.filter((p) => p.stock > 0 && p.stock <= 5), [products]);
+  const inStock = useMemo(() => products.filter((p) => p.stock > 5), [products]);
+
+  // Revenue per category (derived from real orders)
+  const categoryRevenueData = useMemo(() => {
+    const palette = ["#F59E0B", "#FB923C", "#A78BFA", "#34D399", "#60A5FA", "#F472B6"];
+    // Build a productId -> category map
+    const productCategoryMap: Record<string, string> = {};
+    products.forEach((p) => { productCategoryMap[p._id] = p.category; });
+
+    const revenue: Record<string, number> = {};
+    orders.forEach((o) => {
+      if (o.status === "declined") return;
+      o.items.forEach((item) => {
+        const cat = productCategoryMap[item.productId] || "Other";
+        revenue[cat] = (revenue[cat] || 0) + item.price * item.quantity;
+      });
+    });
+
+    // Fall back to product count if no orders yet
+    if (Object.keys(revenue).length === 0) {
+      const counts: Record<string, number> = {};
+      products.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
+      return Object.entries(counts).map(([label, value], i) => ({
+        label, value, color: palette[i % palette.length], isCount: true,
+      }));
+    }
+
+    return Object.entries(revenue)
+      .sort(([, a], [, b]) => b - a)
+      .map(([label, value], i) => ({
+        label, value, color: palette[i % palette.length], isCount: false,
+      }));
+  }, [products, orders]);
 
   // ── Product CRUD ───────────────────────────────────────────────────────
   const openAddModal = () => {
@@ -1313,22 +1348,21 @@ function AdminDashboard() {
                 Sample data
               </span>
             </div>
-            <p className="text-xs text-gray-400 mb-5">12-week rolling average ($)</p>
-            <div className="h-36">
-              <LineChart data={weeklyRevenueSample} color="#F59E0B" />
-            </div>
-            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-50 text-xs text-emerald-600 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5" /> Revenue growing +18% over 12 weeks (sample)
+            {/* Chart placeholder */}
+            <div className="h-48 flex items-center justify-center text-gray-300">
+              <LineChart className="w-12 h-12" />
             </div>
           </div>
 
-          {/* Category Sales Horizontal Bars */}
+          {/* Revenue by Category */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h3 className="font-bold text-gray-900 mb-5">Sales by Category</h3>
-            {categoryData.length > 0 ? (
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-gray-900">Revenue by Category</h3>
+            </div>
+            {categoryRevenueData.length > 0 ? (
               <div className="space-y-4">
-                {categoryData.map((cat, i) => {
-                  const maxVal = Math.max(...categoryData.map((c) => c.value), 1);
+                {categoryRevenueData.map((cat, i) => {
+                  const maxVal = Math.max(...categoryRevenueData.map((c) => c.value), 1);
                   const pct = Math.round((cat.value / maxVal) * 100);
                   return (
                     <div key={i} className="flex items-center gap-3">
@@ -1341,8 +1375,8 @@ function AdminDashboard() {
                           style={{ width: `${pct}%`, backgroundColor: cat.color }}
                         />
                       </div>
-                      <span className="text-sm font-bold text-gray-700 w-8 text-right">
-                        {cat.value}
+                      <span className="text-sm font-bold text-gray-700 w-16 text-right">
+                        ${cat.value.toFixed(0)}
                       </span>
                     </div>
                   );
@@ -1357,7 +1391,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Inventory Insights */}
+        {/* Inventory Insights — uses real stock from DB */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
@@ -1365,11 +1399,8 @@ function AdminDashboard() {
             </div>
             <div>
               <h3 className="font-bold text-gray-900">Inventory Insights</h3>
-              <p className="text-xs text-gray-400">Low stock alerts & product status</p>
+              <p className="text-xs text-gray-400">Live stock levels from database</p>
             </div>
-            <span className="ml-auto text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">
-              Sample stock data
-            </span>
           </div>
 
           {products.length > 0 ? (
