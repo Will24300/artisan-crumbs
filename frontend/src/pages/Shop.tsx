@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { API_BASE } from "../utils/api";
 
 interface RootState {
   auth: {
@@ -62,7 +63,7 @@ export const Shop: React.FC<ShopProps> = ({
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/products")
+    fetch(`${API_BASE}/api/products`)
       .then((res) => {
         if (!res.ok) throw new Error("Unable to fetch products");
         return res.json();

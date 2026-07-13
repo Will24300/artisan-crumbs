@@ -28,6 +28,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { API_BASE } from "../utils/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface RootState {
@@ -374,7 +375,7 @@ function AdminDashboard() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/dashboard", {
+      const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -557,7 +558,7 @@ function AdminDashboard() {
       stock: parseInt(pStock) || 0,
     };
     try {
-      const url = modalMode === "add" ? "/api/products" : `/api/products/${selectedProductId}`;
+      const url = modalMode === "add" ? `${API_BASE}/api/products` : `${API_BASE}/api/products/${selectedProductId}`;
       const method = modalMode === "add" ? "POST" : "PUT";
       const res = await fetch(url, {
         method,
@@ -580,7 +581,7 @@ function AdminDashboard() {
   const handleDeleteProduct = async (id: string) => {
     if (!token || !window.confirm("Delete this product? This cannot be undone.")) return;
     try {
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(`${API_BASE}/api/products/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -592,7 +593,7 @@ function AdminDashboard() {
   const handleDeleteUser = async (id: string) => {
     if (!token || !window.confirm("Delete this customer? This cannot be undone.")) return;
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -604,7 +605,7 @@ function AdminDashboard() {
   const handleUpdateOrderStatus = async (id: string, status: "accepted" | "declined") => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/admin/orders/${id}/status`, {
+      const res = await fetch(`${API_BASE}/api/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status }),
@@ -618,7 +619,7 @@ function AdminDashboard() {
   const handleUpdateUserRole = async (id: string, role: string) => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ role }),

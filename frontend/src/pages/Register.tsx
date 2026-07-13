@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Check, Sun, Moon } from "lu
 import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
 import { useTheme } from "../features/theme";
+import { API_BASE } from "../utils/api";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -35,7 +36,7 @@ function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),

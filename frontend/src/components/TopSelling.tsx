@@ -5,6 +5,7 @@ import { addToCart } from "../features/cart";
 import { motion, useInView } from "framer-motion";
 import { toast } from "react-toastify";
 import { ShoppingCart, PackageSearch, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { API_BASE } from "../utils/api";
 
 interface RootState {
   auth: {
@@ -50,7 +51,7 @@ function TopSelling() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/products/top-selling")
+    fetch(`${API_BASE}/api/products/top-selling`)
       .then((res) => {
         if (!res.ok) throw new Error("Unable to fetch top-selling products");
         return res.json();

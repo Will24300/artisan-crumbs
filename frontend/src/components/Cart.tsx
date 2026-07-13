@@ -11,6 +11,7 @@ import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft } from "lucide-re
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../features/theme";
+import { API_BASE } from "../utils/api";
 
 interface ApiProduct {
   _id: string;
@@ -66,7 +67,7 @@ function Cart() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/products")
+    fetch(`${API_BASE}/api/products`)
       .then((res) => {
         if (!res.ok) throw new Error("Unable to fetch products");
         return res.json();
@@ -140,7 +141,7 @@ function Cart() {
     };
 
     try {
-      const res = await fetch("/api/orders", {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

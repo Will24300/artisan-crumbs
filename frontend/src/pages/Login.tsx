@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock, AlertCircle, Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
 import { useTheme } from "../features/theme";
+import { API_BASE } from "../utils/api";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -29,7 +30,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
