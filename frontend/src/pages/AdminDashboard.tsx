@@ -25,6 +25,8 @@ import {
   Star,
   Store,
   TrendingUp,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -94,7 +96,7 @@ function SvgBarChart({
           x2={data.length * (barW + 6) + 10}
           y1={90 - (pct / 100) * 75}
           y2={90 - (pct / 100) * 75}
-          stroke="#F3F4F6"
+          className="stroke-gray-100 dark:stroke-stone-800/80"
           strokeWidth={1}
         />
       ))}
@@ -111,7 +113,7 @@ function SvgBarChart({
               y={108}
               textAnchor="middle"
               fontSize={9}
-              fill="#9CA3AF"
+              className="fill-gray-400 dark:fill-stone-500"
               fontFamily="sans-serif"
             >
               {lbs[i]}
@@ -152,7 +154,7 @@ function SvgLineChart({
           x2={270}
           y1={h - (pct / 100) * (h - 10) + 5}
           y2={h - (pct / 100) * (h - 10) + 5}
-          stroke="#F3F4F6"
+          className="stroke-gray-100 dark:stroke-stone-800/80"
           strokeWidth={1}
         />
       ))}
@@ -176,14 +178,14 @@ function SvgLineChart({
         const y = h - (val / max) * (h - 10) + 5;
         return (
           <g key={i}>
-            <circle cx={x} cy={y} r={4} fill="white" stroke={color} strokeWidth={2} />
+            <circle cx={x} cy={y} r={4} className="fill-white dark:fill-[#1c1917]" stroke={color} strokeWidth={2} />
             {i % Math.ceil(data.length / 6) === 0 && (
               <text
                 x={x}
                 y={106}
                 textAnchor="middle"
                 fontSize={8}
-                fill="#9CA3AF"
+                className="fill-gray-400 dark:fill-stone-500"
                 fontFamily="sans-serif"
               >
                 {lbs[i]}
@@ -284,17 +286,17 @@ function StatCard({
   bg: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all duration-200 group">
+    <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm hover:shadow-md transition-all duration-200 group">
       <div className="flex items-start justify-between mb-4">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${bg}`}>{icon}</div>
         {sub && (
-          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 px-2 py-0.5 rounded-full">
             {sub}
           </span>
         )}
       </div>
-      <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
-      <p className="text-sm text-gray-400 mt-1">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-stone-100 tracking-tight">{value}</p>
+      <p className="text-sm text-gray-400 dark:text-stone-500 mt-1">{label}</p>
     </div>
   );
 }
@@ -334,6 +336,13 @@ function AdminDashboard() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("admin-theme") === "dark";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("admin-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   // ── Product Modal ──────────────────────────────────────────────────────
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -664,46 +673,46 @@ function AdminDashboard() {
           label="Total Revenue"
           value={`$${totalRevenue.toFixed(2)}`}
           sub="+12.4%"
-          bg="bg-[#FFF4EB]"
+          bg="bg-[#FFF4EB] dark:bg-[#D46211]/20"
         />
         <StatCard
           icon={<ShoppingCart className="w-5 h-5 text-orange-500" />}
           label="Total Orders"
           value={String(orders.length)}
           sub={pendingOrders.length > 0 ? `${pendingOrders.length} pending` : undefined}
-          bg="bg-orange-50"
+          bg="bg-orange-50 dark:bg-orange-950/20"
         />
         <StatCard
           icon={<Package className="w-5 h-5 text-purple-500" />}
           label="Products Listed"
           value={String(products.length)}
-          bg="bg-purple-50"
+          bg="bg-purple-50 dark:bg-purple-950/20"
         />
         <StatCard
           icon={<Users className="w-5 h-5 text-blue-500" />}
           label="Customers"
           value={String(users.length)}
           sub={`${Object.values(customerOrderCounts).filter((c) => c > 1).length} repeat`}
-          bg="bg-blue-50"
+          bg="bg-blue-50 dark:bg-blue-950/20"
         />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Revenue Bar Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-bold text-gray-900">Revenue Overview</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Orders broken down by day of week</p>
+              <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Overview</h3>
+              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">Orders broken down by day of week</p>
             </div>
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+            <div className="flex gap-1 bg-gray-100 dark:bg-[#12100f] rounded-xl p-1">
               {(["daily", "weekly", "monthly"] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() => setSalesPeriod(p)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${salesPeriod === p
-                      ? "bg-white text-[#D46211] shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white dark:bg-[#1c1917] text-[#D46211] shadow-sm"
+                      : "text-gray-500 dark:text-stone-400 hover:text-gray-700 dark:hover:text-stone-300"
                     }`}
                 >
                   {p}
@@ -717,8 +726,8 @@ function AdminDashboard() {
               labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
             />
           </div>
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-            <span className="text-xs text-gray-400">Total this week</span>
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-stone-800/80">
+            <span className="text-xs text-gray-400 dark:text-stone-500">Total this week</span>
             <span className="text-sm font-bold text-[#D46211]">
               ${revenueByDay.reduce((a, b) => a + b, 0).toFixed(2)}
             </span>
@@ -726,12 +735,12 @@ function AdminDashboard() {
         </div>
 
         {/* Category Donut Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-900 mb-4">Product Categories</h3>
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
+          <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-4">Product Categories</h3>
           {categoryData.length > 0 ? (
             <DonutChart data={categoryData} />
           ) : (
-            <div className="h-32 flex flex-col items-center justify-center gap-2 text-gray-300">
+            <div className="h-32 flex flex-col items-center justify-center gap-2 text-gray-300 dark:text-stone-600">
               <Package className="w-8 h-8" />
               <p className="text-xs">No products yet</p>
             </div>
@@ -741,26 +750,26 @@ function AdminDashboard() {
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Top Selling Products */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-bold text-gray-900">Top Selling Cakes</h3>
+            <h3 className="font-bold text-gray-900 dark:text-stone-100">Top Selling Cakes</h3>
             <Star className="w-4 h-4 text-[#D46211] fill-[#D46211]" />
           </div>
           {topProducts.length > 0 ? (
             <div className="space-y-3">
               {topProducts.map((p, i) => (
                 <div key={i} className="flex items-center gap-3 group">
-                  <span className="w-7 h-7 rounded-xl bg-[#FFF4EB] text-[#D46211] text-xs font-bold flex items-center justify-center flex-shrink-0 group-hover:bg-[#FFE5C8] transition-colors">
+                  <span className="w-7 h-7 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/25 text-[#D46211] text-xs font-bold flex items-center justify-center flex-shrink-0 group-hover:bg-[#FFE5C8] dark:group-hover:bg-[#D46211]/45 transition-colors">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-stone-200 truncate">{p.name}</p>
                       <span className="text-sm font-bold text-[#D46211] pl-2">
                         ${p.total.toFixed(2)}
                       </span>
                     </div>
-                    <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="mt-1 h-1.5 bg-gray-100 dark:bg-stone-850 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[#D46211] rounded-full"
                         style={{ width: `${(p.total / (topProducts[0]?.total || 1)) * 100}%` }}
@@ -771,17 +780,17 @@ function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-gray-300">
-              <ShoppingCart className="w-8 h-8 mx-auto mb-2" />
+            <div className="py-8 text-center text-gray-300 dark:text-stone-600">
+              <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-gray-200 dark:text-stone-700" />
               <p className="text-xs">No sales data yet</p>
             </div>
           )}
         </div>
 
         {/* Activity / Notifications Panel */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-bold text-gray-900">Recent Activity</h3>
+            <h3 className="font-bold text-gray-900 dark:text-stone-100">Recent Activity</h3>
             {pendingOrders.length > 0 && (
               <span className="text-xs bg-[#FFE5C8] text-[#D46211] border border-[#D46211]/40 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
                 {pendingOrders.length} new
@@ -790,7 +799,7 @@ function AdminDashboard() {
           </div>
           <div className="space-y-3 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
             {orders.slice(0, 10).map((o) => (
-              <div key={o._id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+              <div key={o._id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors">
                 <div
                   className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${o.status === "pending"
                       ? "bg-[#D46211]"
@@ -800,22 +809,22 @@ function AdminDashboard() {
                     }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-gray-700 dark:text-stone-300">
                     Order from{" "}
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-gray-900 dark:text-stone-100">
                       {o.user?.name || "Guest"}
                     </span>
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-stone-500">
                     {new Date(o.createdAt).toLocaleDateString()} · ${o.totalAmount.toFixed(2)}
                   </p>
                 </div>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${o.status === "pending"
-                      ? "bg-[#FFF4EB] text-[#D46211]"
+                      ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211]"
                       : o.status === "accepted"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-red-50 text-red-700"
+                        ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400"
+                        : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
                     }`}
                 >
                   {o.status}
@@ -823,8 +832,8 @@ function AdminDashboard() {
               </div>
             ))}
             {orders.length === 0 && (
-              <div className="py-8 text-center text-gray-300">
-                <Bell className="w-8 h-8 mx-auto mb-2" />
+              <div className="py-8 text-center text-gray-300 dark:text-stone-600">
+                <Bell className="w-8 h-8 mx-auto mb-2 text-gray-200 dark:text-stone-700" />
                 <p className="text-xs">No activity yet</p>
               </div>
             )}
@@ -853,7 +862,7 @@ function AdminDashboard() {
               onClick={() => setProductFilter(f.key)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${productFilter === f.key
                   ? "bg-[#D46211] text-white shadow-sm shadow-[#D46211]/30"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-[#D46211]/60"
+                  : "bg-white dark:bg-[#1c1917] border border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-[#D46211]/60 dark:hover:border-[#D46211]/80"
                 }`}
             >
               {f.label}
@@ -861,7 +870,7 @@ function AdminDashboard() {
           ))}
         </div>
         <div className="ml-auto flex gap-2">
-          <label className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 bg-white hover:border-[#D46211]/60 cursor-pointer transition-all">
+          <label className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-600 dark:text-stone-400 bg-white dark:bg-[#1c1917] hover:border-[#D46211]/60 dark:hover:border-[#D46211]/80 cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5" />
             Bulk Upload
             <input
@@ -886,16 +895,16 @@ function AdminDashboard() {
       </div>
 
       {/* Product Count */}
-      <p className="text-sm text-gray-400">
-        Showing <strong className="text-gray-700">{filteredProducts.length}</strong> product
+      <p className="text-sm text-gray-400 dark:text-stone-500">
+        Showing <strong className="text-gray-700 dark:text-stone-300">{filteredProducts.length}</strong> product
         {filteredProducts.length !== 1 ? "s" : ""}
       </p>
 
       {/* Product Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
-          <Package className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">No products in this category</p>
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
+          <Package className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
+          <p className="text-gray-400 dark:text-stone-500 font-medium">No products in this category</p>
           <button onClick={openAddModal} className="mt-4 text-sm text-[#D46211] font-semibold hover:underline">
             Add your first product →
           </button>
@@ -905,9 +914,9 @@ function AdminDashboard() {
           {filteredProducts.map((product) => (
             <div
               key={product._id}
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
+              className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
             >
-              <div className="relative h-44 bg-[#FFF4EB] overflow-hidden">
+              <div className="relative h-44 bg-[#FFF4EB] dark:bg-[#0f0d0c] overflow-hidden">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -917,20 +926,20 @@ function AdminDashboard() {
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/90 backdrop-blur-sm text-gray-700 border border-white/50 capitalize shadow-sm">
+                <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm text-gray-700 dark:text-stone-300 border border-white/50 dark:border-stone-800/50 capitalize shadow-sm">
                   {product.category}
                 </span>
                 <div className="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={() => openEditModal(product)}
-                    className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white shadow-sm"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm text-gray-700 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-800 shadow-sm"
                     title="Edit"
                   >
                     <Edit2 className="w-3 h-3" />
                   </button>
                   <button
                     onClick={() => handleDeleteProduct(product._id)}
-                    className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm text-red-500 hover:bg-white shadow-sm"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm text-red-500 hover:bg-white dark:hover:bg-stone-800 shadow-sm"
                     title="Delete"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -938,12 +947,12 @@ function AdminDashboard() {
                 </div>
               </div>
               <div className="p-4">
-                <h4 className="font-bold text-gray-900 text-sm leading-tight">{product.name}</h4>
-                <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                <h4 className="font-bold text-gray-900 dark:text-stone-100 text-sm leading-tight">{product.name}</h4>
+                <p className="text-xs text-gray-400 dark:text-stone-500 mt-1 line-clamp-2 leading-relaxed">
                   {product.description}
                 </p>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-                  <span className="text-[#D46211] font-bold text-base">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-stone-800/65">
+                  <span className="text-amber-600 dark:text-amber-500 font-bold text-base">
                     ${product.price.toFixed(2)}
                   </span>
                   {/* Stock badge */}
@@ -987,13 +996,13 @@ function AdminDashboard() {
       {/* Status Summary Pills */}
       <div className="flex gap-3 flex-wrap">
         {[
-          { label: "All Orders", count: orders.length, cls: "bg-gray-100 text-gray-700" },
-          { label: "Pending", count: pendingOrders.length, cls: "bg-[#FFE5C8] text-[#D46211]" },
-          { label: "Accepted", count: acceptedOrders.length, cls: "bg-emerald-100 text-emerald-700" },
+          { label: "All Orders", count: orders.length, cls: "bg-gray-100 dark:bg-[#24211e] text-gray-700 dark:text-stone-300" },
+          { label: "Pending", count: pendingOrders.length, cls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211]" },
+          { label: "Accepted", count: acceptedOrders.length, cls: "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400" },
           {
             label: "Declined",
             count: orders.filter((o) => o.status === "declined").length,
-            cls: "bg-red-100 text-red-700",
+            cls: "bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-400",
           },
         ].map((s) => (
           <div key={s.label} className={`${s.cls} px-4 py-1.5 rounded-full text-sm font-semibold`}>
@@ -1003,22 +1012,22 @@ function AdminDashboard() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 shadow-sm overflow-hidden">
         {orders.length === 0 ? (
           <div className="p-16 text-center">
-            <ShoppingBag className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-400 font-medium">No orders have been placed yet</p>
+            <ShoppingBag className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
+            <p className="text-gray-400 dark:text-stone-500 font-medium">No orders have been placed yet</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-gray-50 dark:bg-[#24211e] border-b border-gray-100 dark:border-stone-800/80">
                 <tr>
                   {["Order ID", "Customer", "Items", "Total", "Status", "Date", "Actions"].map(
                     (h) => (
                       <th
                         key={h}
-                        className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider"
+                        className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 dark:text-stone-500 uppercase tracking-wider"
                       >
                         {h}
                       </th>
@@ -1026,17 +1035,17 @@ function AdminDashboard() {
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-stone-800/60">
                 {orders.map((order) => (
                   <>
                     <tr
                       key={order._id}
-                      className="hover:bg-[#FFF4EB]/40 transition-colors cursor-pointer"
+                      className="hover:bg-[#FFF4EB]/40 dark:hover:bg-[#2e2a27]/30 transition-colors cursor-pointer"
                       onClick={() =>
                         setExpandedOrder(expandedOrder === order._id ? null : order._id)
                       }
                     >
-                      <td className="px-5 py-4 text-xs font-mono text-gray-400">
+                      <td className="px-5 py-4 text-xs font-mono text-gray-400 dark:text-stone-500">
                         #{order._id.slice(-6).toUpperCase()}
                       </td>
                       <td className="px-5 py-4">
@@ -1047,14 +1056,14 @@ function AdminDashboard() {
                             {getInitials(order.user?.name || "Guest")}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">
                               {order.user?.name || "Deleted User"}
                             </p>
-                            <p className="text-xs text-gray-400">{order.user?.email || "N/A"}</p>
+                            <p className="text-xs text-gray-400 dark:text-stone-500">{order.user?.email || "N/A"}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-500">
+                      <td className="px-5 py-4 text-sm text-gray-500 dark:text-stone-400">
                         {order.items.length} item{order.items.length !== 1 ? "s" : ""}
                       </td>
                       <td className="px-5 py-4">
@@ -1065,10 +1074,10 @@ function AdminDashboard() {
                       <td className="px-5 py-4">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-bold ${order.status === "pending"
-                              ? "bg-[#FFF4EB] text-[#D46211] border border-[#D46211]/40"
+                              ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211] border border-[#D46211]/40"
                               : order.status === "accepted"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : "bg-red-50 text-red-700 border border-red-200"
+                                ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 border border-emerald-200 dark:border-emerald-900/30"
+                                : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30"
                             }`}
                         >
                           {order.status === "accepted"
@@ -1078,7 +1087,7 @@ function AdminDashboard() {
                               : "⏳ Pending"}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-xs text-gray-400">
+                      <td className="px-5 py-4 text-xs text-gray-400 dark:text-stone-550">
                         {new Date(order.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -1094,7 +1103,7 @@ function AdminDashboard() {
                             onClick={() =>
                               setExpandedOrder(expandedOrder === order._id ? null : order._id)
                             }
-                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition"
+                            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-stone-800 text-gray-400 dark:text-stone-500 transition"
                             title="View details"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -1103,14 +1112,14 @@ function AdminDashboard() {
                             <>
                               <button
                                 onClick={() => handleUpdateOrderStatus(order._id, "accepted")}
-                                className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 transition"
+                                className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-600 dark:text-emerald-450 transition"
                                 title="Accept order"
                               >
                                 <Check className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => handleUpdateOrderStatus(order._id, "declined")}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition"
+                                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 dark:text-red-400 transition"
                                 title="Decline order"
                               >
                                 <Ban className="w-3.5 h-3.5" />
@@ -1126,33 +1135,33 @@ function AdminDashboard() {
                       <tr key={`${order._id}-exp`}>
                         <td
                           colSpan={7}
-                          className="px-5 py-0 bg-[#FFF4EB]/60 border-b border-[#D46211]/20"
+                          className="px-5 py-0 bg-[#FFF4EB]/60 dark:bg-[#D46211]/5 border-b border-[#D46211]/20 dark:border-stone-800/80"
                         >
                           <div className="py-5 grid sm:grid-cols-2 gap-6">
                             {/* Order Items */}
                             <div>
-                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                              <p className="text-xs font-bold text-gray-500 dark:text-stone-400 uppercase tracking-wider mb-3">
                                 Order Items
                               </p>
                               <div className="space-y-2">
                                 {order.items.map((item, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center justify-between text-sm bg-white rounded-xl px-4 py-2.5 border border-[#D46211]/20"
+                                    className="flex items-center justify-between text-sm bg-white dark:bg-[#12100f] rounded-xl px-4 py-2.5 border border-[#D46211]/20 dark:border-stone-800/80"
                                   >
-                                    <span className="text-gray-800 font-medium">
+                                    <span className="text-gray-800 dark:text-stone-300 font-medium">
                                       {item.name}{" "}
-                                      <span className="text-gray-400 text-xs">
+                                      <span className="text-gray-400 dark:text-stone-500 text-xs">
                                         ×{item.quantity}
                                       </span>
                                     </span>
-                                    <span className="font-bold text-gray-900">
+                                    <span className="font-bold text-gray-900 dark:text-stone-100">
                                       ${(item.price * item.quantity).toFixed(2)}
                                     </span>
                                   </div>
                                 ))}
                                 <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-[#D46211]/40 px-1">
-                                  <span className="text-gray-700">Total (incl. tax)</span>
+                                  <span className="text-gray-700 dark:text-stone-400">Total (incl. tax)</span>
                                   <span className="text-[#D46211] text-base">
                                     ${order.totalAmount.toFixed(2)}
                                   </span>
@@ -1162,35 +1171,35 @@ function AdminDashboard() {
 
                             {/* Customer Info */}
                             <div>
-                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                              <p className="text-xs font-bold text-gray-500 dark:text-stone-400 uppercase tracking-wider mb-3">
                                 Customer & Delivery Info
                               </p>
-                              <div className="bg-white rounded-xl border border-[#D46211]/20 p-4 space-y-2 text-sm">
+                              <div className="bg-white dark:bg-[#12100f] rounded-xl border border-[#D46211]/20 dark:border-stone-800/80 p-4 space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400">Name</span>
-                                  <span className="font-semibold text-gray-900">
+                                  <span className="text-gray-400 dark:text-stone-500">Name</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200">
                                     {order.user?.name || "N/A"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400">Email</span>
-                                  <span className="font-semibold text-gray-900 text-xs">
+                                  <span className="text-gray-400 dark:text-stone-500">Email</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200 text-xs">
                                     {order.user?.email || "N/A"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400">Payment</span>
-                                  <span className="font-semibold text-gray-900">Online</span>
+                                  <span className="text-gray-400 dark:text-stone-500">Payment</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200">Online</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400">Delivery</span>
-                                  <span className="font-semibold text-gray-900">
+                                  <span className="text-gray-400 dark:text-stone-500">Delivery</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200">
                                     Standard (2–3 days)
                                   </span>
                                 </div>
-                                <div className="flex justify-between pt-1 border-t border-gray-50">
-                                  <span className="text-gray-400">Order ID</span>
-                                  <span className="font-mono text-xs text-gray-500">
+                                <div className="flex justify-between pt-1 border-t border-gray-50 dark:border-stone-800/50">
+                                  <span className="text-gray-400 dark:text-stone-500">Order ID</span>
+                                  <span className="font-mono text-xs text-gray-500 dark:text-stone-400">
                                     {order._id}
                                   </span>
                                 </div>
@@ -1216,24 +1225,24 @@ function AdminDashboard() {
       {/* Search + Stats */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-stone-500" />
           <input
             value={customerSearch}
             onChange={(e) => setCustomerSearch(e.target.value)}
             type="text"
             placeholder="Search by name or email..."
-            className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#D46211] bg-white w-72 transition-all"
+            className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-stone-800 text-sm outline-none focus:border-[#D46211] bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 w-72 transition-all"
           />
         </div>
-        <div className="text-sm text-gray-400 ml-auto">
-          <strong className="text-gray-700">{filteredCustomers.length}</strong> customers found
+        <div className="text-sm text-gray-400 dark:text-stone-500 ml-auto">
+          <strong className="text-gray-700 dark:text-stone-300">{filteredCustomers.length}</strong> customers found
         </div>
       </div>
 
       {filteredCustomers.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
-          <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-400 font-medium">No customers match your search</p>
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
+          <Users className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
+          <p className="text-gray-400 dark:text-stone-500 font-medium">No customers match your search</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -1248,7 +1257,7 @@ function AdminDashboard() {
             return (
               <div
                 key={u._id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all duration-200"
+                className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -1258,44 +1267,44 @@ function AdminDashboard() {
                       {initials}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-sm">{u.name}</p>
-                      <p className="text-xs text-gray-400 max-w-[160px] truncate">{u.email}</p>
+                      <p className="font-bold text-gray-900 dark:text-stone-100 text-sm">{u.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-stone-500 max-w-[160px] truncate">{u.email}</p>
                     </div>
                   </div>
                   <span
                     className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${u.role === "admin"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400"
+                        : "bg-gray-100 dark:bg-stone-800 text-gray-500 dark:text-stone-400"
                       }`}
                   >
                     {u.role}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center py-3 border-y border-gray-50">
+                <div className="grid grid-cols-3 gap-2 text-center py-3 border-y border-gray-50 dark:border-stone-800/80">
                   <div>
-                    <p className="text-lg font-bold text-gray-900">{orderCount}</p>
-                    <p className="text-xs text-gray-400">Orders</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-stone-100">{orderCount}</p>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Orders</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-[#D46211]">⭐ {loyaltyPts}</p>
-                    <p className="text-xs text-gray-400">Points</p>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Points</p>
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-gray-900">${totalSpent.toFixed(0)}</p>
-                    <p className="text-xs text-gray-400">Spent</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-stone-100">${totalSpent.toFixed(0)}</p>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Spent</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex gap-1">
                     {loyaltyPts >= 50 && (
-                      <span className="text-xs bg-[#FFF4EB] text-[#D46211] border border-[#D46211]/40 px-2 py-0.5 rounded-full font-semibold">
+                      <span className="text-xs bg-[#FFF4EB] dark:bg-[#D46211]/25 text-[#D46211] border border-[#D46211]/40 px-2 py-0.5 rounded-full font-semibold">
                         🥇 Gold
                       </span>
                     )}
                     {orderCount > 1 && loyaltyPts < 50 && (
-                      <span className="text-xs bg-gray-50 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full font-semibold">
+                      <span className="text-xs bg-gray-50 dark:bg-[#24211e] text-gray-600 dark:text-stone-400 border border-gray-200 dark:border-stone-800 px-2 py-0.5 rounded-full font-semibold">
                         Repeat buyer
                       </span>
                     )}
@@ -1303,7 +1312,7 @@ function AdminDashboard() {
                   {u.role !== "admin" && (
                     <button
                       onClick={() => handleDeleteUser(u._id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition"
+                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-400 transition"
                       title="Delete customer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1338,21 +1347,21 @@ function AdminDashboard() {
           ].map((kpi) => (
             <div
               key={kpi.label}
-              className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all"
+              className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm hover:shadow-md transition-all"
             >
               <span className="text-2xl">{kpi.icon}</span>
-              <p className="text-2xl font-bold text-gray-900 mt-3">{kpi.value}</p>
-              <p className="text-xs text-gray-400 mt-1">{kpi.label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-stone-100 mt-3">{kpi.value}</p>
+              <p className="text-xs text-gray-400 dark:text-stone-500 mt-1">{kpi.label}</p>
             </div>
           ))}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-5">
           {/* Revenue Line Chart */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-bold text-gray-900">Revenue Trend</h3>
-              <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">
+              <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Trend</h3>
+              <span className="text-xs text-gray-400 dark:text-stone-500 bg-gray-50 dark:bg-stone-850 border border-gray-100 dark:border-stone-800 px-2 py-0.5 rounded-full">
                 Sample data
               </span>
             </div>
@@ -1363,9 +1372,9 @@ function AdminDashboard() {
           </div>
 
           {/* Revenue by Category */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-gray-900">Revenue by Category</h3>
+              <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue by Category</h3>
             </div>
             {categoryRevenueData.length > 0 ? (
               <div className="space-y-4">
@@ -1374,16 +1383,16 @@ function AdminDashboard() {
                   const pct = Math.round((cat.value / maxVal) * 100);
                   return (
                     <div key={i} className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600 w-24 truncate capitalize font-medium">
+                      <span className="text-sm text-gray-600 dark:text-stone-400 w-24 truncate capitalize font-medium">
                         {cat.label}
                       </span>
-                      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="flex-1 bg-gray-100 dark:bg-stone-850 rounded-full h-2.5 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{ width: `${pct}%`, backgroundColor: cat.color }}
                         />
                       </div>
-                      <span className="text-sm font-bold text-gray-700 w-16 text-right">
+                      <span className="text-sm font-bold text-gray-700 dark:text-stone-300 w-16 text-right">
                         ${cat.value.toFixed(0)}
                       </span>
                     </div>
@@ -1391,23 +1400,23 @@ function AdminDashboard() {
                 })}
               </div>
             ) : (
-              <div className="py-8 text-center text-gray-300">
-                <BarChart2 className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-xs">Add products to see category data</p>
+              <div className="py-8 text-center text-gray-300 dark:text-stone-600">
+                <BarChart2 className="w-8 h-8 mx-auto mb-2 text-gray-200 dark:text-stone-700" />
+                <p className="text-xs dark:text-stone-500">Add products to see category data</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Inventory Insights — uses real stock from DB */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] dark:bg-[#D46211]/20 flex items-center justify-center">
               <AlertTriangle className="w-4 h-4 text-[#D46211]" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Inventory Insights</h3>
-              <p className="text-xs text-gray-400">Live stock levels from database</p>
+              <h3 className="font-bold text-gray-900 dark:text-stone-100">Inventory Insights</h3>
+              <p className="text-xs text-gray-400 dark:text-stone-500">Live stock levels from database</p>
             </div>
           </div>
 
@@ -1419,15 +1428,15 @@ function AdminDashboard() {
                 const isLow = !isOut && stock <= 3;
                 const statusLabel = isOut ? "Out of Stock" : isLow ? "Low Stock" : "In Stock";
                 const cardCls = isOut
-                  ? "border-red-200 bg-red-50"
+                  ? "border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20"
                   : isLow
-                    ? "border-[#D46211]/40 bg-[#FFF4EB]"
-                    : "border-emerald-100 bg-emerald-50/50";
+                    ? "border-[#D46211]/40 bg-[#FFF4EB] dark:bg-[#D46211]/10"
+                    : "border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/10";
                 const textCls = isOut
-                  ? "text-red-600"
+                  ? "text-red-600 dark:text-red-400"
                   : isLow
                     ? "text-[#D46211]"
-                    : "text-emerald-700";
+                    : "text-emerald-700 dark:text-emerald-450";
                 return (
                   <div
                     key={p._id}
@@ -1442,7 +1451,7 @@ function AdminDashboard() {
                       }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-stone-200 truncate">{p.name}</p>
                       <p className={`text-xs font-semibold ${textCls}`}>
                         {statusLabel} · {stock} left
                       </p>
@@ -1455,9 +1464,9 @@ function AdminDashboard() {
               })}
             </div>
           ) : (
-            <div className="py-8 text-center text-gray-300">
-              <Package className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-xs">No products to show inventory for</p>
+            <div className="py-8 text-center text-gray-300 dark:text-stone-600">
+              <Package className="w-8 h-8 mx-auto mb-2 text-gray-200 dark:text-stone-700" />
+              <p className="text-xs dark:text-stone-500">No products to show inventory for</p>
             </div>
           )}
         </div>
@@ -1469,12 +1478,12 @@ function AdminDashboard() {
   const renderSettings = () => (
     <div className="space-y-5 max-w-3xl">
       {/* Store Info */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] dark:bg-[#D46211]/20 flex items-center justify-center">
             <Store className="w-4 h-4 text-[#D46211]" />
           </div>
-          <h3 className="font-bold text-gray-900">Store Information</h3>
+          <h3 className="font-bold text-gray-900 dark:text-stone-100">Store Information</h3>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
@@ -1484,19 +1493,19 @@ function AdminDashboard() {
             { label: "Address", value: storeAddress, setter: setStoreAddress, placeholder: "123 Baker Street" },
           ].map((f) => (
             <div key={f.label}>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">{f.label}</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">{f.label}</label>
               <input
                 value={f.value}
                 onChange={(e) => f.setter(e.target.value)}
                 type="text"
                 placeholder={f.placeholder}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-sm outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] transition-all"
               />
             </div>
           ))}
         </div>
         {settingsSaved && (
-          <div className="mt-4 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 flex items-center gap-2">
+          <div className="mt-4 text-xs text-emerald-700 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl px-3 py-2 flex items-center gap-2">
             <Check className="w-3.5 h-3.5" /> Settings saved successfully!
           </div>
         )}
@@ -1512,8 +1521,8 @@ function AdminDashboard() {
       </div>
 
       {/* Payment Methods */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <h3 className="font-bold text-gray-900 mb-5">Payment Methods</h3>
+      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
+        <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-5">Payment Methods</h3>
         <div className="space-y-3">
           {[
             {
@@ -1540,13 +1549,13 @@ function AdminDashboard() {
           ].map((m) => (
             <div
               key={m.label}
-              className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{m.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{m.label}</p>
-                  <p className="text-xs text-gray-400">{m.desc}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">{m.label}</p>
+                  <p className="text-xs text-gray-400 dark:text-stone-500">{m.desc}</p>
                 </div>
               </div>
               <Toggle on={m.state} onChange={m.setter} />
@@ -1556,18 +1565,18 @@ function AdminDashboard() {
       </div>
 
       {/* Delivery Options */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <h3 className="font-bold text-gray-900 mb-5">Delivery Options</h3>
-        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors mb-3">
+      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
+        <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-5">Delivery Options</h3>
+        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors mb-3">
           <div>
-            <p className="text-sm font-semibold text-gray-900">Free Delivery</p>
-            <p className="text-xs text-gray-400">Enable free delivery for all orders</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">Free Delivery</p>
+            <p className="text-xs text-gray-400 dark:text-stone-500">Enable free delivery for all orders</p>
           </div>
           <Toggle on={freeDelivery} onChange={() => setFreeDelivery((v) => !v)} />
         </div>
         {!freeDelivery && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
               Standard Delivery Fee ($)
             </label>
             <input
@@ -1576,26 +1585,26 @@ function AdminDashboard() {
               type="number"
               min="0"
               step="0.50"
-              className="w-40 rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+              className="w-40 rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-sm outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] transition-all"
             />
           </div>
         )}
       </div>
 
       {/* User Roles & Permissions */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] dark:bg-[#D46211]/20 flex items-center justify-center">
             <Users className="w-4 h-4 text-[#D46211]" />
           </div>
-          <h3 className="font-bold text-gray-900">User Roles & Permissions</h3>
+          <h3 className="font-bold text-gray-900 dark:text-stone-100">User Roles & Permissions</h3>
         </div>
         {users.length > 0 ? (
           <div className="space-y-2">
             {users.map((u) => (
               <div
                 key={u._id}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -1604,14 +1613,14 @@ function AdminDashboard() {
                     {getInitials(u.name)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{u.name}</p>
-                    <p className="text-xs text-gray-400">{u.email}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">{u.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">{u.email}</p>
                   </div>
                 </div>
                 <select
                   value={u.role}
                   onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
-                  className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#D46211] bg-white font-semibold text-gray-700 cursor-pointer"
+                  className="text-xs border border-gray-200 dark:border-stone-800 rounded-lg px-2.5 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-semibold cursor-pointer"
                 >
                   <option value="user">User</option>
                   <option value="staff">Staff</option>
@@ -1621,7 +1630,7 @@ function AdminDashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400 text-center py-6">No users to manage</p>
+          <p className="text-sm text-gray-400 dark:text-stone-500 text-center py-6">No users to manage</p>
         )}
       </div>
     </div>
@@ -1629,7 +1638,7 @@ function AdminDashboard() {
 
   // ── RENDER ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#FBF8F4] flex font-sans">
+    <div className={`min-h-screen bg-[#FBF8F4] dark:bg-[#0f0d0c] flex font-sans ${darkMode ? "dark" : ""}`}>
       {/* ── SIDEBAR ──────────────────────────────────────────────────── */}
       <aside
         className={`${sidebarOpen ? "w-60" : "w-16"
@@ -1706,10 +1715,10 @@ function AdminDashboard() {
       {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* ── TOPBAR ────────────────────────────────────────────────── */}
-        <header className="h-16 bg-white border-b border-gray-100 flex items-center gap-4 px-6 flex-shrink-0 sticky top-0 z-30">
+        <header className="h-16 bg-white dark:bg-[#1c1917] border-b border-gray-100 dark:border-stone-800/80 flex items-center gap-4 px-6 flex-shrink-0 sticky top-0 z-30">
           <div className="flex-1">
-            <h2 className="font-bold text-gray-900 capitalize text-base">{activeSection}</h2>
-            <p className="text-xs text-gray-400">
+            <h2 className="font-bold text-gray-900 dark:text-stone-100 capitalize text-base">{activeSection}</h2>
+            <p className="text-xs text-gray-400 dark:text-stone-500">
               {new Date().toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
@@ -1719,14 +1728,23 @@ function AdminDashboard() {
             </p>
           </div>
 
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#2e2a27]/60 text-gray-500 dark:text-stone-400 transition-colors"
+            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {darkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5" />}
+          </button>
+
           {/* Notification Bell */}
           <div className="relative">
             <button
               id="notif-bell"
               onClick={() => setNotifOpen((v) => !v)}
-              className="relative p-2 rounded-xl hover:bg-gray-50 transition-colors"
+              className="relative p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#2e2a27]/60 text-gray-500 dark:text-stone-400 transition-colors"
             >
-              <Bell className="w-5 h-5 text-gray-500" />
+              <Bell className="w-5 h-5 text-gray-500 dark:text-stone-400" />
               {pendingOrders.length > 0 && (
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D46211] animate-pulse" />
               )}
@@ -1737,26 +1755,26 @@ function AdminDashboard() {
                   className="fixed inset-0 z-40"
                   onClick={() => setNotifOpen(false)}
                 />
-                <div className="absolute right-0 top-12 w-80 bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                    <p className="font-bold text-sm text-gray-900">Notifications</p>
+                <div className="absolute right-0 top-12 w-80 bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 shadow-2xl z-50 overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-gray-100 dark:border-stone-800 flex items-center justify-between">
+                    <p className="font-bold text-sm text-gray-900 dark:text-stone-100">Notifications</p>
                     {pendingOrders.length > 0 && (
                       <span className="text-xs bg-[#FFE5C8] text-[#D46211] px-2 py-0.5 rounded-full font-bold">
                         {pendingOrders.length} new
                       </span>
                     )}
                   </div>
-                  <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                  <div className="max-h-72 overflow-y-auto divide-y divide-gray-50 dark:divide-stone-800/60">
                     {pendingOrders.length > 0 ? (
                       pendingOrders.slice(0, 6).map((o) => (
-                        <div key={o._id} className="px-5 py-3.5 hover:bg-[#FFF4EB]/40 transition-colors">
+                        <div key={o._id} className="px-5 py-3.5 hover:bg-[#FFF4EB]/40 dark:hover:bg-[#2e2a27]/40 transition-colors">
                           <div className="flex items-start gap-3">
                             <div className="w-2 h-2 rounded-full bg-[#D46211] mt-1.5 flex-shrink-0" />
                             <div>
-                              <p className="text-sm font-semibold text-gray-900">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">
                                 New order from {o.user?.name || "Guest"}
                               </p>
-                              <p className="text-xs text-gray-400 mt-0.5">
+                              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">
                                 ${o.totalAmount.toFixed(2)} ·{" "}
                                 {new Date(o.createdAt).toLocaleDateString()}
                               </p>
@@ -1765,20 +1783,20 @@ function AdminDashboard() {
                         </div>
                       ))
                     ) : (
-                      <div className="px-5 py-8 text-center text-sm text-gray-400">
-                        <Bell className="w-6 h-6 mx-auto mb-2 text-gray-200" />
+                      <div className="px-5 py-8 text-center text-sm text-gray-400 dark:text-stone-500">
+                        <Bell className="w-6 h-6 mx-auto mb-2 text-gray-200 dark:text-stone-700" />
                         No new notifications
                       </div>
                     )}
                   </div>
                   {pendingOrders.length > 0 && (
-                    <div className="px-5 py-3 border-t border-gray-100">
+                    <div className="px-5 py-3 border-t border-gray-100 dark:border-stone-800">
                       <button
                         onClick={() => {
                           setActiveSection("orders");
                           setNotifOpen(false);
                         }}
-                        className="text-xs font-bold text-[#D46211] hover:text-[#D46211] transition-colors"
+                        className="text-xs font-bold text-[#D46211] hover:text-[#b8540e] transition-colors"
                       >
                         View all orders →
                       </button>
@@ -1790,17 +1808,17 @@ function AdminDashboard() {
           </div>
 
           {/* User Avatar */}
-          <div className="flex items-center gap-2.5 pl-3 border-l border-gray-100">
+          <div className="flex items-center gap-2.5 pl-3 border-l border-gray-100 dark:border-stone-800">
             <div
               className={`w-9 h-9 rounded-xl ${getAvatarColor(authUser?.name || "Admin")} flex items-center justify-center text-white font-bold text-xs shadow-sm`}
             >
               {getInitials(authUser?.name || "Admin")}
             </div>
             <div className="hidden sm:block">
-              <p className="text-xs font-bold text-gray-900 leading-tight">
+              <p className="text-xs font-bold text-gray-900 dark:text-stone-200 leading-tight">
                 {authUser?.name || "Admin"}
               </p>
-              <p className="text-xs text-gray-400">Administrator</p>
+              <p className="text-xs text-gray-400 dark:text-stone-500">Administrator</p>
             </div>
           </div>
         </header>
@@ -1840,17 +1858,18 @@ function AdminDashboard() {
         </main>
       </div>
 
+
       {/* ── PRODUCT MODAL ─────────────────────────────────────────────── */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#1c1917] rounded-3xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-8 pt-8 pb-0">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-stone-100">
                   {modalMode === "add" ? "✨ Add New Product" : "✏️ Edit Product"}
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">
                   {modalMode === "add"
                     ? "Fill in the details to list a new product"
                     : "Update the product information below"}
@@ -1858,7 +1877,7 @@ function AdminDashboard() {
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-stone-800 text-gray-400 dark:text-stone-500 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1866,7 +1885,7 @@ function AdminDashboard() {
 
             <div className="px-8 py-6">
               {errorMsg && (
-                <div className="mb-4 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600 flex items-center gap-2">
+                <div className="mb-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 px-4 py-3 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                   {errorMsg}
                 </div>
@@ -1875,7 +1894,7 @@ function AdminDashboard() {
               <form onSubmit={handleFormSubmit} className="space-y-4">
                 {/* Product Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                     Product Name *
                   </label>
                   <input
@@ -1883,7 +1902,7 @@ function AdminDashboard() {
                     required
                     value={pName}
                     onChange={(e) => setPName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     placeholder="e.g. Chocolate Fudge Cake"
                   />
                 </div>
@@ -1891,7 +1910,7 @@ function AdminDashboard() {
                 {/* Price + Category */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                       Price ($) *
                     </label>
                     <input
@@ -1901,19 +1920,19 @@ function AdminDashboard() {
                       step="0.01"
                       value={pPrice}
                       onChange={(e) => setPPrice(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                       placeholder="24.99"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                       Category *
                     </label>
                     <select
                       value={pCat}
                       onChange={(e) => setPCat(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all bg-white"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     >
                       <option value="">Select category…</option>
                       <option value="Cake">🎂 Cake</option>
@@ -1928,17 +1947,16 @@ function AdminDashboard() {
                 {/* Stock */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-sm font-semibold text-gray-700">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300">
                       Stock Quantity *
                     </label>
-                    {/* Live stock status preview */}
                     {pStock !== "" && (
                       Number(pStock) === 0 ? (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">Out of Stock</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400">Out of Stock</span>
                       ) : Number(pStock) <= 5 ? (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFE5C8] text-[#D46211]">Low Stock</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211]">Low Stock</span>
                       ) : (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">In Stock</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">In Stock</span>
                       )
                     )}
                   </div>
@@ -1948,21 +1966,20 @@ function AdminDashboard() {
                     min="0"
                     value={pStock}
                     onChange={(e) => setPStock(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     placeholder="e.g. 50"
                   />
-                  <p className="text-xs text-gray-400 mt-1.5">
+                  <p className="text-xs text-gray-400 dark:text-stone-500 mt-1.5">
                     Customers won't be able to add this product to their cart when stock reaches 0.
                   </p>
                 </div>
 
                 {/* Image — URL or File Upload */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                     Product Image *
                   </label>
-                  {/* Toggle between URL and file upload */}
-                  <div className="flex rounded-lg bg-gray-100 p-0.5 mb-2">
+                  <div className="flex rounded-lg bg-gray-100 dark:bg-stone-800 p-0.5 mb-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -1971,7 +1988,7 @@ function AdminDashboard() {
                         const el2 = document.getElementById("image-file-input") as HTMLElement | null;
                         if (el2) el2.style.display = "none";
                       }}
-                      className="flex-1 py-1.5 rounded-md text-xs font-semibold text-gray-600 hover:bg-white hover:shadow-sm transition-all text-center"
+                      className="flex-1 py-1.5 rounded-md text-xs font-semibold text-gray-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-700 hover:shadow-sm transition-all text-center"
                     >
                       🔗 Paste URL
                     </button>
@@ -1983,7 +2000,7 @@ function AdminDashboard() {
                         const el2 = document.getElementById("image-file-input") as HTMLElement | null;
                         if (el2) el2.style.display = "";
                       }}
-                      className="flex-1 py-1.5 rounded-md text-xs font-semibold text-gray-600 hover:bg-white hover:shadow-sm transition-all text-center"
+                      className="flex-1 py-1.5 rounded-md text-xs font-semibold text-gray-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-700 hover:shadow-sm transition-all text-center"
                     >
                       📁 Upload File
                     </button>
@@ -1994,16 +2011,16 @@ function AdminDashboard() {
                       type="text"
                       value={pImage.startsWith("data:") ? "" : pImage}
                       onChange={(e) => setPImage(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                       placeholder="https://images.unsplash.com/..."
                     />
                   </div>
                   {/* File input */}
                   <div id="image-file-input" style={{ display: "none" }}>
-                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl py-5 px-4 cursor-pointer hover:border-[#D46211] hover:bg-[#FFF4EB]/30 transition-all">
-                      <Upload className="w-6 h-6 text-gray-400" />
-                      <span className="text-xs text-gray-500 font-medium">Click to choose an image</span>
-                      <span className="text-xs text-gray-400">JPG, PNG, WEBP — max 5MB</span>
+                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 dark:border-stone-700 rounded-xl py-5 px-4 cursor-pointer hover:border-[#D46211] hover:bg-[#FFF4EB]/30 dark:hover:bg-[#D46211]/5 transition-all">
+                      <Upload className="w-6 h-6 text-gray-400 dark:text-stone-500" />
+                      <span className="text-xs text-gray-500 dark:text-stone-400 font-medium">Click to choose an image</span>
+                      <span className="text-xs text-gray-400 dark:text-stone-500">JPG, PNG, WEBP — max 5MB</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2030,7 +2047,7 @@ function AdminDashboard() {
                       <img
                         src={pImage}
                         alt="preview"
-                        className="h-28 w-full object-cover rounded-xl border border-gray-100"
+                        className="h-28 w-full object-cover rounded-xl border border-gray-100 dark:border-stone-800"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
@@ -2048,7 +2065,7 @@ function AdminDashboard() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                     Description *
                   </label>
                   <textarea
@@ -2056,22 +2073,22 @@ function AdminDashboard() {
                     rows={3}
                     value={pDesc}
                     onChange={(e) => setPDesc(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all resize-none"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all resize-none"
                     placeholder="Describe this product…"
                   />
                 </div>
 
                 {/* Tags */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
                     Tags{" "}
-                    <span className="text-gray-400 font-normal">(comma-separated)</span>
+                    <span className="text-gray-400 dark:text-stone-500 font-normal">(comma-separated)</span>
                   </label>
                   <input
                     type="text"
                     value={pTags}
                     onChange={(e) => setPTags(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-700 bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     placeholder="e.g. vegan, gluten-free, bestseller"
                   />
                 </div>
@@ -2081,7 +2098,7 @@ function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                    className="flex-1 rounded-xl border border-gray-200 dark:border-stone-700 py-2.5 text-sm font-bold text-gray-600 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-800 transition-all"
                   >
                     Cancel
                   </button>
@@ -2097,6 +2114,7 @@ function AdminDashboard() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
