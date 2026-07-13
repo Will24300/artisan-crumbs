@@ -223,12 +223,12 @@ export const Shop: React.FC<ShopProps> = ({
             >
               {/* Image Container */}
               <div className="relative">
-                <div className="h-80 lg:h-48 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
+                <div className="h-90 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
                   <img
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                   />
 
                   {activeFilter === "Favorite" && (

@@ -170,12 +170,12 @@ function TopSelling() {
             >
               {/* Image Container */}
               <div className="relative">
-                <div className="h-72 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
+                <div className="h-90 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
                   <img
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                   />
 
                   {product.stock === 0 && (
@@ -210,11 +210,10 @@ function TopSelling() {
                 <button
                   onClick={() => handleAdd(product._id)}
                   disabled={product.stock === 0}
-                  className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
-                    product.stock === 0
-                      ? "bg-gray-100 dark:bg-stone-800 text-gray-400 dark:text-stone-500 cursor-not-allowed"
-                      : "bg-[#FFF4EB] dark:bg-[#D46211]/15 text-[#D46211] hover:bg-[#D46211] hover:text-white"
-                  }`}
+                  className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${product.stock === 0
+                    ? "bg-gray-100 dark:bg-stone-800 text-gray-400 dark:text-stone-500 cursor-not-allowed"
+                    : "bg-[#FFF4EB] dark:bg-[#D46211]/15 text-[#D46211] hover:bg-[#D46211] hover:text-white"
+                    }`}
                 >
                   <ShoppingCart size={14} />
                   {product.stock === 0 ? "Unavailable" : "Add to Cart"}
