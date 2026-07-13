@@ -11,31 +11,33 @@ function Visit() {
   const isOpen = currentHour >= openHour && currentHour < closeHour;
 
   return (
-    <section className="relative bg-[#FFF4EB] flex flex-col gap-8 p-8 sm:p-10 my-10 rounded-3xl border-2 border-dashed border-[#D46211]/25 lg:flex-row lg:items-center lg:justify-between overflow-hidden">
-      {/* Ticket-stub notches — assumes page background is white */}
-      <span className="hidden lg:block absolute top-1/2 -left-4 -translate-y-1/2 w-8 h-8 bg-white rounded-full" />
-      <span className="hidden lg:block absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 bg-white rounded-full" />
+    <section className="relative bg-[#FFF4EB] dark:bg-[#D46211]/5 flex flex-col gap-8 p-8 sm:p-10 my-10 rounded-3xl border-2 border-dashed border-[#D46211]/25 lg:flex-row lg:items-center lg:justify-between overflow-hidden transition-colors duration-300">
+      {/* Ticket-stub notches — matches Layout page background */}
+      <span className="hidden lg:block absolute top-1/2 -left-4 -translate-y-1/2 w-8 h-8 bg-white dark:bg-[#0f0d0c] rounded-full" />
+      <span className="hidden lg:block absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 bg-white dark:bg-[#0f0d0c] rounded-full" />
 
       <div>
         <div className="flex items-center gap-3 mb-3">
           <span className="flex items-center justify-center w-11 h-11 rounded-full bg-[#D46211] shrink-0">
             <MapPin size={20} className="text-white" />
           </span>
-          <h2 className="font-serif text-[28px] sm:text-[30px] font-bold text-[#241812]">
+          <h2 className="font-serif text-[28px] sm:text-[30px] font-bold text-[#241812] dark:text-stone-100">
             Visit Our Bakery
           </h2>
         </div>
 
-        <p className="text-[#475569] text-[16px] leading-relaxed">
+        <p className="text-[#475569] dark:text-stone-300 text-[16px] leading-relaxed">
           123 Baker's Lane, Kigali City
         </p>
 
         <div className="flex items-center gap-2 mt-2 mb-4">
-          <Clock size={15} className="text-[#64748B]" />
-          <span className="text-[#475569] text-[14px]">Open daily, 6 AM – 4 PM</span>
+          <Clock size={15} className="text-[#64748B] dark:text-stone-400" />
+          <span className="text-[#475569] dark:text-stone-300 text-[14px]">Open daily, 6 AM – 4 PM</span>
           <span
             className={`ml-1 inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1 rounded-full ${
-              isOpen ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+              isOpen
+                ? "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400"
+                : "bg-gray-200 dark:bg-stone-800 text-gray-600 dark:text-stone-400"
             }`}
           >
             <span
@@ -45,7 +47,6 @@ function Visit() {
           </span>
         </div>
 
-        {/* FIXED: Restored the opening anchor tag here */}
         <a
           href={viewOnMapUrl}
           target="_blank"
@@ -61,7 +62,6 @@ function Visit() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* FIXED: Restored the opening anchor tag here */}
         <a
           href={getDirectionsUrl}
           target="_blank"
@@ -71,10 +71,9 @@ function Visit() {
           Get Directions
         </a>
 
-        {/* FIXED: Restored the opening anchor tag here */}
         <a
           href="tel:+250791954372"
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white py-3 px-6 rounded-2xl font-semibold text-[16px] border border-[#241812]/10 text-[#241812] text-center hover:bg-gray-50 transition-colors"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white dark:bg-stone-900 py-3 px-6 rounded-2xl font-semibold text-[16px] border border-[#241812]/10 dark:border-stone-800 text-[#241812] dark:text-stone-200 text-center hover:bg-gray-50 dark:hover:bg-stone-850 transition-colors"
         >
           <Phone size={16} className="text-[#D46211]" />
           Call Us

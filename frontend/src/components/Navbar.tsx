@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShoppingCart, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, LayoutDashboard, LogOut, Sun, Moon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth";
+import { useTheme } from "../features/theme";
 import iconImg from "../assets/Icon.png";
 
 interface NavbarProps {
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const location = useLocation();
   const currentHash = location.hash;
+  const { darkMode, toggleDarkMode } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -47,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const activeNavClass =
     "text-white bg-[#D46211] rounded-full px-4 py-1.5 transition-colors";
   const defaultNavClass =
-    "text-gray-600 hover:text-[#241812] rounded-full px-4 py-1.5 transition-colors";
+    "text-gray-600 dark:text-stone-300 hover:text-[#241812] dark:hover:text-stone-100 rounded-full px-4 py-1.5 transition-colors";
   const getNavLinkClass = (to: string) => {
     const hash = to.includes("#") ? to.substring(to.indexOf("#")) : "";
     if (hash) {
@@ -81,8 +83,8 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
 
   return (
     <nav
-      className={`sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md transition-shadow duration-300 ${
-        isScrolled ? "shadow-[0_4px_20px_rgba(36,24,18,0.06)] border-b border-transparent" : "border-b border-gray-100"
+      className={`sticky top-0 z-40 w-full bg-white/90 dark:bg-stone-950/95 backdrop-blur-md transition-shadow duration-300 ${
+        isScrolled ? "shadow-[0_4px_20px_rgba(36,24,18,0.06)] border-b border-transparent" : "border-b border-gray-100 dark:border-stone-800/50"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
@@ -93,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FFF4EB] overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <img src={iconImg} alt="" className="h-6 w-6 object-contain" />
               </span>
-              <span className="font-serif font-bold text-lg text-[#241812]">
+              <span className="font-serif font-bold text-lg text-[#241812] dark:text-stone-100">
                 Artisan Crumbs
               </span>
             </Link>
@@ -137,20 +139,30 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
           {/* Right: actions */}
           <div className="flex items-center gap-3">
             {/* Search - hide on very small screens */}
-            <div className="hidden md:flex items-center gap-2 bg-[#F8F7F5] py-2 px-3.5 rounded-full text-[#94A3B8] border border-transparent focus-within:border-[#D46211]/40 focus-within:bg-white transition-colors">
+            <div className="hidden md:flex items-center gap-2 bg-[#F8F7F5] dark:bg-stone-800 py-2 px-3.5 rounded-full text-[#94A3B8] border border-transparent focus-within:border-[#D46211]/40 focus-within:bg-white dark:focus-within:bg-stone-700 transition-colors">
               <Search size={15} className="shrink-0" />
               <input
                 type="search"
                 placeholder="Search pastries..."
-                className="bg-transparent outline-none text-sm text-[#334155] w-28 lg:w-36 placeholder:text-[#94A3B8]"
+                className="bg-transparent outline-none text-sm text-[#334155] dark:text-stone-200 w-28 lg:w-36 placeholder:text-[#94A3B8]"
               />
             </div>
+
+            {/* Dark mode toggle */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F8F7F5] dark:bg-stone-800 text-[#241812] dark:text-stone-300 hover:bg-[#FFF4EB] dark:hover:bg-stone-700 hover:text-[#D46211] transition-colors"
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
             {/* Cart — hidden for admin users */}
             {!isAdmin && (
               <Link
                 to="/cart"
-                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#F8F7F5] text-[#241812] hover:bg-[#FFF4EB] hover:text-[#D46211] transition-colors"
+                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#F8F7F5] dark:bg-stone-800 text-[#241812] dark:text-stone-300 hover:bg-[#FFF4EB] dark:hover:bg-stone-700 hover:text-[#D46211] transition-colors"
                 aria-label={`Cart with ${cartCount} items`}
               >
                 <ShoppingCart size={18} />
@@ -180,8 +192,8 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-12 w-52 bg-white rounded-2xl border border-gray-100 shadow-[0_16px_40px_rgba(36,24,18,0.12)] z-50 p-2">
-                      <div className="flex items-center gap-2.5 px-2 py-2.5 border-b border-gray-100 mb-1">
+                    <div className="absolute right-0 top-12 w-52 bg-white dark:bg-stone-900 rounded-2xl border border-gray-100 dark:border-stone-800 shadow-[0_16px_40px_rgba(36,24,18,0.12)] z-50 p-2">
+                      <div className="flex items-center gap-2.5 px-2 py-2.5 border-b border-gray-100 dark:border-stone-800 mb-1">
                         <span
                           className="flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold shrink-0"
                           style={{ backgroundColor: profileColor }}
@@ -189,19 +201,19 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                           {authUser.name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-[#241812] truncate">
+                          <p className="text-sm font-semibold text-[#241812] dark:text-stone-200 truncate">
                             {authUser.name}
                           </p>
-                          <p className="text-xs text-[#64748B] capitalize">
+                          <p className="text-xs text-[#64748B] dark:text-stone-400 capitalize">
                             {authUser.role}
                           </p>
                         </div>
                       </div>
-                      {isAdmin && (
+                       {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-[#475569] hover:bg-[#FFF4EB] hover:text-[#D46211] transition-colors"
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-[#475569] dark:text-stone-300 hover:bg-[#FFF4EB] dark:hover:bg-[#D46211]/10 hover:text-[#D46211] transition-colors"
                         >
                           <LayoutDashboard size={15} />
                           Admin Dashboard
@@ -213,7 +225,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                           setProfileDropdownOpen(false);
                           handleLogout();
                         }}
-                        className="w-full text-left flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        className="w-full text-left flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
                       >
                         <LogOut size={15} />
                         Logout
@@ -233,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
 
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 rounded-full text-[#241812] hover:bg-[#F8F7F5] transition-colors"
+              className="lg:hidden p-2 rounded-full text-[#241812] dark:text-stone-200 hover:bg-[#F8F7F5] dark:hover:bg-stone-850 transition-colors"
               onClick={() => setMobileOpen((v) => !v)}
               aria-expanded={mobileOpen}
               aria-label="Toggle menu"
@@ -246,14 +258,14 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
 
       {/* Mobile menu panel */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-gray-100 bg-white">
+        <div className="lg:hidden border-t border-gray-100 dark:border-stone-800 bg-white dark:bg-stone-950">
           <div className="px-4 pt-4 pb-6 space-y-1">
-            <div className="flex items-center gap-2 bg-[#F8F7F5] rounded-full py-2.5 px-4 mb-3">
+            <div className="flex items-center gap-2 bg-[#F8F7F5] dark:bg-stone-800 rounded-full py-2.5 px-4 mb-3">
               <Search size={16} className="text-[#94A3B8]" />
               <input
                 type="search"
                 placeholder="Search pastries..."
-                className="w-full bg-transparent outline-none text-sm text-[#334155] placeholder:text-[#94A3B8]"
+                className="w-full bg-transparent outline-none text-sm text-[#334155] dark:text-stone-200 placeholder:text-[#94A3B8]"
               />
             </div>
 
@@ -297,12 +309,22 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               </Link>
             )}
 
-            <div className="pt-3 mt-2 border-t border-gray-100 space-y-1">
+            {/* Dark mode toggle — mobile */}
+            <button
+              type="button"
+              onClick={() => { toggleDarkMode(); setMobileOpen(false); }}
+              className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-[#475569] dark:text-stone-300 hover:bg-[#F8F7F5] dark:hover:bg-stone-800 w-full"
+            >
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+
+            <div className="pt-3 mt-2 border-t border-gray-100 dark:border-stone-850 space-y-1">
               {!isAdmin && (
                 <Link
                   to="/cart"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-[#475569] hover:bg-[#F8F7F5]"
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-[#475569] dark:text-stone-300 hover:bg-[#F8F7F5] dark:hover:bg-stone-850"
                 >
                   <ShoppingCart size={16} />
                   Cart ({cartCount})
@@ -316,7 +338,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                     setMobileOpen(false);
                     navigate("/");
                   }}
-                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-left w-full text-red-600 hover:bg-red-50"
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium text-left w-full text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
                 >
                   <LogOut size={16} />
                   Logout

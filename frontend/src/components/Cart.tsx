@@ -10,6 +10,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "../features/theme";
 
 interface ApiProduct {
   _id: string;
@@ -162,8 +163,10 @@ function Cart() {
     }
   };
 
+  const { darkMode } = useTheme();
+
   return (
-    <section className="py-9 px-4 sm:px-6 lg:px-10 min-h-screen">
+    <section className="py-9 px-4 sm:px-6 lg:px-10 min-h-screen bg-[#F9F9F8] dark:bg-[#0f0d0c] transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
         <Link
           to={`/shop?filter=${filter}`}
@@ -176,39 +179,39 @@ function Cart() {
           Back to shop
         </Link>
 
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#241812] mb-9">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#241812] dark:text-stone-100 mb-9">
           Shopping <span className="text-[#D46211]">Cart</span>
         </h1>
 
         {loading ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-9">
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div className="lg:col-span-2 bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 overflow-hidden">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex gap-4 p-5 border-b border-gray-100 last:border-b-0 animate-pulse">
-                  <div className="w-24 h-24 rounded-xl bg-gray-200 shrink-0" />
+                <div key={i} className="flex gap-4 p-5 border-b border-gray-100 dark:border-stone-850 last:border-b-0 animate-pulse">
+                  <div className="w-24 h-24 rounded-xl bg-gray-200 dark:bg-stone-800 shrink-0" />
                   <div className="flex-1 space-y-2.5 py-1">
-                    <div className="h-3.5 w-1/3 bg-gray-200 rounded" />
-                    <div className="h-2.5 w-2/3 bg-gray-200 rounded" />
-                    <div className="h-6 w-24 bg-gray-200 rounded-full mt-3" />
+                    <div className="h-3.5 w-1/3 bg-gray-200 dark:bg-stone-750 rounded" />
+                    <div className="h-2.5 w-2/3 bg-gray-200 dark:bg-stone-750 rounded" />
+                    <div className="h-6 w-24 bg-gray-200 dark:bg-stone-750 rounded-full mt-3" />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="hidden lg:block bg-white rounded-2xl border border-gray-200 h-64 animate-pulse" />
+            <div className="hidden lg:block bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 h-64 animate-pulse" />
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-16 text-center bg-white rounded-2xl border border-gray-200">
+          <div className="flex flex-col items-center justify-center gap-2 py-16 text-center bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800">
             <AlertTriangle size={28} className="text-red-400" />
             <p className="text-red-500 font-medium">{error}</p>
-            <p className="text-[#64748B] text-sm">Refresh the page to try again.</p>
+            <p className="text-[#64748B] dark:text-stone-400 text-sm">Refresh the page to try again.</p>
           </div>
         ) : cartProducts.length === 0 ? (
-          <div className="flex flex-col items-center text-center py-16 px-6 bg-white rounded-2xl border border-gray-200">
-            <span className="flex items-center justify-center w-16 h-16 rounded-full bg-[#FFF4EB] mb-4">
+          <div className="flex flex-col items-center text-center py-16 px-6 bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800">
+            <span className="flex items-center justify-center w-16 h-16 rounded-full bg-[#FFF4EB] dark:bg-[#D46211]/15 mb-4">
               <ShoppingBag size={26} className="text-[#D46211]" />
             </span>
-            <p className="font-serif text-xl font-bold text-[#241812] mb-1.5">Your cart is empty</p>
-            <p className="text-[#64748B] text-sm mb-6 max-w-xs">
+            <p className="font-serif text-xl font-bold text-[#241812] dark:text-stone-100 mb-1.5">Your cart is empty</p>
+            <p className="text-[#64748B] dark:text-stone-400 text-sm mb-6 max-w-xs">
               Looks like you haven't added anything yet. Fresh bakes are waiting in the shop.
             </p>
             <Link
@@ -223,7 +226,7 @@ function Cart() {
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <motion.div
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+                className="bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 overflow-hidden"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -237,18 +240,18 @@ function Cart() {
                         variants={itemVariants}
                         exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="flex gap-4 p-5 border-b border-gray-100 last:border-b-0 items-center"
+                        className="flex gap-4 p-5 border-b border-gray-100 dark:border-stone-850 last:border-b-0 items-center"
                       >
                         <img
                           src={item?.image}
                           alt={item?.name}
-                          className="w-24 h-24 object-cover rounded-xl bg-gray-100 shrink-0"
+                          className="w-24 h-24 object-cover rounded-xl bg-gray-100 dark:bg-stone-800 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-[#241812] mb-1 truncate">
+                          <h3 className="font-bold text-[#241812] dark:text-stone-100 mb-1 truncate">
                             {item?.name}
                           </h3>
-                          <p className="text-xs text-[#64748B] mb-3 line-clamp-1">
+                          <p className="text-xs text-[#64748B] dark:text-stone-400 mb-3 line-clamp-1">
                             {item?.description}
                           </p>
                           <div className="flex flex-wrap justify-between items-center gap-2">
@@ -256,24 +259,24 @@ function Cart() {
                               ${(item?.price || 0).toFixed(2)}
                             </span>
 
-                            <div className="flex items-center gap-1 bg-[#F8F7F5] rounded-full p-1">
+                            <div className="flex items-center gap-1 bg-[#F8F7F5] dark:bg-stone-800 rounded-full p-1">
                               <button
                                 onClick={() => handleDecrement(item?._id || 0)}
-                                className="cursor-pointer flex items-center justify-center w-7 h-7 hover:bg-white rounded-full transition-colors"
+                                className="cursor-pointer flex items-center justify-center w-7 h-7 hover:bg-white dark:hover:bg-stone-700 rounded-full transition-colors"
                                 aria-label="Decrease quantity"
                               >
-                                <Minus size={14} className="text-[#475569]" />
+                                <Minus size={14} className="text-[#475569] dark:text-stone-300" />
                               </button>
-                              <span className="text-sm font-bold text-[#241812] w-6 text-center">
+                              <span className="text-sm font-bold text-[#241812] dark:text-stone-200 w-6 text-center">
                                 {item?.quantity}
                               </span>
                               <button
                                 onClick={() => handleIncrement(item?._id || 0)}
                                 disabled={nearLimit}
-                                className="cursor-pointer flex items-center justify-center w-7 h-7 hover:bg-white rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="cursor-pointer flex items-center justify-center w-7 h-7 hover:bg-white dark:hover:bg-stone-700 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label="Increase quantity"
                               >
-                                <Plus size={14} className="text-[#475569]" />
+                                <Plus size={14} className="text-[#475569] dark:text-stone-300" />
                               </button>
                             </div>
                           </div>
@@ -285,7 +288,7 @@ function Cart() {
                         </div>
                         <button
                           onClick={() => handleRemove(item?._id || 0)}
-                          className="cursor-pointer text-[#94A3B8] hover:text-red-600 hover:bg-red-50 transition-colors p-2 rounded-full shrink-0"
+                          className="cursor-pointer text-[#94A3B8] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors p-2 rounded-full shrink-0"
                           aria-label={`Remove ${item?.name}`}
                         >
                           <X size={18} />
@@ -306,30 +309,30 @@ function Cart() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 h-fit sticky top-4 shadow-[0_18px_48px_rgba(36,24,18,0.05)]">
-                <h2 className="font-serif font-bold text-lg text-[#241812] mb-4">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 p-6 h-fit sticky top-4 shadow-[0_18px_48px_rgba(36,24,18,0.05)]">
+                <h2 className="font-serif font-bold text-lg text-[#241812] dark:text-stone-100 mb-4">
                   Order summary
                 </h2>
-                <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
+                <div className="space-y-3 mb-6 pb-6 border-b border-gray-100 dark:border-stone-850">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B]">Subtotal</span>
-                    <span className="font-semibold text-[#241812]">
+                    <span className="text-[#64748B] dark:text-stone-400">Subtotal</span>
+                    <span className="font-semibold text-[#241812] dark:text-stone-200">
                       ${totalPrice.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B]">Shipping</span>
+                    <span className="text-[#64748B] dark:text-stone-400">Shipping</span>
                     <span className="font-semibold text-green-600">Free</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B]">Tax (10%)</span>
-                    <span className="font-semibold text-[#241812]">
+                    <span className="text-[#64748B] dark:text-stone-400">Tax (10%)</span>
+                    <span className="font-semibold text-[#241812] dark:text-stone-200">
                       ${(totalPrice * 0.1).toFixed(2)}
                     </span>
                   </div>
                 </div>
                 <div className="flex justify-between items-baseline mb-6">
-                  <span className="font-bold text-[#241812]">Total</span>
+                  <span className="font-bold text-[#241812] dark:text-stone-100">Total</span>
                   <span className="font-serif font-bold text-[#D46211] text-2xl">
                     ${(totalPrice * 1.1).toFixed(2)}
                   </span>
@@ -353,7 +356,7 @@ function Cart() {
                 </button>
                 <Link
                   to="/shop"
-                  className="cursor-pointer block text-center text-[#475569] font-semibold py-2.5 hover:bg-[#F8F7F5] rounded-full transition-colors"
+                  className="cursor-pointer block text-center text-[#475569] dark:text-stone-300 font-semibold py-2.5 hover:bg-[#F8F7F5] dark:hover:bg-stone-800 rounded-full transition-colors"
                 >
                   Continue Shopping
                 </Link>

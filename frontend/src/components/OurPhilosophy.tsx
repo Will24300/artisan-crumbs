@@ -47,19 +47,19 @@ function OurPhilosophy() {
         variants={slideLeft}
       >
         {/* Offset backdrop panel for depth */}
-        <div className="absolute inset-0 top-10 left-4 lg:left-6 bg-[#FFF4EB] rounded-4xl -z-10" />
+        <div className="absolute inset-0 top-10 left-4 lg:left-6 bg-[#FFF4EB] dark:bg-[#D46211]/10 rounded-4xl -z-10" />
 
         <motion.img
           src={bakerHands}
           alt="baker hands"
-          className="rounded-4xl w-full h-auto object-cover shadow-xl shadow-[#241812]/10"
+          className="rounded-4xl w-full h-auto object-cover shadow-xl shadow-black/10 dark:shadow-black/35"
           whileHover={{ scale: 1.02, transition: { duration: 0.4 } }}
         />
 
-        {/* 48HR stamp — real content, not decoration */}
-        <div className="absolute -bottom-5 right-6 lg:right-10 bg-white rounded-full w-24 h-24 flex flex-col items-center justify-center shadow-lg border border-[#D46211]/20 rotate-[-6deg]">
+        {/* 48HR stamp */}
+        <div className="absolute -bottom-5 right-6 lg:right-10 bg-white dark:bg-stone-800 rounded-full w-24 h-24 flex flex-col items-center justify-center shadow-lg border border-[#D46211]/20 dark:border-[#D46211]/40 rotate-[-6deg]">
           <span className="text-[#D46211] font-bold text-2xl leading-none">48</span>
-          <span className="text-[#64748B] text-[10px] font-bold tracking-widest mt-0.5">
+          <span className="text-[#64748B] dark:text-stone-400 text-[10px] font-bold tracking-widest mt-0.5">
             HOURS
           </span>
         </div>
@@ -78,14 +78,14 @@ function OurPhilosophy() {
         </motion.div>
 
         <motion.h2
-          className="font-serif text-[36px] sm:text-[44px] lg:text-[48px] font-bold leading-tight text-[#241812]"
+          className="font-serif text-[36px] sm:text-[44px] lg:text-[48px] font-bold leading-tight text-[#241812] dark:text-stone-100"
           variants={slideRight}
         >
           Slow Fermented, Heartfully Crafted
         </motion.h2>
 
         <motion.p
-          className="text-[16px] sm:text-[18px] text-[#475569] leading-relaxed"
+          className="text-[16px] sm:text-[18px] text-[#475569] dark:text-stone-300 leading-relaxed"
           variants={slideRight}
         >
           We believe that great bread can't be rushed. That's why we use
@@ -104,7 +104,7 @@ function OurPhilosophy() {
               custom={i}
             >
               <motion.span
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFF4EB] shrink-0"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFF4EB] dark:bg-[#D46211]/20 shrink-0"
                 initial={{ scale: 0, rotate: -45 }}
                 whileInView={{ scale: 1, rotate: 0 }}
                 viewport={{ once: true }}
@@ -112,7 +112,7 @@ function OurPhilosophy() {
               >
                 <img src={checkIcon} alt="" className="w-4 h-4" />
               </motion.span>
-              <span className="text-[#334155] text-[16px] font-medium">{item}</span>
+              <span className="text-[#334155] dark:text-stone-200 text-[16px] font-medium">{item}</span>
             </motion.div>
           ))}
         </motion.div>

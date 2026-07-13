@@ -39,7 +39,7 @@ const containerVariants = {
 const cardVariants = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
+} as const;
 
 export const Shop: React.FC<ShopProps> = ({
   activeFilter: propActiveFilter,
@@ -142,12 +142,12 @@ export const Shop: React.FC<ShopProps> = ({
             The Shop
           </span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#241812] leading-tight mb-2">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#241812] dark:text-stone-100 leading-tight mb-2">
           Our Bakery <span className="text-[#D46211]">Fresh</span> Daily
         </h1>
 
         <div className="flex justify-between items-end flex-wrap gap-4 mt-4">
-          <p className="text-sm text-[#64748B] max-w-full sm:max-w-75 leading-relaxed">
+          <p className="text-sm text-[#64748B] dark:text-stone-400 max-w-full sm:max-w-75 leading-relaxed">
             Handcrafted with organic flour and local ingredients. Experience the
             art of traditional baking.
           </p>
@@ -160,7 +160,7 @@ export const Shop: React.FC<ShopProps> = ({
                 className={`py-1.5 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                   activeFilter === cat.value
                     ? "bg-[#D46211] text-white"
-                    : "bg-[#F8F7F5] text-[#475569] hover:bg-[#FFF4EB] hover:text-[#D46211]"
+                    : "bg-[#F8F7F5] dark:bg-stone-800 text-[#475569] dark:text-stone-400 hover:bg-[#FFF4EB] dark:hover:bg-[#D46211]/10 hover:text-[#D46211]"
                 }`}
               >
                 {cat.label}
@@ -170,7 +170,7 @@ export const Shop: React.FC<ShopProps> = ({
         </div>
 
         {!loading && !error && (
-          <p className="text-xs text-[#94A3B8] mt-4">
+          <p className="text-xs text-[#94A3B8] dark:text-stone-500 mt-4">
             Showing {displayedProducts.length} {displayedProducts.length === 1 ? "item" : "items"}
           </p>
         )}
@@ -182,14 +182,14 @@ export const Shop: React.FC<ShopProps> = ({
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-200 animate-pulse"
+              className="bg-white dark:bg-stone-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-stone-800 animate-pulse"
             >
-              <div className="h-80 lg:h-48 bg-gray-200" />
+              <div className="h-80 lg:h-48 bg-gray-200 dark:bg-stone-800" />
               <div className="p-3.5 space-y-2.5">
-                <div className="h-3 w-12 bg-gray-200 rounded" />
-                <div className="h-3.5 w-3/4 bg-gray-200 rounded" />
-                <div className="h-2.5 w-full bg-gray-200 rounded" />
-                <div className="h-8 w-full bg-gray-200 rounded-full mt-2" />
+                <div className="h-3 w-12 bg-gray-200 dark:bg-stone-700 rounded" />
+                <div className="h-3.5 w-3/4 bg-gray-200 dark:bg-stone-700 rounded" />
+                <div className="h-2.5 w-full bg-gray-200 dark:bg-stone-700 rounded" />
+                <div className="h-8 w-full bg-gray-200 dark:bg-stone-700 rounded-full mt-2" />
               </div>
             </div>
           ))}
@@ -198,13 +198,13 @@ export const Shop: React.FC<ShopProps> = ({
         <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
           <AlertTriangle size={28} className="text-red-400" />
           <p className="text-red-500 font-medium">{error}</p>
-          <p className="text-[#64748B] text-sm">Refresh the page to try again.</p>
+          <p className="text-[#64748B] dark:text-stone-400 text-sm">Refresh the page to try again.</p>
         </div>
       ) : displayedProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
-          <PackageSearch size={28} className="text-[#64748B]" />
-          <p className="text-[#241812] font-medium">No products found</p>
-          <p className="text-[#64748B] text-sm">Try a different category.</p>
+          <PackageSearch size={28} className="text-[#64748B] dark:text-stone-500" />
+          <p className="text-[#241812] dark:text-stone-200 font-medium">No products found</p>
+          <p className="text-[#64748B] dark:text-stone-400 text-sm">Try a different category.</p>
         </div>
       ) : (
         <motion.div
@@ -217,12 +217,12 @@ export const Shop: React.FC<ShopProps> = ({
             <motion.div
               key={product._id}
               variants={cardVariants}
-              className="group bg-white rounded-2xl border border-gray-200 flex flex-col justify-between"
+              className="group bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 flex flex-col justify-between"
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
             >
               {/* Image Container */}
               <div className="relative">
-                <div className="h-80 lg:h-48 w-full bg-gray-100 overflow-hidden rounded-t-2xl">
+                <div className="h-80 lg:h-48 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -244,8 +244,8 @@ export const Shop: React.FC<ShopProps> = ({
                   )}
                 </div>
 
-                {/* Price sticker — sibling of the clipped image div, never gets cut off */}
-                <div className="absolute -bottom-3.5 left-3.5 bg-white border-2 border-[#D46211] rounded-full px-3 py-1 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
+                {/* Price sticker */}
+                <div className="absolute -bottom-3.5 left-3.5 bg-white dark:bg-stone-800 border-2 border-[#D46211] rounded-full px-3 py-1 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
                   <span className="text-[#D46211] font-bold text-xs whitespace-nowrap">
                     ${product.price.toFixed(2)}
                   </span>
@@ -258,10 +258,10 @@ export const Shop: React.FC<ShopProps> = ({
                   <span className="text-[#D46211] text-[10px] font-bold uppercase tracking-wider">
                     {product.category}
                   </span>
-                  <h2 className="font-bold text-sm text-[#241812] line-clamp-1 mt-0.5">
+                  <h2 className="font-bold text-sm text-[#241812] dark:text-stone-100 line-clamp-1 mt-0.5">
                     {product.name}
                   </h2>
-                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mt-1.5 mb-3">
+                  <p className="text-xs text-[#64748B] dark:text-stone-400 line-clamp-2 leading-relaxed mt-1.5 mb-3">
                     {product.description}
                   </p>
                 </div>
@@ -271,8 +271,8 @@ export const Shop: React.FC<ShopProps> = ({
                   disabled={product.stock === 0}
                   className={`w-full rounded-full py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                     product.stock === 0
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-[#FFF4EB] text-[#D46211] hover:bg-[#D46211] hover:text-white"
+                      ? "bg-gray-100 dark:bg-stone-800 text-gray-400 dark:text-stone-500 cursor-not-allowed"
+                      : "bg-[#FFF4EB] dark:bg-[#D46211]/10 text-[#D46211] hover:bg-[#D46211] hover:text-white"
                   }`}
                 >
                   <ShoppingCart size={14} />
@@ -287,4 +287,4 @@ export const Shop: React.FC<ShopProps> = ({
   );
 };
 
-export default Shop;
+export default Shop;

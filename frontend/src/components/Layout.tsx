@@ -31,9 +31,9 @@ function Layout() {
   }, [location]);
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#FBF8F4] dark:bg-[#0f0d0c] transition-colors duration-300">
       <Navbar />
-      <div className=" px-5 md:px-10 lg:px-15">
+      <div className="px-5 md:px-10 lg:px-15">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

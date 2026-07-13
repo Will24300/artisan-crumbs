@@ -16,12 +16,12 @@ const containerVariants = {
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
-};
+} as const;
 
 const rowVariants = {
   hidden: { opacity: 0, x: -12 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
+} as const;
 
 function Contact() {
   const [sent, setSent] = useState(false);
@@ -40,10 +40,10 @@ function Contact() {
             Contact
           </span>
         </div>
-        <h1 className="font-serif text-3xl md:text-[42px] font-bold text-[#241812] mb-4">
+        <h1 className="font-serif text-3xl md:text-[42px] font-bold text-[#241812] dark:text-stone-100 mb-4">
           Get in Touch
         </h1>
-        <p className="text-[#475569] text-base max-w-2xl leading-relaxed mb-10">
+        <p className="text-[#475569] dark:text-stone-300 text-base max-w-2xl leading-relaxed mb-10">
           We love hearing from our community. Whether you have a question
           about our sourdough, want to pre-order for an event, or just want to
           say hello, we're all ears.
@@ -51,43 +51,43 @@ function Contact() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 items-start">
           {/* Form card */}
-          <div className="bg-white border border-gray-100 rounded-[30px] p-8 shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
-            <h2 className="font-serif text-[22px] font-bold mb-6 text-[#241812]">
+          <div className="bg-white dark:bg-stone-900 border border-gray-100 dark:border-stone-800 rounded-[30px] p-8 shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+            <h2 className="font-serif text-[22px] font-bold mb-6 text-[#241812] dark:text-stone-100">
               Send us a Message
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label htmlFor="contact-name" className="block text-sm font-semibold text-[#241812] mb-2">
+                <label htmlFor="contact-name" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
                   Full Name
                 </label>
                 <input
                   id="contact-name"
                   type="text"
                   placeholder="Volonte Rwicha"
-                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] transition-shadow"
+                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
                 />
               </div>
               <div>
-                <label htmlFor="contact-email" className="block text-sm font-semibold text-[#241812] mb-2">
+                <label htmlFor="contact-email" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
                   Email Address
                 </label>
                 <input
                   id="contact-email"
                   type="email"
                   placeholder="volonte@example.com"
-                  className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] transition-shadow"
+                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
                 />
               </div>
             </div>
 
             <div className="mb-4">
-              <label htmlFor="contact-subject" className="block text-sm font-semibold text-[#241812] mb-2">
+              <label htmlFor="contact-subject" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
                 Subject
               </label>
               <select
                 id="contact-subject"
-                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] cursor-pointer transition-shadow"
+                className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] cursor-pointer transition-shadow"
               >
                 <option>General Inquiry</option>
                 <option>Pre-order for Event</option>
@@ -98,14 +98,14 @@ function Contact() {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="contact-message" className="block text-sm font-semibold text-[#241812] mb-2">
+              <label htmlFor="contact-message" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
                 Message
               </label>
               <textarea
                 id="contact-message"
                 placeholder="How can we help you today?"
                 rows={5}
-                className="w-full px-4 py-3 text-sm text-[#334155] border border-gray-200 rounded-2xl outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] resize-y transition-shadow"
+                className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] resize-y transition-shadow"
               />
             </div>
 
@@ -140,7 +140,7 @@ function Contact() {
               {/* Store Hours — hanging sign */}
               <motion.div
                 variants={cardVariants}
-                className="relative bg-[#FFF4EB] border border-[#D46211]/15 rounded-[30px] pt-9 p-6 overflow-visible"
+                className="relative bg-[#FFF4EB] dark:bg-[#D46211]/5 border border-[#D46211]/15 dark:border-[#D46211]/25 rounded-[30px] pt-9 p-6 overflow-visible"
               >
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-4 bg-[#D46211]/30" />
 
@@ -154,7 +154,7 @@ function Contact() {
                     className={`flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm ${
                       hoursData.some((r) => r.days.includes(today))
                         ? "bg-green-600 text-white"
-                        : "bg-gray-400 text-white"
+                        : "bg-gray-400 dark:bg-stone-800 text-white"
                     }`}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
@@ -164,12 +164,12 @@ function Contact() {
 
                 <div className="flex items-center gap-2 mb-4 mt-2">
                   <Clock size={18} className="text-[#D46211]" />
-                  <span className="text-xs font-bold text-[#241812] uppercase tracking-[0.08em]">
+                  <span className="text-xs font-bold text-[#241812] dark:text-stone-100 uppercase tracking-[0.08em]">
                     Store Hours
                   </span>
                 </div>
 
-                <motion.div className="text-sm text-[#475569] space-y-2.5 leading-relaxed" variants={containerVariants}>
+                <motion.div className="text-sm text-[#475569] dark:text-stone-300 space-y-2.5 leading-relaxed" variants={containerVariants}>
                   {hoursData.map((row) => {
                     const isToday = row.days.includes(today);
                     return (
@@ -190,7 +190,7 @@ function Contact() {
                           )}
                           {row.label}
                         </span>
-                        <span className="font-semibold">{row.time}</span>
+                        <span className="font-semibold text-gray-800 dark:text-stone-200">{row.time}</span>
                       </motion.div>
                     );
                   })}
@@ -202,7 +202,7 @@ function Contact() {
                 variants={cardVariants}
                 whileHover={{ y: -3 }}
                 transition={{ duration: 0.25 }}
-                className="bg-[#FFF4EB] border border-[#D46211]/15 rounded-[30px] p-6"
+                className="bg-[#FFF4EB] dark:bg-[#D46211]/5 border border-[#D46211]/15 dark:border-[#D46211]/25 rounded-[30px] p-6"
               >
                 <div className="flex items-center gap-2 mb-4">
                   <motion.span
@@ -213,11 +213,11 @@ function Contact() {
                   >
                     <MapPin size={18} className="text-[#D46211]" />
                   </motion.span>
-                  <span className="text-xs font-bold text-[#241812] uppercase tracking-[0.08em]">
+                  <span className="text-xs font-bold text-[#241812] dark:text-stone-100 uppercase tracking-[0.08em]">
                     Our Location
                   </span>
                 </div>
-                <p className="text-sm text-[#475569] leading-relaxed mb-4">
+                <p className="text-sm text-[#475569] dark:text-stone-300 leading-relaxed mb-4">
                   Independent University of Kigali (ULK)
                   <br />
                   Kigali, Rwanda
@@ -237,17 +237,17 @@ function Contact() {
             {/* Map card */}
             <motion.div
               variants={cardVariants}
-              className="bg-white rounded-[30px] overflow-hidden border border-gray-100 shadow-[0_18px_48px_rgba(15,23,42,0.05)]"
+              className="bg-white dark:bg-stone-900 rounded-[30px] overflow-hidden border border-gray-100 dark:border-stone-850 shadow-[0_18px_48px_rgba(15,23,42,0.05)]"
             >
               {/* Header bar — names the place, offers a real directions link */}
-              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 dark:border-stone-850">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFF4EB] shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFF4EB] dark:bg-stone-800 shrink-0">
                     <MapPin size={15} className="text-[#D46211]" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-[#241812] truncate">Artisan Crumbs</p>
-                    <p className="text-xs text-[#64748B] truncate">Independent University of Kigali (ULK), Kigali</p>
+                    <p className="text-sm font-bold text-[#241812] dark:text-stone-100 truncate">Artisan Crumbs</p>
+                    <p className="text-xs text-[#64748B] dark:text-stone-400 truncate">Independent University of Kigali (ULK), Kigali</p>
                   </div>
                 </div>
                 
@@ -265,10 +265,10 @@ function Contact() {
               {/* Map area */}
               <div className="relative h-72 sm:h-80">
                 {!mapLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#F8F7F5]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#F8F7F5] dark:bg-stone-950">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#D46211]/30 border-t-[#D46211] rounded-full animate-spin" />
-                      <span className="text-xs text-[#64748B]">Loading map…</span>
+                      <span className="text-xs text-[#64748B] dark:text-stone-500">Loading map…</span>
                     </div>
                   </div>
                 )}

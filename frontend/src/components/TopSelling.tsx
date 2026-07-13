@@ -92,7 +92,7 @@ function TopSelling() {
 
   return (
     <section
-      className="bg-[#F8F7F5] -mx-4 sm:-mx-6 md:-mx-10 lg:-mx-15 px-4 sm:px-6 md:px-10 lg:px-15 py-15"
+      className="bg-[#F8F7F5] dark:bg-[#12100f] -mx-4 sm:-mx-6 md:-mx-10 lg:-mx-15 px-4 sm:px-6 md:px-10 lg:px-15 py-15 transition-colors duration-300"
       ref={ref}
     >
       <motion.div
@@ -107,7 +107,7 @@ function TopSelling() {
           </h2>
         </div>
         <div className="flex justify-between items-end gap-4">
-          <h1 className="font-serif text-[28px] xs:text-[32px] sm:text-[36px] font-bold text-[#241812]">
+          <h1 className="font-serif text-[28px] xs:text-[32px] sm:text-[36px] font-bold text-[#241812] dark:text-stone-100">
             Top Selling
           </h1>
           <Link
@@ -128,14 +128,14 @@ function TopSelling() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-200 animate-pulse"
+              className="bg-white dark:bg-stone-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-stone-800 animate-pulse"
             >
-              <div className="h-72 bg-gray-200" />
+              <div className="h-72 bg-gray-200 dark:bg-stone-850" />
               <div className="px-3.5 py-5 space-y-3">
-                <div className="h-3 w-16 bg-gray-200 rounded" />
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                <div className="h-3 w-full bg-gray-200 rounded" />
-                <div className="h-9 w-full bg-gray-200 rounded-full mt-2" />
+                <div className="h-3 w-16 bg-gray-200 dark:bg-stone-750 rounded" />
+                <div className="h-4 w-3/4 bg-gray-200 dark:bg-stone-750 rounded" />
+                <div className="h-3 w-full bg-gray-200 dark:bg-stone-750 rounded" />
+                <div className="h-9 w-full bg-gray-200 dark:bg-stone-750 rounded-full mt-2" />
               </div>
             </div>
           ))}
@@ -144,13 +144,13 @@ function TopSelling() {
         <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
           <AlertTriangle size={28} className="text-red-400" />
           <p className="text-red-500 font-medium">{error}</p>
-          <p className="text-[#64748B] text-sm">Refresh the page to try again.</p>
+          <p className="text-[#64748B] dark:text-stone-400 text-sm">Refresh the page to try again.</p>
         </div>
       ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-          <PackageSearch size={28} className="text-[#64748B]" />
-          <p className="text-[#241812] font-medium">No products yet</p>
-          <p className="text-[#64748B] text-sm">Check back soon — new bakes are added often.</p>
+          <PackageSearch size={28} className="text-[#64748B] dark:text-stone-500" />
+          <p className="text-[#241812] dark:text-stone-200 font-medium">No products yet</p>
+          <p className="text-[#64748B] dark:text-stone-400 text-sm">Check back soon — new bakes are added often.</p>
         </div>
       ) : (
         <motion.div
@@ -164,12 +164,12 @@ function TopSelling() {
             <motion.div
               key={product._id}
               variants={fadeInUp}
-              className="group bg-white rounded-2xl overflow-hidden border border-gray-200 flex flex-col justify-between"
+              className="group bg-white dark:bg-stone-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-stone-800 flex flex-col justify-between"
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
               {/* Image Container */}
               <div className="relative">
-                <div className="h-72 w-full bg-gray-100 overflow-hidden rounded-t-2xl">
+                <div className="h-72 w-full bg-gray-100 dark:bg-stone-800 overflow-hidden rounded-t-2xl">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -184,8 +184,8 @@ function TopSelling() {
                   )}
                 </div>
 
-                {/* Price sticker — now a sibling, not clipped by the image's overflow-hidden */}
-                <div className="absolute -bottom-4 left-4 bg-white border-2 border-[#D46211] rounded-full px-3.5 py-1.5 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
+                {/* Price sticker */}
+                <div className="absolute -bottom-4 left-4 bg-white dark:bg-stone-800 border-2 border-[#D46211] rounded-full px-3.5 py-1.5 shadow-md rotate-[-3deg] transition-transform duration-300 group-hover:rotate-0">
                   <span className="text-[#D46211] font-bold text-sm whitespace-nowrap">
                     ${product.price.toFixed(2)}
                   </span>
@@ -198,10 +198,10 @@ function TopSelling() {
                   <span className="text-[#D46211] text-[11px] font-bold uppercase tracking-wider">
                     {product.category}
                   </span>
-                  <h3 className="font-bold text-[15px] text-[#241812] line-clamp-1 mt-1">
+                  <h3 className="font-bold text-[15px] text-[#241812] dark:text-stone-100 line-clamp-1 mt-1">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed mt-1.5 mb-4">
+                  <p className="text-xs text-[#64748B] dark:text-stone-400 line-clamp-2 leading-relaxed mt-1.5 mb-4">
                     {product.description}
                   </p>
                 </div>
@@ -211,8 +211,8 @@ function TopSelling() {
                   disabled={product.stock === 0}
                   className={`w-full rounded-full py-2.5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                     product.stock === 0
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : "bg-[#FFF4EB] text-[#D46211] hover:bg-[#D46211] hover:text-white"
+                      ? "bg-gray-100 dark:bg-stone-800 text-gray-400 dark:text-stone-500 cursor-not-allowed"
+                      : "bg-[#FFF4EB] dark:bg-[#D46211]/15 text-[#D46211] hover:bg-[#D46211] hover:text-white"
                   }`}
                 >
                   <ShoppingCart size={14} />

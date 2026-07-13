@@ -29,7 +29,7 @@ function Ingredients() {
   const ingredients = ingredientData;
   return (
     <section
-      className="relative -mx-15 my-20 p-6 sm:p-10 overflow-hidden bg-[#F8F7F5]"
+      className="relative -mx-15 my-20 p-6 sm:p-10 overflow-hidden bg-[#F8F7F5] dark:bg-[#12100f] transition-colors duration-300"
       style={{
         backgroundImage:
           "radial-gradient(rgba(212, 98, 17, 0.08) 1.5px, transparent 1.5px)",
@@ -54,7 +54,7 @@ function Ingredients() {
           <span className="h-px w-6 bg-[#D46211]" />
         </motion.div>
         <motion.h2
-          className="font-serif text-[36px] sm:text-[40px] font-bold text-[#241812]"
+          className="font-serif text-[36px] sm:text-[40px] font-bold text-[#241812] dark:text-stone-100"
           variants={headingVariants}
         >
           Featured Ingredients
@@ -71,7 +71,7 @@ function Ingredients() {
         {ingredients.map((ingredient) => (
           <motion.div
             key={ingredient.id}
-            className="flex flex-col justify-center items-center text-center bg-white rounded-2xl p-6 gap-4 border border-[#241812]/5"
+            className="flex flex-col justify-center items-center text-center bg-white dark:bg-stone-900 rounded-2xl p-6 gap-4 border border-[#241812]/5 dark:border-stone-800"
             variants={cardVariants}
             whileHover={{
               y: -6,
@@ -80,11 +80,11 @@ function Ingredients() {
             }}
           >
             <motion.div
-              className="relative bg-[#FFF4EB] p-4 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center"
+              className="relative bg-[#FFF4EB] dark:bg-[#D46211]/15 p-4 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center"
               whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1, transition: { duration: 0.4 } }}
             >
               {/* Dashed stamp ring — quality-seal motif */}
-              <span className="absolute inset-[-6px] rounded-full border-2 border-dashed border-[#D46211]/30" />
+              <span className="absolute inset-[-6px] rounded-full border-2 border-dashed border-[#D46211]/30 dark:border-[#D46211]/45" />
               <img
                 src={ingredient.image}
                 alt={ingredient.name}
@@ -93,11 +93,11 @@ function Ingredients() {
             </motion.div>
 
             <div>
-              <h2 className="text-[20px] font-bold text-[#241812]">{ingredient.name}</h2>
+              <h2 className="text-[20px] font-bold text-[#241812] dark:text-stone-105">{ingredient.name}</h2>
               <span className="block mx-auto mt-1.5 h-[2px] w-6 bg-[#D46211]/50" />
             </div>
 
-            <p className="text-[#64748B] text-[14px] leading-relaxed">
+            <p className="text-[#64748B] dark:text-stone-450 text-[14px] leading-relaxed">
               {ingredient.description}
             </p>
           </motion.div>

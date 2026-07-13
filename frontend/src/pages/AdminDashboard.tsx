@@ -1422,8 +1422,8 @@ function AdminDashboard() {
 
           {products.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {products.slice(0, 9).map((p, i) => {
-                const stock = mockStockLevels[i % mockStockLevels.length];
+              {products.slice(0, 9).map((p) => {
+                const stock = p.stock ?? 0;
                 const isOut = stock === 0;
                 const isLow = !isOut && stock <= 3;
                 const statusLabel = isOut ? "Out of Stock" : isLow ? "Low Stock" : "In Stock";

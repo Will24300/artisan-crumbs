@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import cartReducer from "./features/cart.ts";
 import authReducer from "./features/auth.ts";
 import { ToastContainer } from "react-toastify";
+import { ThemeProvider } from "./features/theme.tsx";
 
 const store = configureStore({
   reducer: {
@@ -17,18 +18,21 @@ const store = configureStore({
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
-    <App />
-    <ToastContainer
-      position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="light"
-    />
+    <ThemeProvider>
+      <App />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </ThemeProvider>
   </Provider>,
 );
+

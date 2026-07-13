@@ -11,11 +11,11 @@ function Bakers() {
               The Team
             </h2>
           </div>
-          <h1 className="font-serif text-[32px] sm:text-[40px] font-bold text-[#241812] leading-tight">
+          <h1 className="font-serif text-[32px] sm:text-[40px] font-bold text-[#241812] dark:text-stone-100 leading-tight">
             Meet the Bakers
           </h1>
         </div>
-        <p className="text-[#64748B] text-[16px] max-w-2xl">
+        <p className="text-[#64748B] dark:text-stone-400 text-[16px] max-w-2xl">
           Meet the passionate hands behind every loaf and pastry that leaves our ovens.
         </p>
       </div>
@@ -30,7 +30,7 @@ function Bakers() {
               />
               {/* Kraft-tag signature element */}
               <div
-                className={`absolute -bottom-5 left-6 bg-[#FBF6EE] border border-dashed border-[#D46211]/50 
+                className={`absolute -bottom-5 left-6 bg-[#FBF6EE] dark:bg-stone-850 border border-dashed border-[#D46211]/50 
                   px-4 py-2 rounded-[3px] shadow-md rotate-[-4deg] transition-transform duration-500
                   group-hover:rotate-0 group-hover:-translate-y-1
                   ${i % 2 === 0 ? "rotate-[-4deg]" : "rotate-[3deg]"}`}
@@ -42,7 +42,7 @@ function Bakers() {
             </div>
 
             <div className="mt-9 px-1">
-              <h2 className="font-serif text-[22px] font-bold text-[#241812]">
+              <h2 className="font-serif text-[22px] font-bold text-[#241812] dark:text-stone-100">
                 {baker.name}
               </h2>
               <span className="block mt-1 h-[2px] w-6 bg-[#D46211]/60" />

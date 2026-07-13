@@ -3,9 +3,10 @@ import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setCredentials } from "../features/auth";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Check } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Check, Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
+import { useTheme } from "../features/theme";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -21,6 +22,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
 
   const passwordChecks = [
     { label: "At least 8 characters", met: password.length >= 8 },
@@ -55,15 +57,22 @@ function Register() {
   };
 
   return (
-    <div className="h-full bg-[#F9F9F8] flex flex-col justify-between px-4 sm:px-6 md:px-10 lg:px-16 overflow-hidden">
-      <header className="w-full max-w-5xl mx-auto py-3.5 flex items-center justify-between border-b border-gray-100 px-2 flex-shrink-0">
+    <div className="h-full bg-[#F9F9F8] dark:bg-[#0f0d0c] flex flex-col justify-between px-4 sm:px-6 md:px-10 lg:px-16 overflow-hidden transition-colors duration-300">
+      <header className="w-full max-w-5xl mx-auto py-3.5 flex items-center justify-between border-b border-gray-100 dark:border-stone-800 px-2 flex-shrink-0">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FFF4EB] overflow-hidden shrink-0">
             <img src={iconImg} alt="" className="h-6 w-6 object-contain" />
           </span>
-          <span className="font-serif font-bold text-[19px] text-[#241812]">Artisan Crumbs</span>
+          <span className="font-serif font-bold text-[19px] text-[#241812] dark:text-stone-100">Artisan Crumbs</span>
         </Link>
-        <div className="flex items-center gap-6 text-sm font-semibold text-[#475569]">
+        <div className="flex items-center gap-4 text-sm font-semibold text-[#475569] dark:text-stone-400">
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-stone-800 text-gray-600 dark:text-stone-300 hover:text-[#D46211] transition-colors"
+          >
+            {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
           <Link to="/" className="hover:text-[#D46211] transition-colors">
             Home
           </Link>
@@ -106,7 +115,7 @@ function Register() {
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 px-4 py-8 md:p-10 flex flex-col justify-center bg-white">
+          <div className="w-full md:w-1/2 px-4 py-8 md:p-10 flex flex-col justify-center bg-white dark:bg-stone-900">
             <motion.div
               className="mb-5"
               initial="initial"
@@ -114,10 +123,10 @@ function Register() {
               variants={fadeInUp}
               transition={{ duration: 0.4 }}
             >
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#241812] tracking-tight break-words">
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#241812] dark:text-stone-100 tracking-tight break-words">
                 Create an account
               </h1>
-              <p className="text-xs sm:text-sm text-[#64748B] mt-1 font-medium break-words">
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-stone-400 mt-1 font-medium break-words">
                 Enter your details to register.
               </p>
             </motion.div>
@@ -131,7 +140,7 @@ function Register() {
               transition={{ duration: 0.4, delay: 0.05 }}
             >
               <div>
-                <label className="block text-xs font-bold text-[#334155] mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-[#334155] dark:text-stone-300 mb-2 uppercase tracking-wide">
                   Full name
                 </label>
                 <div className="relative">
@@ -142,13 +151,13 @@ function Register() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Volonte Rwicha"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] text-[#334155] transition-shadow"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-stone-850 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] dark:bg-[#12100f] text-[#334155] dark:text-stone-200 transition-shadow"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#334155] mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-[#334155] dark:text-stone-300 mb-2 uppercase tracking-wide">
                   Email address
                 </label>
                 <div className="relative">
@@ -159,13 +168,13 @@ function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] text-[#334155] transition-shadow"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-stone-850 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] dark:bg-[#12100f] text-[#334155] dark:text-stone-200 transition-shadow"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#334155] mb-2 uppercase tracking-wide">
+                <label className="block text-xs font-bold text-[#334155] dark:text-stone-300 mb-2 uppercase tracking-wide">
                   Password
                 </label>
                 <div className="relative">
@@ -176,12 +185,12 @@ function Register() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] text-[#334155] transition-shadow"
+                    className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 dark:border-stone-850 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] dark:bg-[#12100f] text-[#334155] dark:text-stone-200 transition-shadow"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-[#94A3B8] hover:text-[#D46211] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-[#94A3B8] hover:text-[#D46211] transition-colors cursor-pointer"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -194,12 +203,12 @@ function Register() {
                       <span
                         key={check.label}
                         className={`flex items-center gap-1 text-[11px] font-medium ${
-                          check.met ? "text-green-600" : "text-[#94A3B8]"
+                          check.met ? "text-green-600 dark:text-green-455" : "text-[#94A3B8] dark:text-stone-500"
                         }`}
                       >
                         <span
                           className={`flex items-center justify-center w-3.5 h-3.5 rounded-full ${
-                            check.met ? "bg-green-100" : "bg-gray-100"
+                            check.met ? "bg-green-100 dark:bg-green-950/45" : "bg-gray-100 dark:bg-stone-800"
                           }`}
                         >
                           {check.met && <Check size={9} strokeWidth={3} />}
@@ -215,7 +224,7 @@ function Register() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="rounded-xl bg-red-50 border border-red-100 p-3 text-xs text-red-600 font-semibold flex items-center gap-2"
+                  className="rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 p-3 text-xs text-red-600 dark:text-red-400 font-semibold flex items-center gap-2"
                 >
                   <AlertCircle size={14} className="shrink-0" />
                   {error}
@@ -239,17 +248,17 @@ function Register() {
             </motion.form>
 
             <div className="flex items-center gap-3 my-6">
-              <div className="flex-1 h-px bg-gray-100" />
-              <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-widest">
+              <div className="flex-1 h-px bg-gray-100 dark:bg-stone-850" />
+              <span className="text-[11px] font-bold text-[#94A3B8] dark:text-stone-500 uppercase tracking-widest">
                 Or continue with
               </span>
-              <div className="flex-1 h-px bg-gray-100" />
+              <div className="flex-1 h-px bg-gray-100 dark:bg-stone-850" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer bg-white"
+                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-850 transition-colors cursor-pointer bg-white dark:bg-stone-900"
                 onClick={() => toast.success("Google integration demo success!")}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -262,7 +271,7 @@ function Register() {
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer bg-white"
+                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-850 transition-colors cursor-pointer bg-white dark:bg-stone-900"
                 onClick={() => toast.success("Facebook integration demo success!")}
               >
                 <svg className="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24">
@@ -272,7 +281,7 @@ function Register() {
               </button>
             </div>
 
-            <p className="mt-8 text-sm text-center text-gray-500 font-medium">
+            <p className="mt-8 text-sm text-center text-gray-550 dark:text-stone-400 font-medium">
               Already registered?{" "}
               <Link to="/login" className="font-bold text-[#D46211] hover:text-[#b04f0b] hover:underline">
                 Sign in
@@ -282,7 +291,7 @@ function Register() {
         </motion.div>
       </main>
 
-      <footer className="w-full max-w-5xl mx-auto py-3.5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-[#94A3B8] px-2 flex-shrink-0">
+      <footer className="w-full max-w-5xl mx-auto py-3.5 border-t border-gray-100 dark:border-stone-850 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-[#94A3B8] dark:text-stone-500 px-2 flex-shrink-0">
         <p>© 2026 Artisan Crumbs Bakery. All rights reserved.</p>
         <div className="flex items-center gap-6">
           <span className="cursor-pointer hover:text-[#D46211] transition-colors">Privacy Policy</span>
