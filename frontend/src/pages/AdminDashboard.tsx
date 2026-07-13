@@ -72,10 +72,10 @@ interface OrderSummary {
 type Section = "overview" | "products" | "orders" | "customers" | "analytics" | "settings";
 
 // ─── SVG Chart: Bar Chart ─────────────────────────────────────────────────
-function BarChart({
+function SvgBarChart({
   data,
   labels,
-  color = "#F59E0B",
+  color = "#D46211",
 }: {
   data: number[];
   labels?: string[];
@@ -124,10 +124,10 @@ function BarChart({
 }
 
 // ─── SVG Chart: Line Chart ────────────────────────────────────────────────
-function LineChart({
+function SvgLineChart({
   data,
   labels,
-  color = "#F59E0B",
+  color = "#D46211",
 }: {
   data: number[];
   labels?: string[];
@@ -304,7 +304,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
     <button
       onClick={onChange}
-      className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${on ? "bg-amber-500" : "bg-gray-200"}`}
+      className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${on ? "bg-[#D46211]" : "bg-gray-200"}`}
     >
       <span
         className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${on ? "translate-x-5" : ""}`}
@@ -413,7 +413,7 @@ function AdminDashboard() {
   }, [orders]);
 
   const categoryData = useMemo(() => {
-    const palette = ["#F59E0B", "#FB923C", "#A78BFA", "#34D399", "#60A5FA", "#F472B6"];
+    const palette = ["#D46211", "#FB923C", "#A78BFA", "#34D399", "#60A5FA", "#F472B6"];
     const counts: Record<string, number> = {};
     products.forEach((p) => {
       counts[p.category] = (counts[p.category] || 0) + 1;
@@ -478,7 +478,7 @@ function AdminDashboard() {
 
   // Revenue per category (derived from real orders)
   const categoryRevenueData = useMemo(() => {
-    const palette = ["#F59E0B", "#FB923C", "#A78BFA", "#34D399", "#60A5FA", "#F472B6"];
+    const palette = ["#D46211", "#FB923C", "#A78BFA", "#34D399", "#60A5FA", "#F472B6"];
     // Build a productId -> category map
     const productCategoryMap: Record<string, string> = {};
     products.forEach((p) => { productCategoryMap[p._id] = p.category; });
@@ -623,9 +623,9 @@ function AdminDashboard() {
   // ── Access Guard ───────────────────────────────────────────────────────
   if (userRole !== "admin") {
     return (
-      <section className="min-h-screen flex items-center justify-center bg-amber-50 px-4">
+      <section className="min-h-screen flex items-center justify-center bg-[#FFF4EB] px-4">
         <div className="max-w-sm w-full bg-white rounded-3xl p-10 text-center shadow-xl">
-          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-5 text-3xl">
+          <div className="w-16 h-16 bg-[#FFE5C8] rounded-2xl flex items-center justify-center mx-auto mb-5 text-3xl">
             🔒
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Access Required</h1>
@@ -647,7 +647,7 @@ function AdminDashboard() {
     { id: "settings", label: "Settings", icon: <Settings className="w-[18px] h-[18px]" /> },
   ];
 
-  const avatarColors = ["bg-amber-500", "bg-orange-500", "bg-purple-500", "bg-blue-500", "bg-emerald-500", "bg-rose-500"];
+  const avatarColors = ["bg-[#D46211]", "bg-orange-500", "bg-purple-500", "bg-blue-500", "bg-emerald-500", "bg-rose-500"];
   const getAvatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -660,11 +660,11 @@ function AdminDashboard() {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
-          icon={<DollarSign className="w-5 h-5 text-amber-600" />}
+          icon={<DollarSign className="w-5 h-5 text-[#D46211]" />}
           label="Total Revenue"
           value={`$${totalRevenue.toFixed(2)}`}
           sub="+12.4%"
-          bg="bg-amber-50"
+          bg="bg-[#FFF4EB]"
         />
         <StatCard
           icon={<ShoppingCart className="w-5 h-5 text-orange-500" />}
@@ -701,11 +701,10 @@ function AdminDashboard() {
                 <button
                   key={p}
                   onClick={() => setSalesPeriod(p)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${
-                    salesPeriod === p
-                      ? "bg-white text-amber-600 shadow-sm"
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${salesPeriod === p
+                      ? "bg-white text-[#D46211] shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
-                  }`}
+                    }`}
                 >
                   {p}
                 </button>
@@ -713,14 +712,14 @@ function AdminDashboard() {
             </div>
           </div>
           <div className="h-36">
-            <BarChart
+            <SvgBarChart
               data={revenueByDay}
               labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
             />
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
             <span className="text-xs text-gray-400">Total this week</span>
-            <span className="text-sm font-bold text-amber-600">
+            <span className="text-sm font-bold text-[#D46211]">
               ${revenueByDay.reduce((a, b) => a + b, 0).toFixed(2)}
             </span>
           </div>
@@ -745,25 +744,25 @@ function AdminDashboard() {
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-bold text-gray-900">Top Selling Cakes</h3>
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <Star className="w-4 h-4 text-[#D46211] fill-[#D46211]" />
           </div>
           {topProducts.length > 0 ? (
             <div className="space-y-3">
               {topProducts.map((p, i) => (
                 <div key={i} className="flex items-center gap-3 group">
-                  <span className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 text-xs font-bold flex items-center justify-center flex-shrink-0 group-hover:bg-amber-100 transition-colors">
+                  <span className="w-7 h-7 rounded-xl bg-[#FFF4EB] text-[#D46211] text-xs font-bold flex items-center justify-center flex-shrink-0 group-hover:bg-[#FFE5C8] transition-colors">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                      <span className="text-sm font-bold text-amber-600 pl-2">
+                      <span className="text-sm font-bold text-[#D46211] pl-2">
                         ${p.total.toFixed(2)}
                       </span>
                     </div>
                     <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-amber-400 rounded-full"
+                        className="h-full bg-[#D46211] rounded-full"
                         style={{ width: `${(p.total / (topProducts[0]?.total || 1)) * 100}%` }}
                       />
                     </div>
@@ -784,7 +783,7 @@ function AdminDashboard() {
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-bold text-gray-900">Recent Activity</h3>
             {pendingOrders.length > 0 && (
-              <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
+              <span className="text-xs bg-[#FFE5C8] text-[#D46211] border border-[#D46211]/40 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
                 {pendingOrders.length} new
               </span>
             )}
@@ -793,13 +792,12 @@ function AdminDashboard() {
             {orders.slice(0, 10).map((o) => (
               <div key={o._id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
                 <div
-                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    o.status === "pending"
-                      ? "bg-amber-400"
+                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${o.status === "pending"
+                      ? "bg-[#D46211]"
                       : o.status === "accepted"
-                      ? "bg-emerald-400"
-                      : "bg-red-400"
-                  }`}
+                        ? "bg-emerald-400"
+                        : "bg-red-400"
+                    }`}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-700">
@@ -813,13 +811,12 @@ function AdminDashboard() {
                   </p>
                 </div>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${
-                    o.status === "pending"
-                      ? "bg-amber-50 text-amber-700"
+                  className={`text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${o.status === "pending"
+                      ? "bg-[#FFF4EB] text-[#D46211]"
                       : o.status === "accepted"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-red-50 text-red-700"
-                  }`}
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-red-50 text-red-700"
+                    }`}
                 >
                   {o.status}
                 </span>
@@ -845,25 +842,26 @@ function AdminDashboard() {
         <div className="flex gap-2 flex-wrap">
           {[
             { key: "all", label: "All" },
-            { key: "cake", label: "🎂 Cakes" },
-            { key: "pastry", label: "🥐 Pastries" },
+            { key: "cake", label: "🎂 Cake" },
+            { key: "muffins", label: "🧁 Muffins" },
+            { key: "croissant", label: "🥐 Croissant" },
             { key: "bread", label: "🍞 Bread" },
+            { key: "tart", label: "🥧 Tart" },
           ].map((f) => (
             <button
               key={f.key}
               onClick={() => setProductFilter(f.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                productFilter === f.key
-                  ? "bg-amber-500 text-white shadow-sm shadow-amber-200"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-amber-300"
-              }`}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${productFilter === f.key
+                  ? "bg-[#D46211] text-white shadow-sm shadow-[#D46211]/30"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-[#D46211]/60"
+                }`}
             >
               {f.label}
             </button>
           ))}
         </div>
         <div className="ml-auto flex gap-2">
-          <label className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 bg-white hover:border-amber-300 cursor-pointer transition-all">
+          <label className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 bg-white hover:border-[#D46211]/60 cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5" />
             Bulk Upload
             <input
@@ -880,7 +878,7 @@ function AdminDashboard() {
           </label>
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-all shadow-sm shadow-amber-200"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D46211] text-white text-sm font-bold hover:bg-[#b8540e] transition-all shadow-sm shadow-[#D46211]/30"
           >
             <Plus className="w-4 h-4" /> Add Product
           </button>
@@ -898,7 +896,7 @@ function AdminDashboard() {
         <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
           <Package className="w-10 h-10 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-400 font-medium">No products in this category</p>
-          <button onClick={openAddModal} className="mt-4 text-sm text-amber-600 font-semibold hover:underline">
+          <button onClick={openAddModal} className="mt-4 text-sm text-[#D46211] font-semibold hover:underline">
             Add your first product →
           </button>
         </div>
@@ -909,7 +907,7 @@ function AdminDashboard() {
               key={product._id}
               className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
             >
-              <div className="relative h-44 bg-amber-50 overflow-hidden">
+              <div className="relative h-44 bg-[#FFF4EB] overflow-hidden">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -945,24 +943,36 @@ function AdminDashboard() {
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-                  <div className="flex flex-col">
-                    <span className="text-amber-600 font-bold text-base">
-                      ${product.price.toFixed(2)}
+                  <span className="text-[#D46211] font-bold text-base">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  {/* Stock badge */}
+                  {product.stock === 0 ? (
+                    <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                      Out of Stock
                     </span>
-                    <span className="text-[11px] font-semibold text-gray-500 mt-0.5">
-                      Stock: <span className={product.stock === 0 ? "text-red-500" : "text-gray-700"}>{product.stock}</span>
+                  ) : product.stock <= 5 ? (
+                    <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFE5C8] text-[#D46211]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D46211] inline-block" />
+                      Low: {product.stock} left
                     </span>
-                  </div>
-                  {product.tags && product.tags.length > 0 && (
-                    <div className="flex gap-1">
-                      {product.tags.slice(0, 1).map((tag) => (
-                        <span key={tag} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                      {product.stock} in stock
+                    </span>
                   )}
                 </div>
+                {product.tags && product.tags.length > 0 && (
+                  <div className="flex gap-1 mt-2">
+                    {product.tags.slice(0, 2).map((tag) => (
+                      <span key={tag} className="text-xs bg-[#FFF4EB] text-[#D46211] px-2 py-0.5 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -978,7 +988,7 @@ function AdminDashboard() {
       <div className="flex gap-3 flex-wrap">
         {[
           { label: "All Orders", count: orders.length, cls: "bg-gray-100 text-gray-700" },
-          { label: "Pending", count: pendingOrders.length, cls: "bg-amber-100 text-amber-700" },
+          { label: "Pending", count: pendingOrders.length, cls: "bg-[#FFE5C8] text-[#D46211]" },
           { label: "Accepted", count: acceptedOrders.length, cls: "bg-emerald-100 text-emerald-700" },
           {
             label: "Declined",
@@ -1021,7 +1031,7 @@ function AdminDashboard() {
                   <>
                     <tr
                       key={order._id}
-                      className="hover:bg-amber-50/40 transition-colors cursor-pointer"
+                      className="hover:bg-[#FFF4EB]/40 transition-colors cursor-pointer"
                       onClick={() =>
                         setExpandedOrder(expandedOrder === order._id ? null : order._id)
                       }
@@ -1048,25 +1058,24 @@ function AdminDashboard() {
                         {order.items.length} item{order.items.length !== 1 ? "s" : ""}
                       </td>
                       <td className="px-5 py-4">
-                        <span className="text-sm font-bold text-amber-600">
+                        <span className="text-sm font-bold text-[#D46211]">
                           ${order.totalAmount.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            order.status === "pending"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${order.status === "pending"
+                              ? "bg-[#FFF4EB] text-[#D46211] border border-[#D46211]/40"
                               : order.status === "accepted"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-red-50 text-red-700 border border-red-200"
-                          }`}
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : "bg-red-50 text-red-700 border border-red-200"
+                            }`}
                         >
                           {order.status === "accepted"
                             ? "✓ Accepted"
                             : order.status === "declined"
-                            ? "✗ Declined"
-                            : "⏳ Pending"}
+                              ? "✗ Declined"
+                              : "⏳ Pending"}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-xs text-gray-400">
@@ -1117,7 +1126,7 @@ function AdminDashboard() {
                       <tr key={`${order._id}-exp`}>
                         <td
                           colSpan={7}
-                          className="px-5 py-0 bg-amber-50/60 border-b border-amber-100"
+                          className="px-5 py-0 bg-[#FFF4EB]/60 border-b border-[#D46211]/20"
                         >
                           <div className="py-5 grid sm:grid-cols-2 gap-6">
                             {/* Order Items */}
@@ -1129,7 +1138,7 @@ function AdminDashboard() {
                                 {order.items.map((item, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center justify-between text-sm bg-white rounded-xl px-4 py-2.5 border border-amber-100"
+                                    className="flex items-center justify-between text-sm bg-white rounded-xl px-4 py-2.5 border border-[#D46211]/20"
                                   >
                                     <span className="text-gray-800 font-medium">
                                       {item.name}{" "}
@@ -1142,9 +1151,9 @@ function AdminDashboard() {
                                     </span>
                                   </div>
                                 ))}
-                                <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-amber-200 px-1">
+                                <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-[#D46211]/40 px-1">
                                   <span className="text-gray-700">Total (incl. tax)</span>
-                                  <span className="text-amber-600 text-base">
+                                  <span className="text-[#D46211] text-base">
                                     ${order.totalAmount.toFixed(2)}
                                   </span>
                                 </div>
@@ -1156,7 +1165,7 @@ function AdminDashboard() {
                               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
                                 Customer & Delivery Info
                               </p>
-                              <div className="bg-white rounded-xl border border-amber-100 p-4 space-y-2 text-sm">
+                              <div className="bg-white rounded-xl border border-[#D46211]/20 p-4 space-y-2 text-sm">
                                 <div className="flex justify-between">
                                   <span className="text-gray-400">Name</span>
                                   <span className="font-semibold text-gray-900">
@@ -1213,7 +1222,7 @@ function AdminDashboard() {
             onChange={(e) => setCustomerSearch(e.target.value)}
             type="text"
             placeholder="Search by name or email..."
-            className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-amber-400 bg-white w-72 transition-all"
+            className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#D46211] bg-white w-72 transition-all"
           />
         </div>
         <div className="text-sm text-gray-400 ml-auto">
@@ -1254,11 +1263,10 @@ function AdminDashboard() {
                     </div>
                   </div>
                   <span
-                    className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
-                      u.role === "admin"
+                    className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${u.role === "admin"
                         ? "bg-purple-100 text-purple-700"
                         : "bg-gray-100 text-gray-500"
-                    }`}
+                      }`}
                   >
                     {u.role}
                   </span>
@@ -1270,7 +1278,7 @@ function AdminDashboard() {
                     <p className="text-xs text-gray-400">Orders</p>
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-amber-500">⭐ {loyaltyPts}</p>
+                    <p className="text-lg font-bold text-[#D46211]">⭐ {loyaltyPts}</p>
                     <p className="text-xs text-gray-400">Points</p>
                   </div>
                   <div>
@@ -1282,7 +1290,7 @@ function AdminDashboard() {
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex gap-1">
                     {loyaltyPts >= 50 && (
-                      <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
+                      <span className="text-xs bg-[#FFF4EB] text-[#D46211] border border-[#D46211]/40 px-2 py-0.5 rounded-full font-semibold">
                         🥇 Gold
                       </span>
                     )}
@@ -1349,8 +1357,8 @@ function AdminDashboard() {
               </span>
             </div>
             {/* Chart placeholder */}
-            <div className="h-48 flex items-center justify-center text-gray-300">
-              <LineChart className="w-12 h-12" />
+            <div className="h-48">
+              <SvgLineChart data={weeklyRevenueSample} />
             </div>
           </div>
 
@@ -1394,8 +1402,8 @@ function AdminDashboard() {
         {/* Inventory Insights — uses real stock from DB */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-[#D46211]" />
             </div>
             <div>
               <h3 className="font-bold text-gray-900">Inventory Insights</h3>
@@ -1413,13 +1421,13 @@ function AdminDashboard() {
                 const cardCls = isOut
                   ? "border-red-200 bg-red-50"
                   : isLow
-                  ? "border-amber-200 bg-amber-50"
-                  : "border-emerald-100 bg-emerald-50/50";
+                    ? "border-[#D46211]/40 bg-[#FFF4EB]"
+                    : "border-emerald-100 bg-emerald-50/50";
                 const textCls = isOut
                   ? "text-red-600"
                   : isLow
-                  ? "text-amber-700"
-                  : "text-emerald-700";
+                    ? "text-[#D46211]"
+                    : "text-emerald-700";
                 return (
                   <div
                     key={p._id}
@@ -1463,8 +1471,8 @@ function AdminDashboard() {
       {/* Store Info */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
-            <Store className="w-4 h-4 text-amber-600" />
+          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+            <Store className="w-4 h-4 text-[#D46211]" />
           </div>
           <h3 className="font-bold text-gray-900">Store Information</h3>
         </div>
@@ -1482,7 +1490,7 @@ function AdminDashboard() {
                 onChange={(e) => f.setter(e.target.value)}
                 type="text"
                 placeholder={f.placeholder}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
               />
             </div>
           ))}
@@ -1493,7 +1501,7 @@ function AdminDashboard() {
           </div>
         )}
         <button
-          className="mt-4 px-6 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-all shadow-sm shadow-amber-200"
+          className="mt-4 px-6 py-2.5 rounded-xl bg-[#D46211] text-white text-sm font-bold hover:bg-[#b8540e] transition-all shadow-sm shadow-[#D46211]/30"
           onClick={() => {
             setSettingsSaved(true);
             setTimeout(() => setSettingsSaved(false), 3000);
@@ -1568,7 +1576,7 @@ function AdminDashboard() {
               type="number"
               min="0"
               step="0.50"
-              className="w-40 rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+              className="w-40 rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
             />
           </div>
         )}
@@ -1577,8 +1585,8 @@ function AdminDashboard() {
       {/* User Roles & Permissions */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
-            <Users className="w-4 h-4 text-amber-600" />
+          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] flex items-center justify-center">
+            <Users className="w-4 h-4 text-[#D46211]" />
           </div>
           <h3 className="font-bold text-gray-900">User Roles & Permissions</h3>
         </div>
@@ -1603,7 +1611,7 @@ function AdminDashboard() {
                 <select
                   value={u.role}
                   onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
-                  className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-amber-400 bg-white font-semibold text-gray-700 cursor-pointer"
+                  className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#D46211] bg-white font-semibold text-gray-700 cursor-pointer"
                 >
                   <option value="user">User</option>
                   <option value="staff">Staff</option>
@@ -1624,24 +1632,22 @@ function AdminDashboard() {
     <div className="min-h-screen bg-[#FBF8F4] flex font-sans">
       {/* ── SIDEBAR ──────────────────────────────────────────────────── */}
       <aside
-        className={`${
-          sidebarOpen ? "w-60" : "w-16"
-        } flex-shrink-0 bg-stone-900 flex flex-col transition-all duration-300 ease-in-out overflow-hidden`}
+        className={`${sidebarOpen ? "w-60" : "w-16"
+          } flex-shrink-0 bg-[#D46211] flex flex-col transition-all duration-300 ease-in-out overflow-hidden`}
         style={{ minHeight: "100vh" }}
       >
         {/* Logo */}
         <div
-          className={`flex items-center h-16 border-b border-stone-800 px-4 gap-3 ${
-            sidebarOpen ? "" : "justify-center"
-          }`}
+          className={`flex items-center h-16 border-b border-white/20 px-4 gap-3 ${sidebarOpen ? "" : "justify-center"
+            }`}
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-900/30">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#D46211] to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#D46211]/30">
             <span className="text-lg leading-none">🍰</span>
           </div>
           {sidebarOpen && (
             <div>
               <p className="text-white font-bold text-sm leading-tight">Artisan Crumbs</p>
-              <p className="text-stone-500 text-xs">Admin Panel</p>
+              <p className="text-white/60 text-xs">Admin Panel</p>
             </div>
           )}
         </div>
@@ -1654,17 +1660,16 @@ function AdminDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left relative group ${
-                  isActive
-                    ? "bg-amber-500 text-white shadow-lg shadow-amber-900/20"
-                    : "text-stone-400 hover:bg-stone-800 hover:text-stone-200"
-                } ${sidebarOpen ? "" : "justify-center"}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left relative group ${isActive
+                    ? "bg-white text-[#D46211] shadow-lg shadow-black/10"
+                    : "text-white/70 hover:bg-white/15 hover:text-white"
+                  } ${sidebarOpen ? "" : "justify-center"}`}
                 title={!sidebarOpen ? item.label : ""}
               >
                 <span className="flex-shrink-0 relative">
                   {item.icon}
                   {!sidebarOpen && item.badge !== undefined && item.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#D46211]" />
                   )}
                 </span>
                 {sidebarOpen && (
@@ -1672,9 +1677,8 @@ function AdminDashboard() {
                     <span className="text-sm font-semibold flex-1 truncate">{item.label}</span>
                     {item.badge !== undefined && item.badge > 0 && (
                       <span
-                        className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
-                          isActive ? "bg-white/20 text-white" : "bg-amber-500 text-white"
-                        }`}
+                        className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${isActive ? "bg-[#D46211] text-white" : "bg-white/20 text-white"
+                          }`}
                       >
                         {item.badge}
                       </span>
@@ -1687,12 +1691,11 @@ function AdminDashboard() {
         </nav>
 
         {/* Collapse Toggle */}
-        <div className="p-3 border-t border-stone-800">
+        <div className="p-3 border-t border-white/20">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-400 hover:bg-stone-800 hover:text-stone-200 transition-all ${
-              sidebarOpen ? "" : "justify-center"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-white/15 hover:text-white transition-all ${sidebarOpen ? "" : "justify-center"
+              }`}
           >
             <Menu className="w-[18px] h-[18px] flex-shrink-0" />
             {sidebarOpen && <span className="text-sm font-semibold">Collapse</span>}
@@ -1725,7 +1728,7 @@ function AdminDashboard() {
             >
               <Bell className="w-5 h-5 text-gray-500" />
               {pendingOrders.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#D46211] animate-pulse" />
               )}
             </button>
             {notifOpen && (
@@ -1738,7 +1741,7 @@ function AdminDashboard() {
                   <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
                     <p className="font-bold text-sm text-gray-900">Notifications</p>
                     {pendingOrders.length > 0 && (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-xs bg-[#FFE5C8] text-[#D46211] px-2 py-0.5 rounded-full font-bold">
                         {pendingOrders.length} new
                       </span>
                     )}
@@ -1746,9 +1749,9 @@ function AdminDashboard() {
                   <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
                     {pendingOrders.length > 0 ? (
                       pendingOrders.slice(0, 6).map((o) => (
-                        <div key={o._id} className="px-5 py-3.5 hover:bg-amber-50/40 transition-colors">
+                        <div key={o._id} className="px-5 py-3.5 hover:bg-[#FFF4EB]/40 transition-colors">
                           <div className="flex items-start gap-3">
-                            <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
+                            <div className="w-2 h-2 rounded-full bg-[#D46211] mt-1.5 flex-shrink-0" />
                             <div>
                               <p className="text-sm font-semibold text-gray-900">
                                 New order from {o.user?.name || "Guest"}
@@ -1775,7 +1778,7 @@ function AdminDashboard() {
                           setActiveSection("orders");
                           setNotifOpen(false);
                         }}
-                        className="text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors"
+                        className="text-xs font-bold text-[#D46211] hover:text-[#D46211] transition-colors"
                       >
                         View all orders →
                       </button>
@@ -1821,7 +1824,7 @@ function AdminDashboard() {
           {/* Loading */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-4">
-              <div className="w-10 h-10 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+              <div className="w-10 h-10 rounded-full border-2 border-[#D46211] border-t-transparent animate-spin" />
               <p className="text-sm text-gray-400 font-medium">Loading dashboard data…</p>
             </div>
           ) : (
@@ -1880,7 +1883,7 @@ function AdminDashboard() {
                     required
                     value={pName}
                     onChange={(e) => setPName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     placeholder="e.g. Chocolate Fudge Cake"
                   />
                 </div>
@@ -1898,7 +1901,7 @@ function AdminDashboard() {
                       step="0.01"
                       value={pPrice}
                       onChange={(e) => setPPrice(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                       placeholder="24.99"
                     />
                   </div>
@@ -1910,33 +1913,47 @@ function AdminDashboard() {
                       value={pCat}
                       onChange={(e) => setPCat(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all bg-white"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all bg-white"
                     >
                       <option value="">Select category…</option>
-                      <option value="Cakes">🎂 Cakes</option>
-                      <option value="Pastries">🥐 Pastries</option>
-                      <option value="Bread">🍞 Bread</option>
+                      <option value="Cake">🎂 Cake</option>
                       <option value="Muffins">🧁 Muffins</option>
-                      <option value="Cookies">🍪 Cookies</option>
-                      <option value="Pies">🥧 Pies</option>
+                      <option value="Croissant">🥐 Croissant</option>
+                      <option value="Bread">🍞 Bread</option>
+                      <option value="Tart">🥧 Tart</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Stock */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Stock Quantity *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      Stock Quantity *
+                    </label>
+                    {/* Live stock status preview */}
+                    {pStock !== "" && (
+                      Number(pStock) === 0 ? (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">Out of Stock</span>
+                      ) : Number(pStock) <= 5 ? (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFE5C8] text-[#D46211]">Low Stock</span>
+                      ) : (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">In Stock</span>
+                      )
+                    )}
+                  </div>
                   <input
                     type="number"
                     required
                     min="0"
                     value={pStock}
                     onChange={(e) => setPStock(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
-                    placeholder="0"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
+                    placeholder="e.g. 50"
                   />
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    Customers won't be able to add this product to their cart when stock reaches 0.
+                  </p>
                 </div>
 
                 {/* Image — URL or File Upload */}
@@ -1977,13 +1994,13 @@ function AdminDashboard() {
                       type="text"
                       value={pImage.startsWith("data:") ? "" : pImage}
                       onChange={(e) => setPImage(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                       placeholder="https://images.unsplash.com/..."
                     />
                   </div>
                   {/* File input */}
                   <div id="image-file-input" style={{ display: "none" }}>
-                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl py-5 px-4 cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all">
+                    <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl py-5 px-4 cursor-pointer hover:border-[#D46211] hover:bg-[#FFF4EB]/30 transition-all">
                       <Upload className="w-6 h-6 text-gray-400" />
                       <span className="text-xs text-gray-500 font-medium">Click to choose an image</span>
                       <span className="text-xs text-gray-400">JPG, PNG, WEBP — max 5MB</span>
@@ -2039,7 +2056,7 @@ function AdminDashboard() {
                     rows={3}
                     value={pDesc}
                     onChange={(e) => setPDesc(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all resize-none"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all resize-none"
                     placeholder="Describe this product…"
                   />
                 </div>
@@ -2054,7 +2071,7 @@ function AdminDashboard() {
                     type="text"
                     value={pTags}
                     onChange={(e) => setPTags(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 transition-all"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-[#D46211] transition-all"
                     placeholder="e.g. vegan, gluten-free, bestseller"
                   />
                 </div>
@@ -2070,7 +2087,7 @@ function AdminDashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-amber-500 py-2.5 text-sm font-bold text-white hover:bg-amber-600 transition-all shadow-sm shadow-amber-200"
+                    className="flex-1 rounded-xl bg-[#D46211] py-2.5 text-sm font-bold text-white hover:bg-[#b8540e] transition-all shadow-sm shadow-[#D46211]/30"
                   >
                     {modalMode === "add" ? "Create Product" : "Save Changes"}
                   </button>
