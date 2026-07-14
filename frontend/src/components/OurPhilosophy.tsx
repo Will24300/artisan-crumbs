@@ -20,17 +20,17 @@ const containerVariants = {
 const slideLeft = {
   hidden: { opacity: 0, x: -60 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
+} as const;
 
 const slideRight = {
   hidden: { opacity: 0, x: 60 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
+} as const;
 
 const checkVariant = {
   hidden: { opacity: 0, x: -20 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: "easeOut" } },
-};
+} as const;
 
 function OurPhilosophy() {
   return (

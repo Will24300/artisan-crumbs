@@ -1,6 +1,5 @@
 import Navbar from "./Navbar";
 import { Outlet, useLocation } from "react-router-dom";
-import Footer from "./Footer";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer2 from "./Footer2";
@@ -13,7 +12,7 @@ const pageVariants = {
 
 const pageTransition = {
   duration: 0.3,
-  ease: [0.4, 0, 0.2, 1]
+  ease: [0.4, 0, 0.2, 1] as const,
 };
 
 function Layout() {

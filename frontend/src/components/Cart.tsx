@@ -9,8 +9,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../features/theme";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { API_BASE } from "../utils/api";
 
 interface ApiProduct {
@@ -42,14 +41,21 @@ interface RootState {
   };
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: "easeOut",
+    },
+  },
 };
 
 function Cart() {
@@ -164,7 +170,7 @@ function Cart() {
     }
   };
 
-  const { darkMode } = useTheme();
+  // const { darkMode } = useTheme();
 
   return (
     <section className="py-9 px-4 sm:px-6 lg:px-10 min-h-screen bg-[#F9F9F8] dark:bg-[#0f0d0c] transition-colors duration-300">

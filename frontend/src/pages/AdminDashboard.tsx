@@ -24,7 +24,6 @@ import {
   ShoppingCart,
   Star,
   Store,
-  TrendingUp,
   Sun,
   Moon,
 } from "lucide-react";
@@ -482,9 +481,6 @@ function AdminDashboard() {
   );
 
   // Inventory derived stats (uses real p.stock from DB)
-  const outOfStock = useMemo(() => products.filter((p) => p.stock === 0), [products]);
-  const lowStock = useMemo(() => products.filter((p) => p.stock > 0 && p.stock <= 5), [products]);
-  const inStock = useMemo(() => products.filter((p) => p.stock > 5), [products]);
 
   // Revenue per category (derived from real orders)
   const categoryRevenueData = useMemo(() => {
