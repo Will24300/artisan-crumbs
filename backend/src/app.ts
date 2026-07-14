@@ -32,7 +32,7 @@ app.use((err, _req, res, _next) => {
 
 connectDatabase()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0" ,() => {
       console.log(`Backend running on http://localhost:${PORT}`);
     });
   })
