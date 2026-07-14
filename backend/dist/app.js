@@ -8,7 +8,7 @@ import adminRouter from "./routes/admin.js";
 import ordersRouter from "./routes/orders.js";
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
@@ -25,7 +25,7 @@ app.use((err, _req, res, _next) => {
 });
 connectDatabase()
     .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
         console.log(`Backend running on http://localhost:${PORT}`);
     });
 })
