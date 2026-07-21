@@ -7,7 +7,7 @@ import {
 } from "../features/cart";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { API_BASE } from "../utils/api";
@@ -125,6 +125,8 @@ function Cart() {
     dispatch(removeAllFromCart());
   };
 
+  const [createdOrder, setCreatedOrder] = useState<any | null>(null);
+
   const handleCheckout = async () => {
     if (!token) {
       navigate("/login");
@@ -162,9 +164,10 @@ function Cart() {
         return;
       }
 
-      toast.success("Order placed successfully!");
+      const newOrder = await res.json();
+      toast.success("Order placed successfully! 🥖");
       dispatch(removeAllFromCart());
-      navigate("/");
+      setCreatedOrder(newOrder);
     } catch {
       toast.error("Unable to connect to the server.");
     }
@@ -372,6 +375,95 @@ function Cart() {
           </div>
         )}
       </div>
+
+      {/* Order Placed & In Process Modal */}
+      {createdOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white dark:bg-stone-900 border border-gray-100 dark:border-stone-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative space-y-6"
+          >
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-[#D46211] dark:text-amber-400 mb-2">
+                <Clock className="w-9 h-9 animate-pulse" />
+              </div>
+              
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span>Status: In Process</span>
+                </span>
+              </div>
+
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100">
+                Order Placed & In Process!
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+                Your order has been received! Our bakers will review and accept your order shortly.
+              </p>
+            </div>
+
+            {/* Timeline steps */}
+            <div className="bg-stone-50 dark:bg-stone-850 p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 space-y-3">
+              <div className="flex items-center gap-3 text-xs font-semibold text-stone-800 dark:text-stone-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>1. Order Placed</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#D46211] dark:text-amber-400">
+                <Clock className="w-4 h-4 animate-spin shrink-0 text-[#D46211]" />
+                <span>2. Bakery Review & Acceptance (In Process...)</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-semibold text-stone-400 dark:text-stone-500">
+                <Utensils className="w-4 h-4 shrink-0" />
+                <span>3. Baking & Order Preparation</span>
+              </div>
+            </div>
+
+            {/* Order Details Snippet */}
+            <div className="space-y-2 text-xs text-stone-600 dark:text-stone-300 border-t border-b border-stone-100 dark:border-stone-800 py-3">
+              <div className="flex justify-between">
+                <span className="font-medium text-stone-500 dark:text-stone-400">Order ID:</span>
+                <span className="font-mono font-bold text-stone-800 dark:text-stone-200">#{createdOrder._id?.slice(-8).toUpperCase()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium text-stone-500 dark:text-stone-400">Total Items:</span>
+                <span>{createdOrder.items?.reduce((sum: number, i: any) => sum + i.quantity, 0)} items</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium text-stone-500 dark:text-stone-400">Total Amount:</span>
+                <span className="font-bold text-[#D46211]">${Number(createdOrder.totalAmount || 0).toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setCreatedOrder(null);
+                  navigate("/account");
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold text-xs tracking-wide transition-colors cursor-pointer"
+              >
+                <Package className="w-4 h-4" />
+                View Order History
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCreatedOrder(null);
+                  navigate("/shop");
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, ShoppingCart, Menu, X, LayoutDashboard, LogOut, Sun, Moon } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, LayoutDashboard, LogOut, Sun, Moon, Package } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth";
@@ -209,6 +209,14 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                           </p>
                         </div>
                       </div>
+                      <Link
+                        to="/account"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-[#475569] dark:text-stone-300 hover:bg-[#FFF4EB] dark:hover:bg-[#D46211]/10 hover:text-[#D46211] transition-colors"
+                      >
+                        <Package size={15} />
+                        My Orders & History
+                      </Link>
                        {isAdmin && (
                         <Link
                           to="/admin"

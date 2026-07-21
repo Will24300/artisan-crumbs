@@ -156,13 +156,12 @@ function Login() {
                   <label className="block text-xs font-bold text-[#334155] dark:text-stone-300 uppercase tracking-wide">
                     Password
                   </label>
-                  <button
-                    type="button"
+                  <Link
+                    to="/forgot-password"
                     className="text-xs font-bold text-[#D46211] hover:text-[#b04f0b] hover:underline"
-                    onClick={() => toast.info("Password recovery is coming soon!")}
                   >
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />

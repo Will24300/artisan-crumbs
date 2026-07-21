@@ -5,6 +5,8 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["admin", "customer"], default: "customer" },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null },
     createdAt: { type: Date, default: () => new Date() },
 }, { timestamps: true });
 userSchema.methods.comparePassword = async function (password) {
