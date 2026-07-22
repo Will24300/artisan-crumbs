@@ -84,16 +84,21 @@ function SvgBarChart({
   color?: string;
 }) {
   const max = Math.max(...data, 1);
-  const defaultLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const lbs = labels || defaultLabels.slice(0, data.length);
-  const barW = Math.floor(240 / data.length) - 6;
+  const lbs = labels || Array.from({ length: data.length }, (_, i) => `${i + 1}`);
+  const totalW = 320;
+  const h = 120;
+  const paddingX = 15;
+  const chartW = totalW - paddingX * 2;
+  const barW = Math.max(Math.floor(chartW / Math.max(data.length, 1)) - 6, 8);
+  const step = chartW / Math.max(data.length, 1);
+
   return (
-    <svg viewBox={`0 0 ${data.length * (barW + 6) + 20} 120`} className="w-full h-full">
+    <svg viewBox={`0 0 ${totalW} ${h}`} className="w-full h-full">
       {[0, 25, 50, 75, 100].map((pct) => (
         <line
           key={pct}
           x1={10}
-          x2={data.length * (barW + 6) + 10}
+          x2={totalW - 10}
           y1={90 - (pct / 100) * 75}
           y2={90 - (pct / 100) * 75}
           className="stroke-gray-100 dark:stroke-stone-800/80"
@@ -101,20 +106,29 @@ function SvgBarChart({
         />
       ))}
       {data.map((val, i) => {
-        const height = Math.max((val / max) * 75, 2);
-        const x = i * (barW + 6) + 10;
+        const height = Math.max((val / max) * 75, val > 0 ? 4 : 2);
+        const x = paddingX + i * step + (step - barW) / 2;
         const y = 90 - height;
-        const opacity = 0.25 + (val / max) * 0.75;
+        const opacity = val > 0 ? 0.35 + (val / max) * 0.65 : 0.15;
         return (
-          <g key={i}>
-            <rect x={x} y={y} width={barW} height={height} rx={5} fill={color} opacity={opacity} />
+          <g key={i} className="group cursor-pointer">
+            <title>{`${lbs[i]}: $${val.toFixed(2)}`}</title>
+            <rect
+              x={x}
+              y={y}
+              width={barW}
+              height={height}
+              rx={4}
+              fill={color}
+              opacity={opacity}
+              className="transition-all duration-300 group-hover:opacity-100"
+            />
             <text
               x={x + barW / 2}
               y={108}
               textAnchor="middle"
-              fontSize={9}
-              className="fill-gray-400 dark:fill-stone-500"
-              fontFamily="sans-serif"
+              fontSize={8}
+              className="fill-gray-400 dark:fill-stone-500 font-medium"
             >
               {lbs[i]}
             </text>
@@ -136,31 +150,37 @@ function SvgLineChart({
   color?: string;
 }) {
   const max = Math.max(...data, 1);
-  const w = 260;
-  const h = 80;
+  const w = 320;
+  const h = 90;
+  const paddingX = 15;
+  const chartW = w - paddingX * 2;
+  const step = data.length > 1 ? chartW / (data.length - 1) : chartW;
+
   const pts = data.map((val, i) => {
-    const x = i * (w / (data.length - 1)) + 10;
-    const y = h - (val / max) * (h - 10) + 5;
+    const x = paddingX + i * step;
+    const y = h - (val / max) * (h - 20) - 10;
     return `${x},${y}`;
   });
-  const fillPts = [`10,${h + 5}`, ...pts, `${w + 10},${h + 5}`].join(" ");
-  const lbs = labels || Array.from({ length: data.length }, (_, i) => `W${i + 1}`);
+
+  const fillPts = [`${paddingX},${h - 5}`, ...pts, `${paddingX + (data.length - 1) * step},${h - 5}`].join(" ");
+  const lbs = labels || Array.from({ length: data.length }, (_, i) => `P${i + 1}`);
+
   return (
-    <svg viewBox={`0 0 280 110`} className="w-full h-full">
+    <svg viewBox={`0 0 ${w} ${h + 20}`} className="w-full h-full">
       {[0, 33, 66, 100].map((pct) => (
         <line
           key={pct}
           x1={10}
-          x2={270}
-          y1={h - (pct / 100) * (h - 10) + 5}
-          y2={h - (pct / 100) * (h - 10) + 5}
+          x2={w - 10}
+          y1={h - (pct / 100) * (h - 20) - 10}
+          y2={h - (pct / 100) * (h - 20) - 10}
           className="stroke-gray-100 dark:stroke-stone-800/80"
           strokeWidth={1}
         />
       ))}
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -174,23 +194,40 @@ function SvgLineChart({
         strokeLinejoin="round"
       />
       {data.map((val, i) => {
-        const x = i * (w / (data.length - 1)) + 10;
-        const y = h - (val / max) * (h - 10) + 5;
+        const x = paddingX + i * step;
+        const y = h - (val / max) * (h - 20) - 10;
         return (
-          <g key={i}>
-            <circle cx={x} cy={y} r={4} className="fill-white dark:fill-[#1c1917]" stroke={color} strokeWidth={2} />
-            {i % Math.ceil(data.length / 6) === 0 && (
+          <g key={i} className="group cursor-pointer">
+            <title>{`${lbs[i]}: $${val.toFixed(2)}`}</title>
+            <circle
+              cx={x}
+              cy={y}
+              r={4}
+              className="fill-white dark:fill-[#1c1917] transition-all group-hover:r-6"
+              stroke={color}
+              strokeWidth={2.5}
+            />
+            {data.length <= 12 ? (
               <text
                 x={x}
-                y={106}
+                y={h + 12}
                 textAnchor="middle"
                 fontSize={8}
-                className="fill-gray-400 dark:fill-stone-500"
-                fontFamily="sans-serif"
+                className="fill-gray-400 dark:fill-stone-500 font-medium"
               >
                 {lbs[i]}
               </text>
-            )}
+            ) : i % 2 === 0 ? (
+              <text
+                x={x}
+                y={h + 12}
+                textAnchor="middle"
+                fontSize={8}
+                className="fill-gray-400 dark:fill-stone-500 font-medium"
+              >
+                {lbs[i]}
+              </text>
+            ) : null}
           </g>
         );
       })}
@@ -409,16 +446,80 @@ function AdminDashboard() {
   const pendingOrders = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
   const acceptedOrders = useMemo(() => orders.filter((o) => o.status === "accepted"), [orders]);
 
-  const revenueByDay = useMemo(() => {
-    const days = [0, 0, 0, 0, 0, 0, 0];
+  // Revenue Overview Data (Bar Chart)
+  const revenueOverviewData = useMemo(() => {
+    if (salesPeriod === "daily") {
+      const days = [0, 0, 0, 0, 0, 0, 0];
+      orders.forEach((o) => {
+        if (o.status === "declined") return;
+        const date = new Date(o.createdAt);
+        if (!isNaN(date.getTime())) {
+          const d = date.getDay();
+          const idx = d === 0 ? 6 : d - 1;
+          days[idx] += Number(o.totalAmount || 0);
+        }
+      });
+      return {
+        data: days,
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        periodLabel: "Total this week",
+      };
+    } else if (salesPeriod === "weekly") {
+      const weeks = [0, 0, 0, 0];
+      const now = new Date().getTime();
+      const weekMs = 7 * 24 * 60 * 60 * 1000;
+      orders.forEach((o) => {
+        if (o.status === "declined") return;
+        const date = new Date(o.createdAt);
+        if (!isNaN(date.getTime())) {
+          const diffMs = now - date.getTime();
+          const weekIdx = Math.floor(diffMs / weekMs);
+          if (weekIdx >= 0 && weekIdx < 4) {
+            weeks[3 - weekIdx] += Number(o.totalAmount || 0);
+          }
+        }
+      });
+      return {
+        data: weeks,
+        labels: ["4 Wks Ago", "3 Wks Ago", "2 Wks Ago", "This Week"],
+        periodLabel: "Total last 4 weeks",
+      };
+    } else {
+      const months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const currentYear = new Date().getFullYear();
+      orders.forEach((o) => {
+        if (o.status === "declined") return;
+        const date = new Date(o.createdAt);
+        if (!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
+          months[date.getMonth()] += Number(o.totalAmount || 0);
+        }
+      });
+      return {
+        data: months,
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        periodLabel: `Total for ${currentYear}`,
+      };
+    }
+  }, [orders, salesPeriod]);
+
+  // Revenue Trend Data (Line Chart over 12 months)
+  const revenueTrendData = useMemo(() => {
+    const months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentYear = new Date().getFullYear();
+
     orders.forEach((o) => {
       if (o.status === "declined") return;
-      const d = new Date(o.createdAt).getDay();
-      const idx = d === 0 ? 6 : d - 1;
-      days[idx] += o.totalAmount;
+      const date = new Date(o.createdAt);
+      if (!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
+        months[date.getMonth()] += Number(o.totalAmount || 0);
+      }
     });
-    const hasData = days.some((v) => v > 0);
-    return hasData ? days : [110, 195, 162, 290, 245, 388, 330];
+
+    return {
+      data: months,
+      labels: monthLabels,
+    };
   }, [orders]);
 
   const categoryData = useMemo(() => {
@@ -470,15 +571,6 @@ function AdminDashboard() {
       (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
     );
   }, [users, customerSearch]);
-
-  // Sample analytics data (for charts that don't have a backend endpoint yet)
-  const weeklyRevenueSample = useMemo(
-    () =>
-      activeOrders.length > 0
-        ? [120, 340, 280, 450, 390, 510, 480, 620, 540, 700, 660, 780]
-        : [80, 120, 200, 160, 280, 240, 310, 290, 380, 420, 390, 460],
-    [activeOrders.length]
-  );
 
   // Inventory derived stats (uses real p.stock from DB)
 
@@ -700,7 +792,9 @@ function AdminDashboard() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Overview</h3>
-              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">Orders broken down by day of week</p>
+              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">
+                Orders broken down by {salesPeriod === "daily" ? "day of week" : salesPeriod === "weekly" ? "weeks" : "months"}
+              </p>
             </div>
             <div className="flex gap-1 bg-gray-100 dark:bg-[#12100f] rounded-xl p-1">
               {(["daily", "weekly", "monthly"] as const).map((p) => (
@@ -719,14 +813,14 @@ function AdminDashboard() {
           </div>
           <div className="h-36">
             <SvgBarChart
-              data={revenueByDay}
-              labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+              data={revenueOverviewData.data}
+              labels={revenueOverviewData.labels}
             />
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-stone-800/80">
-            <span className="text-xs text-gray-400 dark:text-stone-500">Total this week</span>
+            <span className="text-xs text-gray-400 dark:text-stone-500">{revenueOverviewData.periodLabel}</span>
             <span className="text-sm font-bold text-[#D46211]">
-              ${revenueByDay.reduce((a, b) => a + b, 0).toFixed(2)}
+              ${revenueOverviewData.data.reduce((a, b) => a + b, 0).toFixed(2)}
             </span>
           </div>
         </div>
@@ -1358,13 +1452,18 @@ function AdminDashboard() {
           <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Trend</h3>
-              <span className="text-xs text-gray-400 dark:text-stone-500 bg-gray-50 dark:bg-stone-850 border border-gray-100 dark:border-stone-800 px-2 py-0.5 rounded-full">
-                Sample data
+              <span className="text-xs font-semibold text-[#D46211] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/50 px-2.5 py-0.5 rounded-full">
+                Real-time Analytics
               </span>
             </div>
-            {/* Chart placeholder */}
+            <p className="text-xs text-gray-400 dark:text-stone-500 mb-3">
+              Monthly revenue progression for {new Date().getFullYear()}
+            </p>
             <div className="h-48">
-              <SvgLineChart data={weeklyRevenueSample} />
+              <SvgLineChart
+                data={revenueTrendData.data}
+                labels={revenueTrendData.labels}
+              />
             </div>
           </div>
 

@@ -1,6 +1,8 @@
-import { Clock, MapPin, Send, CheckCircle2, ExternalLink } from "lucide-react";
+import { Clock, MapPin, Send, CheckCircle2, ExternalLink, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { toast } from "react-toastify";
+import { API_BASE } from "../utils/api";
 
 const hoursData = [
   { label: "Mon – Fri", time: "7:00 AM – 6:00 PM", days: [1, 2, 3, 4, 5] },
@@ -24,9 +26,52 @@ const rowVariants = {
 } as const;
 
 function Contact() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("General Inquiry");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const today = new Date().getDay();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to send feedback.");
+        return;
+      }
+
+      setSent(true);
+      toast.success("Feedback sent to volonterwicha123@gmail.com! 📩");
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch {
+      setError("Unable to connect to the server.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const directionsUrl =
     "https://www.google.com/maps/dir/?api=1&destination=University+of+Kigali+ULK+Kigali+Rwanda";
@@ -44,9 +89,8 @@ function Contact() {
           Get in Touch
         </h1>
         <p className="text-[#475569] dark:text-stone-300 text-base max-w-2xl leading-relaxed mb-10">
-          We love hearing from our community. Whether you have a question
-          about our sourdough, want to pre-order for an event, or just want to
-          say hello, we're all ears.
+          We love hearing from our community. Send your feedback or inquiry directly to our team at{" "}
+          <strong className="text-[#D46211]">volonterwicha123@gmail.com</strong>.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 items-start">
@@ -56,76 +100,103 @@ function Contact() {
               Send us a Message
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor="contact-name" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
-                  Full Name
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label htmlFor="contact-name" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Volonte Rwicha"
+                    className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="contact-email" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="volonte@example.com"
+                    className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="contact-subject" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
+                  Subject
                 </label>
-                <input
-                  id="contact-name"
-                  type="text"
-                  placeholder="Volonte Rwicha"
-                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
+                <select
+                  id="contact-subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] cursor-pointer transition-shadow"
+                >
+                  <option>General Inquiry</option>
+                  <option>Feedback</option>
+                  <option>Pre-order for Event</option>
+                  <option>Custom Cake</option>
+                  <option>Wholesale</option>
+                </select>
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="contact-message" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
+                  Message *
+                </label>
+                <textarea
+                  id="contact-message"
+                  required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="How can we help you today? Enter your feedback here..."
+                  rows={5}
+                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] resize-y transition-shadow"
                 />
               </div>
-              <div>
-                <label htmlFor="contact-email" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
-                  Email Address
-                </label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  placeholder="volonte@example.com"
-                  className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 transition-shadow"
-                />
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <label htmlFor="contact-subject" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
-                Subject
-              </label>
-              <select
-                id="contact-subject"
-                className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] cursor-pointer transition-shadow"
-              >
-                <option>General Inquiry</option>
-                <option>Pre-order for Event</option>
-                <option>Custom Cake</option>
-                <option>Wholesale</option>
-                <option>Feedback</option>
-              </select>
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="contact-message" className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-2">
-                Message
-              </label>
-              <textarea
-                id="contact-message"
-                placeholder="How can we help you today?"
-                rows={5}
-                className="w-full px-4 py-3 text-sm text-[#334155] dark:text-stone-200 border border-gray-200 dark:border-stone-850 rounded-2xl outline-none bg-[#FDFDFD] dark:bg-[#12100f] resize-y transition-shadow"
-              />
-            </div>
-
-            <button
-              onClick={() => setSent(true)}
-              disabled={sent}
-              className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-full text-sm tracking-wide transition-colors cursor-pointer ${
-                sent ? "bg-green-600 text-white cursor-default" : "bg-[#D46211] hover:bg-[#b04f0b] text-white"
-              }`}
-            >
-              {sent ? (
-                <>
-                  <CheckCircle2 size={16} /> Message Sent!
-                </>
-              ) : (
-                <>
-                  <Send size={16} /> Send Message
-                </>
+              {error && (
+                <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  {error}
+                </div>
               )}
-            </button>
+
+              <button
+                type="submit"
+                disabled={loading || sent}
+                className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-full text-sm tracking-wide transition-colors cursor-pointer ${
+                  sent
+                    ? "bg-emerald-600 text-white cursor-default"
+                    : "bg-[#D46211] hover:bg-[#b04f0b] text-white disabled:opacity-70"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending to volonterwicha123@gmail.com...
+                  </>
+                ) : sent ? (
+                  <>
+                    <CheckCircle2 size={16} /> Sent to volonterwicha123@gmail.com!
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} /> Send Message
+                  </>
+                )}
+              </button>
+            </form>
           </div>
 
           {/* Right column — animated */}
