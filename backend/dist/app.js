@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.js";
 import productsRouter from "./routes/products.js";
 import adminRouter from "./routes/admin.js";
 import ordersRouter from "./routes/orders.js";
+import contactRouter from "./routes/contact.js";
 dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -16,6 +17,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/contact", contactRouter);
 app.get("/api/status", (_req, res) => {
     res.json({ status: "ok", message: "Artisan Crumbs backend is running" });
 });
