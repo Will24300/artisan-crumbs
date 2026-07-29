@@ -786,59 +786,6 @@ function AdminDashboard() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5">
-        {/* Revenue Bar Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Overview</h3>
-              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">
-                Orders broken down by {salesPeriod === "daily" ? "day of week" : salesPeriod === "weekly" ? "weeks" : "months"}
-              </p>
-            </div>
-            <div className="flex gap-1 bg-gray-100 dark:bg-[#12100f] rounded-xl p-1">
-              {(["daily", "weekly", "monthly"] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setSalesPeriod(p)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${salesPeriod === p
-                      ? "bg-white dark:bg-[#1c1917] text-[#D46211] shadow-sm"
-                      : "text-gray-500 dark:text-stone-400 hover:text-gray-700 dark:hover:text-stone-300"
-                    }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="h-36">
-            <SvgBarChart
-              data={revenueOverviewData.data}
-              labels={revenueOverviewData.labels}
-            />
-          </div>
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-stone-800/80">
-            <span className="text-xs text-gray-400 dark:text-stone-500">{revenueOverviewData.periodLabel}</span>
-            <span className="text-sm font-bold text-[#D46211]">
-              ${revenueOverviewData.data.reduce((a, b) => a + b, 0).toFixed(2)}
-            </span>
-          </div>
-        </div>
-
-        {/* Category Donut Chart */}
-        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-4">Product Categories</h3>
-          {categoryData.length > 0 ? (
-            <DonutChart data={categoryData} />
-          ) : (
-            <div className="h-32 flex flex-col items-center justify-center gap-2 text-gray-300 dark:text-stone-600">
-              <Package className="w-8 h-8" />
-              <p className="text-xs">No products yet</p>
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Top Selling Products */}
         <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
@@ -929,6 +876,59 @@ function AdminDashboard() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Revenue Bar Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-stone-100">Revenue Overview</h3>
+              <p className="text-xs text-gray-400 dark:text-stone-500 mt-0.5">
+                Orders broken down by {salesPeriod === "daily" ? "day of week" : salesPeriod === "weekly" ? "weeks" : "months"}
+              </p>
+            </div>
+            <div className="flex gap-1 bg-gray-100 dark:bg-[#12100f] rounded-xl p-1">
+              {(["daily", "weekly", "monthly"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSalesPeriod(p)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${salesPeriod === p
+                      ? "bg-white dark:bg-[#1c1917] text-[#D46211] shadow-sm"
+                      : "text-gray-500 dark:text-stone-400 hover:text-gray-700 dark:hover:text-stone-300"
+                    }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="h-36">
+            <SvgBarChart
+              data={revenueOverviewData.data}
+              labels={revenueOverviewData.labels}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-stone-800/80">
+            <span className="text-xs text-gray-400 dark:text-stone-500">{revenueOverviewData.periodLabel}</span>
+            <span className="text-sm font-bold text-[#D46211]">
+              ${revenueOverviewData.data.reduce((a, b) => a + b, 0).toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* Category Donut Chart */}
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
+          <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-4">Product Categories</h3>
+          {categoryData.length > 0 ? (
+            <DonutChart data={categoryData} />
+          ) : (
+            <div className="h-32 flex flex-col items-center justify-center gap-2 text-gray-300 dark:text-stone-600">
+              <Package className="w-8 h-8" />
+              <p className="text-xs">No products yet</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
