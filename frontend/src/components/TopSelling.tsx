@@ -1,27 +1,25 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../features/cart";
 import { motion, useInView } from "framer-motion";
 import { toast } from "react-toastify";
 import { ShoppingCart, PackageSearch, AlertTriangle, ArrowUpRight } from "lucide-react";
-import { API_BASE } from "../utils/api";
+import { fetchTopSelling, type ApiProduct } from "../features/products";
 
 interface RootState {
   auth: {
     user: { id: string; role?: string } | null;
   };
-}
-
-interface ApiProduct {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  tags?: string[];
-  stock: number;
+  products: {
+    items: ApiProduct[];
+    topSelling: ApiProduct[];
+    loading: boolean;
+    topSellingLoading: boolean;
+    error: string | null;
+    loaded: boolean;
+    topSellingLoaded: boolean;
+  };
 }
 
 const fadeInUp = {
@@ -40,35 +38,24 @@ const staggerContainer = {
 };
 
 function TopSelling() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const [products, setProducts] = useState<ApiProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    topSelling: products,
+    topSellingLoading: loading,
+    topSellingLoaded,
+    error,
+  } = useSelector((state: RootState) => state.products);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/products/top-selling`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Unable to fetch top-selling products");
-        return res.json();
-      })
-      .then((data: ApiProduct[]) => {
-        setProducts((data || []).map((product) => {
-          const rawStock = (product as any).stock ?? (product as any).countInStock ?? (product as any).quantity ?? 0;
-          return {
-            ...product,
-            stock: Number(rawStock) || 0,
-          } as ApiProduct;
-        }));
-        setError(null);
-      })
-      .catch(() => setError("Error loading top-selling products."))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!topSellingLoaded) {
+      dispatch(fetchTopSelling());
+    }
+  }, [dispatch, topSellingLoaded]);
 
   const handleAdd = (productId: string) => {
     if (!authUser) {
@@ -174,7 +161,8 @@ function TopSelling() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    loading="lazy"
+                    loading="eager"
+                    decoding="async"
                     className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                   />
 

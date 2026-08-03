@@ -10,18 +10,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { fetchProducts, type ApiProduct } from "../features/products";
 import { API_BASE } from "../utils/api";
-
-interface ApiProduct {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  tags?: string[];
-  stock: number;
-}
 
 interface RootState {
   cart: {
@@ -38,6 +28,12 @@ interface RootState {
       name: string;
       email: string;
     } | null;
+  };
+  products: {
+    items: ApiProduct[];
+    loading: boolean;
+    error: string | null;
+    loaded: boolean;
   };
 }
 
@@ -59,35 +55,24 @@ const itemVariants: Variants = {
 };
 
 function Cart() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const authUser = useSelector((state: RootState) => state.auth.user);
   const token = useSelector((state: RootState) => state.auth.token);
   const [searchParams] = useSearchParams();
   const filter = searchParams.get("filter") || "all";
-  const [products, setProducts] = useState<ApiProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { items: products, loading, error, loaded } = useSelector(
+    (state: RootState) => state.products
+  );
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`${API_BASE}/api/products`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Unable to fetch products");
-        return res.json();
-      })
-      .then((data: ApiProduct[]) => {
-        setProducts((data || []).map((product) => {
-          const rawStock = (product as any).stock ?? (product as any).countInStock ?? (product as any).quantity ?? 0;
-          return { ...product, stock: Number(rawStock) || 0 } as ApiProduct;
-        }));
-        setError(null);
-      })
-      .catch(() => setError("Couldn't load your cart details."))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!loaded) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, loaded]);
 
   const cartProducts = cartItems
     .map((cartItem) => {

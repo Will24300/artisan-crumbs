@@ -1,27 +1,22 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { ShoppingCart, PackageSearch, AlertTriangle, Heart } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { addToCart } from "../features/cart";
+import { fetchProducts, type ApiProduct } from "../features/products";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { API_BASE } from "../utils/api";
 
 interface RootState {
   auth: {
     user: { id: string; role?: string } | null;
   };
-}
-
-interface ApiProduct {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  tags?: string[];
-  stock: number;
+  products: {
+    items: ApiProduct[];
+    loading: boolean;
+    error: string | null;
+    loaded: boolean;
+  };
 }
 
 export type CategoryFilter = string;
@@ -47,10 +42,13 @@ export const Shop: React.FC<ShopProps> = ({
   onFilterChange: propOnFilterChange,
   onAddToCart: propOnAddToCart,
 }) => {
+  const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<ApiProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { items: products, loading, error, loaded } = useSelector(
+    (state: RootState) => state.products
+  );
 
   const filterFromUrl = (searchParams.get("filter") as CategoryFilter) || "all";
   const activeFilter = propActiveFilter ?? filterFromUrl;
@@ -62,28 +60,11 @@ export const Shop: React.FC<ShopProps> = ({
     });
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`${API_BASE}/api/products`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Unable to fetch products");
-        return res.json();
-      })
-      .then((data: ApiProduct[]) => {
-        setProducts((data || []).map((product) => {
-          const rawStock = (product as any).stock ?? (product as any).countInStock ?? (product as any).quantity ?? 0;
-          return {
-            ...product,
-            stock: Number(rawStock) || 0,
-          } as ApiProduct;
-        }));
-        setError(null);
-      })
-      .catch(() => setError("Error loading products. Please try again later."))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!loaded) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, loaded]);
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const authUser = useSelector((state: RootState) => state.auth.user);
 
   React.useEffect(() => {
