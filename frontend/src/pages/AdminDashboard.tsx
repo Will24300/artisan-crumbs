@@ -69,6 +69,11 @@ interface OrderSummary {
   items: OrderItem[];
   totalAmount: number;
   status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined";
+  fulfillmentType?: "pickup" | "delivery";
+  pickupTime?: string;
+  deliveryAddress?: string;
+  deliveryFee?: number;
+  paymentMethod?: string;
   createdAt: string;
 }
 
@@ -424,10 +429,67 @@ function AdminDashboard() {
       setUsers(data.users || []);
       setProducts(data.products || []);
       setOrders(data.orders || []);
+
+      // Fetch Settings
+      const settingsRes = await fetch(`${API_BASE}/api/settings`);
+      if (settingsRes.ok) {
+        const sData = await settingsRes.json();
+        setStoreName(sData.storeName || "Artisan Crumbs");
+        setStoreEmail(sData.storeEmail || "hello@artisancrumbs.com");
+        setStorePhone(sData.storePhone || "+1 (555) 123-4567");
+        setStoreAddress(sData.storeAddress || "123 Baker Street, NY");
+        setPaypalEnabled(Boolean(sData.paypalEnabled));
+        setStripeEnabled(Boolean(sData.stripeEnabled));
+        setCashEnabled(Boolean(sData.cashEnabled));
+        setFreeDelivery(Boolean(sData.freeDelivery));
+        setDeliveryFee(String(sData.deliveryFee ?? 4.99));
+      }
     } catch {
       setMessage("Unable to connect to the backend. Is the server running?");
     }
     setLoading(false);
+  };
+
+  const handleSaveSettings = async (overrides?: Record<string, any>) => {
+    if (!token) return;
+    const payload = {
+      storeName,
+      storeEmail,
+      storePhone,
+      storeAddress,
+      paypalEnabled,
+      stripeEnabled,
+      cashEnabled,
+      freeDelivery,
+      deliveryFee: parseFloat(deliveryFee) || 0,
+      ...overrides,
+    };
+    try {
+      const res = await fetch(`${API_BASE}/api/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStoreName(data.storeName);
+        setStoreEmail(data.storeEmail);
+        setStorePhone(data.storePhone);
+        setStoreAddress(data.storeAddress);
+        setPaypalEnabled(data.paypalEnabled);
+        setStripeEnabled(data.stripeEnabled);
+        setCashEnabled(data.cashEnabled);
+        setFreeDelivery(data.freeDelivery);
+        setDeliveryFee(String(data.deliveryFee));
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    } catch {
+      toast.error("Failed to save settings");
+    }
   };
 
   useEffect(() => {
@@ -1344,13 +1406,38 @@ function AdminDashboard() {
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400 dark:text-stone-500">Payment</span>
-                                  <span className="font-semibold text-gray-900 dark:text-stone-200">Online</span>
+                                  <span className="text-gray-400 dark:text-stone-500">Fulfillment</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200 capitalize">
+                                    {order.fulfillmentType || "delivery"}
+                                  </span>
                                 </div>
+                                {order.fulfillmentType === "pickup" ? (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-400 dark:text-stone-500">Pickup Time</span>
+                                    <span className="font-semibold text-gray-900 dark:text-stone-200 text-xs">
+                                      {order.pickupTime || "Standard"}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-400 dark:text-stone-500">Address</span>
+                                      <span className="font-semibold text-gray-900 dark:text-stone-200 text-xs truncate max-w-[180px]" title={order.deliveryAddress}>
+                                        {order.deliveryAddress || "N/A"}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-400 dark:text-stone-500">Delivery Fee</span>
+                                      <span className="font-semibold text-gray-900 dark:text-stone-200">
+                                        ${(order.deliveryFee || 0).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400 dark:text-stone-500">Delivery</span>
-                                  <span className="font-semibold text-gray-900 dark:text-stone-200">
-                                    Standard (2–3 days)
+                                  <span className="text-gray-400 dark:text-stone-500">Payment</span>
+                                  <span className="font-semibold text-gray-900 dark:text-stone-200 uppercase">
+                                    {order.paymentMethod || "card"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between pt-1 border-t border-gray-50 dark:border-stone-800/50">
@@ -1672,10 +1759,7 @@ function AdminDashboard() {
         )}
         <button
           className="mt-4 px-6 py-2.5 rounded-xl bg-[#D46211] text-white text-sm font-bold hover:bg-[#b8540e] transition-all shadow-sm shadow-[#D46211]/30"
-          onClick={() => {
-            setSettingsSaved(true);
-            setTimeout(() => setSettingsSaved(false), 3000);
-          }}
+          onClick={() => handleSaveSettings()}
         >
           Save Changes
         </button>
@@ -1691,21 +1775,33 @@ function AdminDashboard() {
               desc: "Accept PayPal payments",
               icon: "🅿️",
               state: paypalEnabled,
-              setter: () => setPaypalEnabled((v) => !v),
+              setter: () => {
+                const next = !paypalEnabled;
+                setPaypalEnabled(next);
+                handleSaveSettings({ paypalEnabled: next });
+              },
             },
             {
-              label: "Stripe",
+              label: "Stripe / Cards",
               desc: "Credit & debit cards via Stripe",
               icon: "💳",
               state: stripeEnabled,
-              setter: () => setStripeEnabled((v) => !v),
+              setter: () => {
+                const next = !stripeEnabled;
+                setStripeEnabled(next);
+                handleSaveSettings({ stripeEnabled: next });
+              },
             },
             {
               label: "Cash on Delivery",
               desc: "Pay when your order arrives",
               icon: "💵",
               state: cashEnabled,
-              setter: () => setCashEnabled((v) => !v),
+              setter: () => {
+                const next = !cashEnabled;
+                setCashEnabled(next);
+                handleSaveSettings({ cashEnabled: next });
+              },
             },
           ].map((m) => (
             <div
@@ -1733,7 +1829,14 @@ function AdminDashboard() {
             <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">Free Delivery</p>
             <p className="text-xs text-gray-400 dark:text-stone-500">Enable free delivery for all orders</p>
           </div>
-          <Toggle on={freeDelivery} onChange={() => setFreeDelivery((v) => !v)} />
+          <Toggle
+            on={freeDelivery}
+            onChange={() => {
+              const next = !freeDelivery;
+              setFreeDelivery(next);
+              handleSaveSettings({ freeDelivery: next });
+            }}
+          />
         </div>
         {!freeDelivery && (
           <div>

@@ -15,6 +15,11 @@ const orderSchema = new Schema({
         enum: ["pending", "accepted", "preparing", "ready_for_pickup", "completed", "declined"],
         default: "pending",
     },
+    fulfillmentType: { type: String, enum: ["pickup", "delivery"], default: "delivery" },
+    pickupTime: { type: String, default: "" },
+    deliveryAddress: { type: String, default: "" },
+    deliveryFee: { type: Number, default: 0 },
+    paymentMethod: { type: String, default: "card" },
     createdAt: { type: Date, default: () => new Date() },
 }, { timestamps: true });
 const Order = mongoose.model("Order", orderSchema);

@@ -15,6 +15,9 @@ import {
   ChevronRight,
   AlertCircle,
   ChefHat,
+  Truck,
+  MapPin,
+  CreditCard,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -30,6 +33,11 @@ interface Order {
   items: OrderItem[];
   totalAmount: number;
   status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined";
+  fulfillmentType?: "pickup" | "delivery";
+  pickupTime?: string;
+  deliveryAddress?: string;
+  deliveryFee?: number;
+  paymentMethod?: string;
   createdAt: string;
 }
 
@@ -402,9 +410,40 @@ function Account() {
                       </div>
                     </div>
 
+                    {/* Fulfillment & Payment Details */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-100 dark:border-stone-800 text-xs">
+                      <div className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                        {order.fulfillmentType === "pickup" ? (
+                          <><Package size={12} className="text-[#D46211]" /> <span className="font-semibold">Pickup</span></>
+                        ) : (
+                          <><Truck size={12} className="text-[#D46211]" /> <span className="font-semibold">Delivery</span></>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400 justify-end">
+                        <CreditCard size={12} className="text-[#D46211]" />
+                        <span className="font-semibold uppercase">{order.paymentMethod || "card"}</span>
+                      </div>
+                      {order.fulfillmentType === "pickup" && order.pickupTime && (
+                        <div className="col-span-2 flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                          <Clock size={12} /> <span>{order.pickupTime}</span>
+                        </div>
+                      )}
+                      {order.fulfillmentType === "delivery" && order.deliveryAddress && (
+                        <div className="col-span-2 flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                          <MapPin size={12} /> <span className="truncate">{order.deliveryAddress}</span>
+                        </div>
+                      )}
+                      {(order.deliveryFee ?? 0) > 0 && (
+                        <div className="col-span-2 flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                          <span>Delivery Fee:</span>
+                          <span className="font-semibold">${(order.deliveryFee ?? 0).toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Footer / Total */}
                     <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800 text-xs">
-                      <span className="font-medium text-stone-500 dark:text-stone-400">Total Price (incl. tax)</span>
+                      <span className="font-medium text-stone-500 dark:text-stone-400">Total Price (incl. tax & fees)</span>
                       <span className="font-serif font-bold text-[#D46211] text-base">
                         ${order.totalAmount.toFixed(2)}
                       </span>

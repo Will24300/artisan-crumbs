@@ -7,7 +7,7 @@ import {
 } from "../features/cart";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils, Truck, MapPin, CreditCard } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { fetchProducts, type ApiProduct } from "../features/products";
@@ -112,6 +112,42 @@ function Cart() {
 
   const [createdOrder, setCreatedOrder] = useState<any | null>(null);
 
+  // Settings & Fulfillment state
+  const [storeSettings, setStoreSettings] = useState<any>({
+    freeDelivery: true,
+    deliveryFee: 4.99,
+    paypalEnabled: true,
+    stripeEnabled: true,
+    cashEnabled: false,
+  });
+
+  const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">("delivery");
+  const [pickupTime, setPickupTime] = useState<string>("As soon as possible (in 30 mins)");
+  const [deliveryAddress, setDeliveryAddress] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("card");
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/settings`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setStoreSettings(data);
+          if (data.stripeEnabled) setPaymentMethod("card");
+          else if (data.paypalEnabled) setPaymentMethod("paypal");
+          else if (data.cashEnabled) setPaymentMethod("cash");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const deliveryFeeAmount =
+    fulfillmentType === "pickup" || storeSettings.freeDelivery
+      ? 0
+      : Number(storeSettings.deliveryFee) || 0;
+
+  const taxAmount = totalPrice * 0.1;
+  const grandTotal = totalPrice + taxAmount + deliveryFeeAmount;
+
   const handleCheckout = async () => {
     if (!token) {
       navigate("/login");
@@ -123,6 +159,16 @@ function Cart() {
       return;
     }
 
+    if (fulfillmentType === "delivery" && !deliveryAddress.trim()) {
+      toast.error("Please enter a valid delivery address.");
+      return;
+    }
+
+    if (fulfillmentType === "pickup" && !pickupTime.trim()) {
+      toast.error("Please enter or select a pickup time.");
+      return;
+    }
+
     const payload = {
       items: cartProducts.map((p) => ({
         productId: p._id,
@@ -130,7 +176,12 @@ function Cart() {
         quantity: p.quantity,
         price: p.price,
       })),
-      totalAmount: totalPrice * 1.1,
+      totalAmount: grandTotal,
+      fulfillmentType,
+      pickupTime: fulfillmentType === "pickup" ? pickupTime : "",
+      deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
+      deliveryFee: deliveryFeeAmount,
+      paymentMethod,
     };
 
     try {
@@ -304,34 +355,162 @@ function Cart() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 p-6 h-fit sticky top-4 shadow-[0_18px_48px_rgba(36,24,18,0.05)]">
-                <h2 className="font-serif font-bold text-lg text-[#241812] dark:text-stone-100 mb-4">
-                  Order summary
+              <div className="bg-white dark:bg-stone-900 rounded-2xl border border-gray-200 dark:border-stone-800 p-6 h-fit sticky top-4 shadow-[0_18px_48px_rgba(36,24,18,0.05)] space-y-5">
+                <h2 className="font-serif font-bold text-lg text-[#241812] dark:text-stone-100 border-b border-gray-100 dark:border-stone-850 pb-3">
+                  Order Summary
                 </h2>
-                <div className="space-y-3 mb-6 pb-6 border-b border-gray-100 dark:border-stone-850">
-                  <div className="flex justify-between text-sm">
+
+                {/* Fulfillment Selection */}
+                <div>
+                  <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-2">
+                    Fulfillment Method
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFulfillmentType("delivery")}
+                      className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        fulfillmentType === "delivery"
+                          ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 border-[#D46211] text-[#D46211]"
+                          : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                      }`}
+                    >
+                      <Truck size={14} /> Delivery
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFulfillmentType("pickup")}
+                      className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        fulfillmentType === "pickup"
+                          ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 border-[#D46211] text-[#D46211]"
+                          : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                      }`}
+                    >
+                      <Package size={14} /> Pickup
+                    </button>
+                  </div>
+                </div>
+
+                {/* Conditional Inputs */}
+                {fulfillmentType === "delivery" ? (
+                  <div>
+                    <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-1.5">
+                      Delivery Address *
+                    </label>
+                    <div className="relative">
+                      <MapPin size={14} className="absolute left-3 top-3 text-stone-400" />
+                      <input
+                        type="text"
+                        placeholder="Street address, Apt, City..."
+                        value={deliveryAddress}
+                        onChange={(e) => setDeliveryAddress(e.target.value)}
+                        className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 dark:border-stone-800 text-xs outline-none bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-200 focus:border-[#D46211]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-1.5">
+                      Desired Pickup Time *
+                    </label>
+                    <select
+                      value={pickupTime}
+                      onChange={(e) => setPickupTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-stone-800 text-xs outline-none bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-200 focus:border-[#D46211]"
+                    >
+                      <option value="As soon as possible (in 30 mins)">As soon as possible (in 30 mins)</option>
+                      <option value="Today at 3:00 PM">Today at 3:00 PM</option>
+                      <option value="Today at 5:00 PM">Today at 5:00 PM</option>
+                      <option value="Tomorrow morning (9:00 AM)">Tomorrow morning (9:00 AM)</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Payment Method Selector */}
+                <div>
+                  <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-2">
+                    Payment Method
+                  </label>
+                  <div className="space-y-1.5">
+                    {storeSettings.stripeEnabled && (
+                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="card"
+                            checked={paymentMethod === "card"}
+                            onChange={() => setPaymentMethod("card")}
+                            className="accent-[#D46211]"
+                          />
+                          <CreditCard size={14} className="text-[#D46211]" /> Credit / Debit Card
+                        </span>
+                      </label>
+                    )}
+                    {storeSettings.paypalEnabled && (
+                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="paypal"
+                            checked={paymentMethod === "paypal"}
+                            onChange={() => setPaymentMethod("paypal")}
+                            className="accent-[#D46211]"
+                          />
+                          🅿️ PayPal
+                        </span>
+                      </label>
+                    )}
+                    {storeSettings.cashEnabled && (
+                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="cash"
+                            checked={paymentMethod === "cash"}
+                            onChange={() => setPaymentMethod("cash")}
+                            className="accent-[#D46211]"
+                          />
+                          💵 Cash on {fulfillmentType === "pickup" ? "Pickup" : "Delivery"}
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="space-y-2.5 pt-3 border-t border-gray-100 dark:border-stone-850 text-xs">
+                  <div className="flex justify-between">
                     <span className="text-[#64748B] dark:text-stone-400">Subtotal</span>
                     <span className="font-semibold text-[#241812] dark:text-stone-200">
                       ${totalPrice.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B] dark:text-stone-400">Shipping</span>
-                    <span className="font-semibold text-green-600">Free</span>
+                  <div className="flex justify-between">
+                    <span className="text-[#64748B] dark:text-stone-400">
+                      Delivery {fulfillmentType === "pickup" ? "(Pickup)" : ""}
+                    </span>
+                    <span className={`font-semibold ${deliveryFeeAmount === 0 ? "text-emerald-600" : "text-[#241812] dark:text-stone-200"}`}>
+                      {deliveryFeeAmount === 0 ? "Free" : `$${deliveryFeeAmount.toFixed(2)}`}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between">
                     <span className="text-[#64748B] dark:text-stone-400">Tax (10%)</span>
                     <span className="font-semibold text-[#241812] dark:text-stone-200">
-                      ${(totalPrice * 0.1).toFixed(2)}
+                      ${taxAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between items-baseline mb-6">
-                  <span className="font-bold text-[#241812] dark:text-stone-100">Total</span>
+
+                <div className="flex justify-between items-baseline pt-2 border-t border-gray-100 dark:border-stone-850">
+                  <span className="font-bold text-sm text-[#241812] dark:text-stone-100">Total</span>
                   <span className="font-serif font-bold text-[#D46211] text-2xl">
-                    ${(totalPrice * 1.1).toFixed(2)}
+                    ${grandTotal.toFixed(2)}
                   </span>
                 </div>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -345,13 +524,13 @@ function Cart() {
                     }
                     handleCheckout();
                   }}
-                  className="cursor-pointer w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3 rounded-full transition-colors mb-3"
+                  className="cursor-pointer w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3 rounded-full transition-colors shadow-sm"
                 >
-                  Checkout
+                  Confirm & Place Order
                 </button>
                 <Link
                   to="/shop"
-                  className="cursor-pointer block text-center text-[#475569] dark:text-stone-300 font-semibold py-2.5 hover:bg-[#F8F7F5] dark:hover:bg-stone-800 rounded-full transition-colors"
+                  className="cursor-pointer block text-center text-[#475569] dark:text-stone-300 font-semibold py-2 text-xs hover:bg-[#F8F7F5] dark:hover:bg-stone-800 rounded-full transition-colors"
                 >
                   Continue Shopping
                 </Link>

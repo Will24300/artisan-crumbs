@@ -16,7 +16,15 @@ router.post("/", authenticateToken, async (req: AuthRequest, res) => {
       return res.status(403).json({ error: "Administrators cannot place orders." });
     }
 
-    const { items, totalAmount } = req.body;
+    const {
+      items,
+      totalAmount,
+      fulfillmentType,
+      pickupTime,
+      deliveryAddress,
+      deliveryFee,
+      paymentMethod,
+    } = req.body;
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Cart is empty" });
     }
@@ -47,6 +55,11 @@ router.post("/", authenticateToken, async (req: AuthRequest, res) => {
       items,
       totalAmount,
       status: "pending",
+      fulfillmentType: fulfillmentType === "pickup" ? "pickup" : "delivery",
+      pickupTime: pickupTime || "",
+      deliveryAddress: deliveryAddress || "",
+      deliveryFee: Number(deliveryFee) || 0,
+      paymentMethod: paymentMethod || "card",
     });
 
     res.status(201).json(order);
