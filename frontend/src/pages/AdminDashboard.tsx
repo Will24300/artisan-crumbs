@@ -26,6 +26,7 @@ import {
   Store,
   Sun,
   Moon,
+  ChefHat,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -67,7 +68,7 @@ interface OrderSummary {
   user: { _id: string; name: string; email: string } | null;
   items: OrderItem[];
   totalAmount: number;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined";
   createdAt: string;
 }
 
@@ -690,7 +691,10 @@ function AdminDashboard() {
     } catch { setMessage("Connection error."); }
   };
 
-  const handleUpdateOrderStatus = async (id: string, status: "accepted" | "declined") => {
+  const handleUpdateOrderStatus = async (
+    id: string,
+    status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined"
+  ) => {
     if (!token) return;
     try {
       const res = await fetch(`${API_BASE}/api/admin/orders/${id}/status`, {
@@ -1088,8 +1092,11 @@ function AdminDashboard() {
       <div className="flex gap-3 flex-wrap">
         {[
           { label: "All Orders", count: orders.length, cls: "bg-gray-100 dark:bg-[#24211e] text-gray-700 dark:text-stone-300" },
-          { label: "Pending", count: pendingOrders.length, cls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211]" },
-          { label: "Accepted", count: acceptedOrders.length, cls: "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400" },
+          { label: "Pending", count: orders.filter((o) => o.status === "pending").length, cls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211]" },
+          { label: "Accepted", count: orders.filter((o) => o.status === "accepted").length, cls: "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450" },
+          { label: "Preparing", count: orders.filter((o) => o.status === "preparing").length, cls: "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400" },
+          { label: "Ready for Pickup", count: orders.filter((o) => o.status === "ready_for_pickup").length, cls: "bg-blue-100 dark:bg-blue-950/20 text-blue-700 dark:text-blue-450" },
+          { label: "Completed", count: orders.filter((o) => o.status === "completed").length, cls: "bg-teal-100 dark:bg-teal-950/20 text-teal-700 dark:text-teal-400" },
           {
             label: "Declined",
             count: orders.filter((o) => o.status === "declined").length,
@@ -1164,18 +1171,31 @@ function AdminDashboard() {
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${order.status === "pending"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                            order.status === "pending"
                               ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211] border border-[#D46211]/40"
                               : order.status === "accepted"
                                 ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 border border-emerald-200 dark:border-emerald-900/30"
-                                : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30"
+                                : order.status === "preparing"
+                                  ? "bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-450 border border-purple-200 dark:border-purple-900/30"
+                                  : order.status === "ready_for_pickup"
+                                    ? "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-450 border border-blue-200 dark:border-blue-900/30"
+                                    : order.status === "completed"
+                                      ? "bg-teal-50 dark:bg-teal-950/20 text-teal-700 dark:text-teal-450 border border-teal-200 dark:border-teal-900/30"
+                                      : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30"
                             }`}
                         >
                           {order.status === "accepted"
                             ? "✓ Accepted"
-                            : order.status === "declined"
-                              ? "✗ Declined"
-                              : "⏳ Pending"}
+                            : order.status === "preparing"
+                              ? "🥖 Preparing"
+                              : order.status === "ready_for_pickup"
+                                ? "📦 Ready"
+                                : order.status === "completed"
+                                  ? "✓ Completed"
+                                  : order.status === "declined"
+                                    ? "✗ Declined"
+                                    : "⏳ Pending"}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-xs text-gray-400 dark:text-stone-550">
@@ -1216,6 +1236,51 @@ function AdminDashboard() {
                                 <Ban className="w-3.5 h-3.5" />
                               </button>
                             </>
+                          )}
+                          {order.status === "accepted" && (
+                            <>
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, "preparing")}
+                                className="p-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 dark:text-purple-450 transition"
+                                title="Start preparing order"
+                              >
+                                <ChefHat className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, "declined")}
+                                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 dark:text-red-400 transition"
+                                title="Decline order"
+                              >
+                                <Ban className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                          {order.status === "preparing" && (
+                            <>
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, "ready_for_pickup")}
+                                className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 text-blue-600 dark:text-blue-400 transition"
+                                title="Mark ready for pickup"
+                              >
+                                <Package className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, "declined")}
+                                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 dark:text-red-400 transition"
+                                title="Decline order"
+                              >
+                                <Ban className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                          {order.status === "ready_for_pickup" && (
+                            <button
+                              onClick={() => handleUpdateOrderStatus(order._id, "completed")}
+                              className="p-1.5 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/30 text-teal-600 dark:text-teal-400 transition"
+                              title="Complete order"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
                           )}
                         </div>
                       </td>

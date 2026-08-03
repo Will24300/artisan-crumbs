@@ -8,7 +8,7 @@ const router = express.Router();
 const TARGET_EMAIL = process.env.TARGET_EMAIL || "volonterwicha123@gmail.com";
 
 // Helper function to create Nodemailer transporter
-async function createTransporter() {
+export async function createTransporter() {
   const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
   const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
 

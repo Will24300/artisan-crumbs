@@ -12,7 +12,7 @@ const orderSchema = new Schema({
     totalAmount: { type: Number, required: true, min: 0 },
     status: {
         type: String,
-        enum: ["pending", "accepted", "declined"],
+        enum: ["pending", "accepted", "preparing", "ready_for_pickup", "completed", "declined"],
         default: "pending",
     },
     createdAt: { type: Date, default: () => new Date() },

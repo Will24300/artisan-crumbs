@@ -14,6 +14,7 @@ import {
   Calendar,
   ChevronRight,
   AlertCircle,
+  ChefHat,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -28,7 +29,7 @@ interface Order {
   _id: string;
   items: OrderItem[];
   totalAmount: number;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined";
   createdAt: string;
 }
 
@@ -122,15 +123,37 @@ function Account() {
       case "accepted":
         return (
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
-            <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Accepted & Preparing 🥖</span>
+            <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-450 shrink-0" />
+            <span>Accepted</span>
+          </div>
+        );
+      case "preparing":
+        return (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-900">
+            <ChefHat size={14} className="text-purple-600 dark:text-purple-400 shrink-0" />
+            <span>Preparing & Baking 🥖</span>
+          </div>
+        );
+      case "ready_for_pickup":
+        return (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping shrink-0" />
+            <Package size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+            <span>Ready for Pickup 📦</span>
+          </div>
+        );
+      case "completed":
+        return (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-900">
+            <CheckCircle2 size={14} className="text-teal-600 dark:text-teal-400 shrink-0" />
+            <span>Completed ✅</span>
           </div>
         );
       case "declined":
         return (
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900">
             <XCircle size={14} className="text-red-600 dark:text-red-400 shrink-0" />
-            <span>Order Declined</span>
+            <span>Order Declined ❌</span>
           </div>
         );
       case "pending":
@@ -299,9 +322,57 @@ function Account() {
                       <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/50 rounded-2xl p-3.5 text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
                         <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-bold">Order Accepted & Baking!</p>
+                          <p className="font-bold">Order Accepted!</p>
                           <p className="text-[11px] opacity-80 mt-0.5">
-                            The bakery has accepted your order. Your delicious bakes are being prepared fresh for you.
+                            The bakery has accepted your order. Your delicious bakes will start preparation shortly.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === "preparing" && (
+                      <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-900/50 rounded-2xl p-3.5 text-xs text-purple-900 dark:text-purple-200 flex items-start gap-2.5">
+                        <ChefHat size={16} className="text-purple-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">Baking & Order Preparation!</p>
+                          <p className="text-[11px] opacity-80 mt-0.5">
+                            Your order is in the oven! Our team is preparing your bakes fresh for you.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === "ready_for_pickup" && (
+                      <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/50 rounded-2xl p-3.5 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5 animate-pulse">
+                        <Package size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">Ready for Pickup! 📦</p>
+                          <p className="text-[11px] opacity-80 mt-0.5">
+                            Your fresh bakes are ready! Please come by the shop to collect your order.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === "completed" && (
+                      <div className="bg-teal-50 dark:bg-teal-950/40 border border-teal-200/80 dark:border-teal-900/50 rounded-2xl p-3.5 text-xs text-teal-900 dark:text-teal-200 flex items-start gap-2.5">
+                        <CheckCircle2 size={16} className="text-teal-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">Order Completed ✅</p>
+                          <p className="text-[11px] opacity-80 mt-0.5">
+                            This order was successfully collected. We hope you enjoy your delicious items!
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === "declined" && (
+                      <div className="bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/50 rounded-2xl p-3.5 text-xs text-red-900 dark:text-red-200 flex items-start gap-2.5">
+                        <XCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold">Order Declined ❌</p>
+                          <p className="text-[11px] opacity-80 mt-0.5">
+                            Unfortunately, we were unable to fulfill your order. Any payment has been refunded or voided.
                           </p>
                         </div>
                       </div>

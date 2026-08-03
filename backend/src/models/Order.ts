@@ -11,7 +11,7 @@ export interface IOrder {
   user: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalAmount: number;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "accepted" | "preparing" | "ready_for_pickup" | "completed" | "declined";
   createdAt: Date;
 }
 
@@ -31,7 +31,7 @@ const orderSchema = new Schema<IOrderDocument>(
     totalAmount: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ["pending", "accepted", "declined"],
+      enum: ["pending", "accepted", "preparing", "ready_for_pickup", "completed", "declined"],
       default: "pending",
     },
     createdAt: { type: Date, default: () => new Date() },

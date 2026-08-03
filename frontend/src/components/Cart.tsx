@@ -419,6 +419,14 @@ function Cart() {
                 <Utensils className="w-4 h-4 shrink-0" />
                 <span>3. Baking & Order Preparation</span>
               </div>
+              <div className="flex items-center gap-3 text-xs font-semibold text-stone-400 dark:text-stone-500">
+                <Package className="w-4 h-4 shrink-0" />
+                <span>4. Ready for Pickup</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-semibold text-stone-400 dark:text-stone-500">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>5. Order Completed</span>
+              </div>
             </div>
 
             {/* Order Details Snippet */}
