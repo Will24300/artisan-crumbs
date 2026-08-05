@@ -34,13 +34,17 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Server error", details: err.message });
 });
 
-connectDatabase()
-  .then(() => {
-    app.listen(PORT, "0.0.0.0" ,() => {
-      console.log(`Backend running on http://localhost:${PORT}`);
+if (process.env.NODE_ENV !== "test") {
+  connectDatabase()
+    .then(() => {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Backend running on http://localhost:${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error("Failed to connect to MongoDB:", error);
+      process.exit(1);
     });
-  })
-  .catch((error) => {
-    console.error("Failed to connect to MongoDB:", error);
-    process.exit(1);
-  });
+}
+
+export default app;
