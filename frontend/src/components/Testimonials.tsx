@@ -1,9 +1,85 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Star } from "lucide-react";
 import { testimonialData } from "../data";
+import { API_BASE } from "../utils/api";
+
+interface TestimonialCardItem {
+  id: string | number;
+  ratings: number;
+  comment: string;
+  image: string;
+  name: string;
+  detail: string;
+}
 
 function Testimonials() {
-  const testimonials = testimonialData;
+  const [items, setItems] = useState<TestimonialCardItem[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/contact/testimonials`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch testimonials");
+        return res.json();
+      })
+      .then((data: any[]) => {
+        if (data && data.length > 0) {
+          const fetched: TestimonialCardItem[] = data.map((t) => ({
+            id: t._id,
+            ratings: t.rating > 0 ? t.rating : 5,
+            comment: t.message.startsWith('"') ? t.message : `"${t.message}"`,
+            name: t.name,
+            detail: t.subject || "VERIFIED CUSTOMER",
+            image: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(t.name)}`,
+          }));
+
+          // Fill remainder with static data if fewer than 3 items
+          const fallbacks = testimonialData.slice(0, Math.max(0, 3 - fetched.length)).map((f) => ({
+            id: f.id,
+            ratings: f.ratings,
+            comment: f.comment,
+            name: f.name,
+            detail: f.detail,
+            image: f.image,
+          }));
+
+          setItems([...fetched, ...fallbacks]);
+        } else {
+          setItems(
+            testimonialData.map((f) => ({
+              id: f.id,
+              ratings: f.ratings,
+              comment: f.comment,
+              name: f.name,
+              detail: f.detail,
+              image: f.image,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        setItems(
+          testimonialData.map((f) => ({
+            id: f.id,
+            ratings: f.ratings,
+            comment: f.comment,
+            name: f.name,
+            detail: f.detail,
+            image: f.image,
+          }))
+        );
+      });
+  }, []);
+
+  const testimonials = items.length > 0 ? items : testimonialData.map((f) => ({
+    id: f.id,
+    ratings: f.ratings,
+    comment: f.comment,
+    name: f.name,
+    detail: f.detail,
+    image: f.image,
+  }));
+
   return (
     <section className="relative bg-[#D46211] -mx-5 md:-mx-10 lg:-mx-15 px-10 py-16 overflow-hidden">
       {/* Ambient depth — soft darker glow in the corner */}
@@ -49,9 +125,17 @@ function Testimonials() {
               "
             </span>
 
-            <div className="relative flex flex-wrap gap-1">
-              {[...Array(testimonial.ratings)].map((_, index) => (
-                <img key={index} src={testimonial.star} alt="" className="w-4 h-4" />
+            <div className="relative flex items-center gap-1">
+              {[...Array(5)].map((_, index) => (
+                <Star
+                  key={index}
+                  size={16}
+                  className={
+                    index < testimonial.ratings
+                      ? "fill-amber-300 text-amber-300"
+                      : "text-white/30"
+                  }
+                />
               ))}
             </div>
 
@@ -63,7 +147,7 @@ function Testimonials() {
               <img
                 src={testimonial.image}
                 alt={testimonial.name}
-                className="rounded-full w-14 h-14 sm:w-16 sm:h-16 object-cover ring-2 ring-white/30 float-slow"
+                className="rounded-full w-14 h-14 sm:w-16 sm:h-16 object-cover ring-2 ring-white/30 float-slow bg-white/20"
               />
               <div>
                 <h2 className="font-bold text-[16px] text-white">{testimonial.name}</h2>

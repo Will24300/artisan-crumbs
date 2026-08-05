@@ -1,4 +1,4 @@
-import { Clock, MapPin, Send, CheckCircle2, ExternalLink, AlertCircle } from "lucide-react";
+import { Clock, MapPin, Send, CheckCircle2, ExternalLink, AlertCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import { toast } from "react-toastify";
@@ -29,6 +29,8 @@ function Contact() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("General Inquiry");
+  const [rating, setRating] = useState<number>(0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -51,7 +53,7 @@ function Contact() {
       const response = await fetch(`${API_BASE}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({ name, email, subject, rating, message }),
       });
 
       const data = await response.json();
@@ -66,6 +68,7 @@ function Contact() {
       setName("");
       setEmail("");
       setMessage("");
+      setRating(0);
     } catch {
       setError("Unable to connect to the server.");
     } finally {
@@ -148,6 +151,43 @@ function Contact() {
                   <option>Custom Cake</option>
                   <option>Wholesale</option>
                 </select>
+              </div>
+
+              {/* Star Rating Picker (Optional) */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-[#241812] dark:text-stone-300 mb-1.5">
+                  Rating <span className="text-xs font-normal text-stone-400 dark:text-stone-500">(Optional)</span>
+                </label>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((starVal) => {
+                    const active = starVal <= (hoverRating || rating);
+                    return (
+                      <button
+                        key={starVal}
+                        type="button"
+                        onClick={() => setRating(starVal === rating ? 0 : starVal)}
+                        onMouseEnter={() => setHoverRating(starVal)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="p-1 cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                        title={`${starVal} Star${starVal > 1 ? "s" : ""}`}
+                      >
+                        <Star
+                          size={22}
+                          className={
+                            active
+                              ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                              : "text-stone-300 dark:text-stone-700"
+                          }
+                        />
+                      </button>
+                    );
+                  })}
+                  {rating > 0 && (
+                    <span className="text-xs font-bold text-[#D46211] ml-2">
+                      {rating} / 5 Stars
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="mb-6">

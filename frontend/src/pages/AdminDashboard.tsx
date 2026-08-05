@@ -27,6 +27,7 @@ import {
   Sun,
   Moon,
   ChefHat,
+  MessageSquare,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -77,7 +78,19 @@ interface OrderSummary {
   createdAt: string;
 }
 
-type Section = "overview" | "products" | "orders" | "customers" | "analytics" | "settings";
+interface FeedbackMessage {
+  _id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  rating?: number;
+  isApproved?: boolean;
+  isTestimonial?: boolean;
+  createdAt: string;
+}
+
+type Section = "overview" | "products" | "orders" | "customers" | "reviews" | "analytics" | "settings";
 
 // ─── SVG Chart: Bar Chart ─────────────────────────────────────────────────
 function SvgBarChart({
@@ -412,6 +425,10 @@ function AdminDashboard() {
   const [deliveryFee, setDeliveryFee] = useState("4.99");
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  const [reviews, setReviews] = useState<FeedbackMessage[]>([]);
+  const [reviewSearch, setReviewSearch] = useState("");
+  const [reviewFilter, setReviewFilter] = useState<"all" | "approved" | "testimonials" | "pending">("all");
+
   // ── Fetch Admin Data ───────────────────────────────────────────────────
   const fetchAdminData = async () => {
     if (!token) return;
@@ -444,10 +461,43 @@ function AdminDashboard() {
         setFreeDelivery(Boolean(sData.freeDelivery));
         setDeliveryFee(String(sData.deliveryFee ?? 4.99));
       }
+
+      // Fetch Reviews / Feedback
+      const reviewsRes = await fetch(`${API_BASE}/api/contact`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (reviewsRes.ok) {
+        const rData = await reviewsRes.json();
+        setReviews(rData || []);
+      }
     } catch {
       setMessage("Unable to connect to the backend. Is the server running?");
     }
     setLoading(false);
+  };
+
+  const handleToggleReviewStatus = async (
+    id: string,
+    updates: { isApproved?: boolean; isTestimonial?: boolean }
+  ) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/contact/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setReviews((prev) => prev.map((r) => (r._id === id ? updated : r)));
+        toast.success("Review status updated successfully");
+      }
+    } catch {
+      toast.error("Failed to update review status");
+    }
   };
 
   const handleSaveSettings = async (overrides?: Record<string, any>) => {
@@ -807,6 +857,7 @@ function AdminDashboard() {
     { id: "products", label: "Products", icon: <Package className="w-[18px] h-[18px]" />, badge: products.length },
     { id: "orders", label: "Orders", icon: <ShoppingBag className="w-[18px] h-[18px]" />, badge: pendingOrders.length || undefined },
     { id: "customers", label: "Customers", icon: <Users className="w-[18px] h-[18px]" />, badge: users.length },
+    { id: "reviews", label: "Reviews", icon: <MessageSquare className="w-[18px] h-[18px]" />, badge: reviews.length || undefined },
     { id: "analytics", label: "Analytics", icon: <BarChart2 className="w-[18px] h-[18px]" /> },
     { id: "settings", label: "Settings", icon: <Settings className="w-[18px] h-[18px]" /> },
   ];
@@ -1570,6 +1621,161 @@ function AdminDashboard() {
     </div>
   );
 
+  // ── SECTION: REVIEWS ──────────────────────────────────────────────────
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((r) => {
+      const matchesSearch =
+        r.name.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        r.email.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        r.subject.toLowerCase().includes(reviewSearch.toLowerCase()) ||
+        r.message.toLowerCase().includes(reviewSearch.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (reviewFilter === "approved") return r.isApproved;
+      if (reviewFilter === "testimonials") return r.isTestimonial;
+      if (reviewFilter === "pending") return !r.isApproved;
+      return true;
+    });
+  }, [reviews, reviewSearch, reviewFilter]);
+
+  const renderReviews = () => (
+    <div className="space-y-5">
+      {/* Search & Filter Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-stone-500" />
+            <input
+              value={reviewSearch}
+              onChange={(e) => setReviewSearch(e.target.value)}
+              type="text"
+              placeholder="Search reviews & feedback..."
+              className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-stone-800 text-sm outline-none focus:border-[#D46211] bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 w-72 transition-all"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-white dark:bg-[#1c1917] p-1 rounded-xl border border-gray-200 dark:border-stone-800 text-xs">
+            {(
+              [
+                { id: "all", label: `All (${reviews.length})` },
+                { id: "pending", label: `Pending (${reviews.filter((r) => !r.isApproved).length})` },
+                { id: "approved", label: `Approved (${reviews.filter((r) => r.isApproved).length})` },
+                { id: "testimonials", label: `Testimonials (${reviews.filter((r) => r.isTestimonial).length})` },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setReviewFilter(tab.id)}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  reviewFilter === tab.id
+                    ? "bg-[#D46211] text-white shadow-sm"
+                    : "text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-sm text-gray-400 dark:text-stone-500">
+          <strong className="text-gray-700 dark:text-stone-300">{filteredReviews.length}</strong> reviews
+        </div>
+      </div>
+
+      {filteredReviews.length === 0 ? (
+        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
+          <MessageSquare className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
+          <p className="text-gray-400 dark:text-stone-500 font-medium">No reviews match your filters</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {filteredReviews.map((review) => (
+            <div
+              key={review._id}
+              className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-3 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h4 className="font-bold text-gray-900 dark:text-stone-100 text-base">
+                      {review.name}
+                    </h4>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">{review.email}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[11px] font-semibold bg-gray-100 dark:bg-stone-850 px-2 py-0.5 rounded-full text-stone-600 dark:text-stone-400">
+                      {review.subject}
+                    </span>
+                    <p className="text-[10px] text-gray-400 dark:text-stone-500 mt-1">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Rating stars */}
+                <div className="flex items-center gap-1 my-2">
+                  {[1, 2, 3, 4, 5].map((starIdx) => (
+                    <Star
+                      key={starIdx}
+                      size={15}
+                      className={
+                        starIdx <= (review.rating || 0)
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-stone-300 dark:text-stone-700"
+                      }
+                    />
+                  ))}
+                  <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 ml-1">
+                    {review.rating ? `${review.rating}/5` : "No rating"}
+                  </span>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-[#12100f] p-3 rounded-xl border border-gray-100 dark:border-stone-850 text-xs text-gray-700 dark:text-stone-300 italic">
+                  "{review.message}"
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-stone-850 text-xs font-semibold">
+                <button
+                  onClick={() =>
+                    handleToggleReviewStatus(review._id, { isApproved: !review.isApproved })
+                  }
+                  className={`flex-1 py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    review.isApproved
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                      : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                  }`}
+                >
+                  <Check size={14} /> {review.isApproved ? "Approved" : "Approve Review"}
+                </button>
+
+                <button
+                  onClick={() =>
+                    handleToggleReviewStatus(review._id, {
+                      isTestimonial: !review.isTestimonial,
+                      isApproved: true,
+                    })
+                  }
+                  className={`flex-1 py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    review.isTestimonial
+                      ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 border-[#D46211] text-[#D46211]"
+                      : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                  }`}
+                >
+                  <Star size={14} className={review.isTestimonial ? "fill-[#D46211]" : ""} />
+                  {review.isTestimonial ? "Featured" : "Feature on Homepage"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   // ── SECTION: ANALYTICS ────────────────────────────────────────────────
   const renderAnalytics = () => {
     const avgOrderValue =
@@ -2115,6 +2321,7 @@ function AdminDashboard() {
               {activeSection === "products" && renderProducts()}
               {activeSection === "orders" && renderOrders()}
               {activeSection === "customers" && renderCustomers()}
+              {activeSection === "reviews" && renderReviews()}
               {activeSection === "analytics" && renderAnalytics()}
               {activeSection === "settings" && renderSettings()}
             </>

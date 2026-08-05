@@ -42,7 +42,7 @@ export async function createTransporter() {
 // POST /api/contact - Submit contact message / feedback
 router.post("/", async (req, res) => {
   try {
-    const { name, email, subject, message } = req.body;
+    const { name, email, subject, message, rating } = req.body;
 
     if (!name || !email || !message) {
       return res.status(400).json({ error: "Name, email, and message are required." });
@@ -54,6 +54,7 @@ router.post("/", async (req, res) => {
       email,
       subject: subject || "General Inquiry",
       message,
+      rating: Number(rating) || 0,
     });
 
     const emailSubject = `[Artisan Crumbs Feedback] ${subject || "New Message"} from ${name}`;
@@ -61,6 +62,7 @@ router.post("/", async (req, res) => {
 
 From: ${name} (${email})
 Subject: ${subject || "General Inquiry"}
+Rating: ${rating ? `${rating}/5 Stars` : "No rating given"}
 Submitted Date: ${new Date().toLocaleString()}
 
 Message:
@@ -72,6 +74,7 @@ ${message}
         <h2 style="color: #D46211; font-family: Georgia, serif; margin-top: 0;">Artisan Crumbs - New Customer Feedback</h2>
         <p><strong>From:</strong> ${name} (&lt;<a href="mailto:${email}">${email}</a>&gt;)</p>
         <p><strong>Subject:</strong> ${subject || "General Inquiry"}</p>
+        <p><strong>Rating:</strong> ${rating ? `⭐ ${rating}/5 Stars` : "Not specified"}</p>
         <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
         <p style="white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #334155;">${message}</p>
@@ -84,6 +87,7 @@ ${message}
     console.log(`[CONTACT EMAIL] Sending message to: ${TARGET_EMAIL}`);
     console.log(`Sender: ${name} <${email}>`);
     console.log(`Subject: ${emailSubject}`);
+    console.log(`Rating: ${rating || 0}`);
     console.log(`Message: ${message}`);
     console.log(`======================================================\n`);
 
@@ -119,6 +123,16 @@ ${message}
   }
 });
 
+// GET /api/contact/testimonials - Public route to fetch approved testimonials
+router.get("/testimonials", async (_req, res) => {
+  try {
+    const testimonials = await Feedback.find({ isApproved: true, isTestimonial: true }).sort({ createdAt: -1 });
+    res.json(testimonials);
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to fetch testimonials", details: error.message });
+  }
+});
+
 // GET /api/contact - Admin route to view all feedback messages
 router.get("/", authenticateToken, requireAdmin, async (_req, res) => {
   try {
@@ -126,6 +140,24 @@ router.get("/", authenticateToken, requireAdmin, async (_req, res) => {
     res.json(messages);
   } catch (error: any) {
     res.status(500).json({ error: "Failed to retrieve feedback messages", details: error.message });
+  }
+});
+
+// PATCH /api/contact/:id - Admin route to approve/disapprove & toggle testimonial
+router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { isApproved, isTestimonial } = req.body;
+    const updateData: any = {};
+    if (isApproved !== undefined) updateData.isApproved = Boolean(isApproved);
+    if (isTestimonial !== undefined) updateData.isTestimonial = Boolean(isTestimonial);
+
+    const feedback = await Feedback.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!feedback) {
+      return res.status(404).json({ error: "Feedback message not found" });
+    }
+    res.json(feedback);
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to update feedback status", details: error.message });
   }
 });
 
