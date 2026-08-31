@@ -20,6 +20,8 @@ const orderSchema = new Schema({
     deliveryAddress: { type: String, default: "" },
     deliveryFee: { type: Number, default: 0 },
     paymentMethod: { type: String, default: "card" },
+    paymentStatus: { type: String, enum: ["paid", "pending", "failed"], default: "paid" },
+    transactionId: { type: String, default: "" },
     createdAt: { type: Date, default: () => new Date() },
 }, { timestamps: true });
 const Order = mongoose.model("Order", orderSchema);

@@ -11,7 +11,7 @@ router.post("/", authenticateToken, async (req, res) => {
         if (req.user.role === "admin") {
             return res.status(403).json({ error: "Administrators cannot place orders." });
         }
-        const { items, totalAmount, fulfillmentType, pickupTime, deliveryAddress, deliveryFee, paymentMethod, } = req.body;
+        const { items, totalAmount, fulfillmentType, pickupTime, deliveryAddress, deliveryFee, paymentMethod, paymentStatus: requestedPaymentStatus, transactionId: requestedTransactionId, } = req.body;
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: "Cart is empty" });
         }
@@ -31,6 +31,12 @@ router.post("/", authenticateToken, async (req, res) => {
         for (const item of items) {
             await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } });
         }
+        const selectedMethod = paymentMethod || "card";
+        const finalTransactionId = requestedTransactionId ||
+            (selectedMethod !== "cash"
+                ? `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+                : "");
+        const finalPaymentStatus = requestedPaymentStatus || (selectedMethod === "cash" ? "pending" : "paid");
         const order = await Order.create({
             user: req.user.id,
             items,
@@ -40,7 +46,9 @@ router.post("/", authenticateToken, async (req, res) => {
             pickupTime: pickupTime || "",
             deliveryAddress: deliveryAddress || "",
             deliveryFee: Number(deliveryFee) || 0,
-            paymentMethod: paymentMethod || "card",
+            paymentMethod: selectedMethod,
+            paymentStatus: finalPaymentStatus,
+            transactionId: finalTransactionId,
         });
         res.status(201).json(order);
     }

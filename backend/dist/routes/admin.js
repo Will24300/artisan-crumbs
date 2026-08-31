@@ -6,14 +6,20 @@ import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 import { createTransporter } from "./contact.js";
 const router = express.Router();
 router.use(authenticateToken, requireAdmin);
-router.get("/dashboard", async (_req, res) => {
+router.get("/dashboard", async (req, res) => {
     try {
         const users = await User.find().select("name email role createdAt");
-        const products = await Product.find().select("name category price description image tags stock createdAt");
+        const products = await Product.find().select("-image").lean();
         const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
+        const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+        const host = req.get("host");
+        const lightProducts = products.map((p) => ({
+            ...p,
+            image: `${protocol}://${host}/api/products/${p._id}/image`,
+        }));
         res.json({
             users,
-            products,
+            products: lightProducts,
             orders,
             totals: {
                 totalUsers: users.length,

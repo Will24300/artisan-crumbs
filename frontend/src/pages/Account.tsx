@@ -38,6 +38,8 @@ interface Order {
   deliveryAddress?: string;
   deliveryFee?: number;
   paymentMethod?: string;
+  paymentStatus?: "paid" | "pending" | "failed";
+  transactionId?: string;
   createdAt: string;
 }
 
@@ -422,7 +424,21 @@ function Account() {
                       <div className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400 justify-end">
                         <CreditCard size={12} className="text-[#D46211]" />
                         <span className="font-semibold uppercase">{order.paymentMethod || "card"}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${
+                            order.paymentStatus === "paid"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                          }`}
+                        >
+                          {order.paymentStatus || (order.paymentMethod === "cash" ? "pending" : "paid")}
+                        </span>
                       </div>
+                      {order.transactionId && (
+                        <div className="col-span-2 text-[11px] text-stone-400 font-mono">
+                          Ref: <span className="font-bold">{order.transactionId}</span>
+                        </div>
+                      )}
                       {order.fulfillmentType === "pickup" && order.pickupTime && (
                         <div className="col-span-2 flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
                           <Clock size={12} /> <span>{order.pickupTime}</span>

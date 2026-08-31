@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { fetchProducts, type ApiProduct } from "../features/products";
 import { API_BASE } from "../utils/api";
+import { PaymentModal } from "./PaymentModal";
 
 interface RootState {
   cart: {
@@ -111,6 +112,7 @@ function Cart() {
   };
 
   const [createdOrder, setCreatedOrder] = useState<any | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Settings & Fulfillment state
   const [storeSettings, setStoreSettings] = useState<any>({
@@ -148,7 +150,7 @@ function Cart() {
   const taxAmount = totalPrice * 0.1;
   const grandTotal = totalPrice + taxAmount + deliveryFeeAmount;
 
-  const handleCheckout = async () => {
+  const handleOpenPaymentModal = () => {
     if (!token) {
       navigate("/login");
       return;
@@ -169,6 +171,14 @@ function Cart() {
       return;
     }
 
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleFinalizeOrder = async (paymentDetails: {
+    paymentMethod: string;
+    paymentStatus: "paid" | "pending";
+    transactionId: string;
+  }) => {
     const payload = {
       items: cartProducts.map((p) => ({
         productId: p._id,
@@ -181,7 +191,9 @@ function Cart() {
       pickupTime: fulfillmentType === "pickup" ? pickupTime : "",
       deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
       deliveryFee: deliveryFeeAmount,
-      paymentMethod,
+      paymentMethod: paymentDetails.paymentMethod,
+      paymentStatus: paymentDetails.paymentStatus,
+      transactionId: paymentDetails.transactionId,
     };
 
     try {
@@ -204,6 +216,7 @@ function Cart() {
       toast.success("Order placed successfully! 🥖");
       dispatch(removeAllFromCart());
       setCreatedOrder(newOrder);
+      setIsPaymentModalOpen(false);
     } catch {
       toast.error("Unable to connect to the server.");
     }
@@ -213,6 +226,14 @@ function Cart() {
 
   return (
     <section className="py-9 px-4 sm:px-6 lg:px-10 min-h-screen bg-[#F9F9F8] dark:bg-[#0f0d0c] transition-colors duration-300">
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onPaymentSuccess={handleFinalizeOrder}
+        grandTotal={grandTotal}
+        fulfillmentType={fulfillmentType}
+        initialMethod={paymentMethod}
+      />
       <div className="max-w-6xl mx-auto">
         <Link
           to={`/shop?filter=${filter}`}
@@ -522,11 +543,11 @@ function Cart() {
                       toast.error("Administrators cannot place orders.");
                       return;
                     }
-                    handleCheckout();
+                    handleOpenPaymentModal();
                   }}
                   className="cursor-pointer w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3 rounded-full transition-colors shadow-sm"
                 >
-                  Confirm & Place Order
+                  Proceed to Payment
                 </button>
                 <Link
                   to="/shop"
