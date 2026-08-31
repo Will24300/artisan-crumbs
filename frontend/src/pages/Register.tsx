@@ -3,11 +3,13 @@ import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setCredentials } from "../features/auth";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Check, Sun, Moon } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Sun, Moon, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
 import { useTheme } from "../features/theme";
 import { API_BASE } from "../utils/api";
+import { FacebookAuthModal } from "../components/FacebookAuthModal";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -25,6 +27,12 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const { darkMode, toggleDarkMode } = useTheme();
 
+  // Real Google OAuth via GIS
+  const googleAuth = useGoogleAuth();
+
+  // Facebook modal (existing flow, unchanged)
+  const [isFacebookModalOpen, setIsFacebookModalOpen] = useState(false);
+
   const passwordChecks = [
     { label: "At least 8 characters", met: password.length >= 8 },
     { label: "One number", met: /\d/.test(password) },
@@ -34,7 +42,6 @@ function Register() {
     event.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
@@ -46,19 +53,61 @@ function Register() {
         setError(data.error || "Registration failed");
         return;
       }
-
       dispatch(setCredentials({ token: data.token, user: data.user }));
       toast.success(`Account created! Welcome, ${data.user.name}! 🍰`, { autoClose: 5000 });
       navigate(data.user.role === "admin" ? "/admin" : "/");
-    } catch (fetchError) {
+    } catch {
       setError("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleFacebookSuccess = async (creds: { accessToken?: string; email?: string; name?: string }) => {
+    setIsFacebookModalOpen(false);
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/facebook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(creds),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Facebook authentication failed");
+        return;
+      }
+      dispatch(setCredentials({ token: data.token, user: data.user }));
+      toast.success(`Account registered! Welcome, ${data.user.name}! 🍰`);
+      navigate(data.user.role === "admin" ? "/admin" : "/");
+    } catch {
+      setError("Unable to connect to the server for Facebook registration.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayError = error || googleAuth.error;
+
   return (
-    <div className="h-full bg-[#F9F9F8] dark:bg-[#0f0d0c] flex flex-col justify-between px-4 sm:px-6 md:px-10 lg:px-16 overflow-hidden transition-colors duration-300">
+    <div className="h-screen bg-[#F9F9F8] dark:bg-[#0f0d0c] flex flex-col justify-between px-4 sm:px-6 md:px-10 lg:px-16 overflow-hidden transition-colors duration-300">
+      {/*
+        Hidden off-screen div: GIS renders its real button here.
+        googleAuth.signIn() programmatically clicks it → real Google popup.
+      */}
+      <div
+        ref={googleAuth.hiddenDivRef}
+        aria-hidden="true"
+        className="absolute -top-[9999px] -left-[9999px] overflow-hidden pointer-events-none"
+      />
+
+      <FacebookAuthModal
+        isOpen={isFacebookModalOpen}
+        onClose={() => setIsFacebookModalOpen(false)}
+        onSuccess={handleFacebookSuccess}
+      />
+
       <header className="w-full max-w-5xl mx-auto py-3.5 flex items-center justify-between border-b border-gray-100 dark:border-stone-800 px-2 flex-shrink-0">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#FFF4EB] overflow-hidden shrink-0">
@@ -90,28 +139,28 @@ function Register() {
           {/* Mobile hero */}
           <div
             className="md:hidden w-full h-40 bg-cover bg-center rounded-t-[32px]"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1549931319-a545dcf3bc73?q=80&w=1000&auto=format&fit=crop')` }}
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1000&auto=format&fit=crop')` }}
           />
 
           <div
             className="hidden md:block w-1/2 relative bg-cover bg-center"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1549931319-a545dcf3bc73?q=80&w=1000&auto=format&fit=crop')` }}
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1000&auto=format&fit=crop')` }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-[#241812]/85 via-[#241812]/30 to-transparent" />
             <div className="absolute top-8 left-8">
               <span className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm text-[#F2A469] text-[11px] font-bold px-3 py-1.5 rounded-full tracking-widest border border-white/15 uppercase">
                 <span className="w-1 h-1 rounded-full bg-[#F2A469]" />
-                Since 1994
+                Handcrafted Daily
               </span>
             </div>
             <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10 text-white">
               <h2 className="font-serif text-2xl md:text-[28px] font-bold leading-tight mb-2 tracking-tight">
-                Authentic flavors,
+                Freshly baked goodness,
                 <br />
-                handcrafted daily.
+                delivered to your door.
               </h2>
               <p className="text-xs text-gray-200/90 leading-relaxed max-w-sm">
-                Join our community of bread lovers and sweet enthusiasts.
+                Create an account to earn rewards and track your orders.
               </p>
             </div>
           </div>
@@ -124,11 +173,11 @@ function Register() {
               variants={fadeInUp}
               transition={{ duration: 0.4 }}
             >
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#241812] dark:text-stone-100 tracking-tight break-words">
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#241812] dark:text-stone-100 tracking-tight">
                 Create an account
               </h1>
-              <p className="text-xs sm:text-sm text-[#64748B] dark:text-stone-400 mt-1 font-medium break-words">
-                Enter your details to register.
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-stone-400 mt-1 font-medium">
+                Sign up in seconds to start ordering.
               </p>
             </motion.div>
 
@@ -147,11 +196,12 @@ function Register() {
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
                   <input
+                    id="register-name"
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Volonte Rwicha"
+                    placeholder="Your full name"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-stone-850 text-sm outline-none focus:border-[#D46211] focus:ring-4 focus:ring-[#D46211]/10 bg-[#FDFDFD] dark:bg-[#12100f] text-[#334155] dark:text-stone-200 transition-shadow"
                   />
                 </div>
@@ -164,6 +214,7 @@ function Register() {
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
                   <input
+                    id="register-email"
                     type="email"
                     required
                     value={email}
@@ -181,6 +232,7 @@ function Register() {
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
                   <input
+                    id="register-password"
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
@@ -204,7 +256,7 @@ function Register() {
                       <span
                         key={check.label}
                         className={`flex items-center gap-1 text-[11px] font-medium ${
-                          check.met ? "text-green-600 dark:text-green-455" : "text-[#94A3B8] dark:text-stone-500"
+                          check.met ? "text-green-600 dark:text-green-400" : "text-[#94A3B8] dark:text-stone-500"
                         }`}
                       >
                         <span
@@ -221,20 +273,29 @@ function Register() {
                 )}
               </div>
 
-              {error && (
+              {displayError && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   className="rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 p-3 text-xs text-red-600 dark:text-red-400 font-semibold flex items-center gap-2"
                 >
                   <AlertCircle size={14} className="shrink-0" />
-                  {error}
+                  <span>{displayError}</span>
+                  <button
+                    type="button"
+                    className="ml-auto text-red-400 hover:text-red-600 shrink-0"
+                    onClick={() => { setError(null); googleAuth.setError(null); }}
+                    aria-label="Dismiss error"
+                  >
+                    ✕
+                  </button>
                 </motion.div>
               )}
 
               <button
+                id="register-submit"
                 type="submit"
-                disabled={loading}
+                disabled={loading || googleAuth.loading}
                 className="w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3.5 rounded-xl transition-colors duration-200 shadow-md shadow-[#D46211]/15 flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer text-sm tracking-wide"
               >
                 {loading ? (
@@ -257,32 +318,43 @@ function Register() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
+              {/* Sign up with Google — real GIS popup */}
               <button
+                id="register-google"
                 type="button"
-                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-850 transition-colors cursor-pointer bg-white dark:bg-stone-900"
-                onClick={() => toast.success("Google integration demo success!")}
+                disabled={googleAuth.loading}
+                onClick={googleAuth.signIn}
+                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-800 hover:border-gray-300 transition-all cursor-pointer bg-white dark:bg-stone-900 disabled:opacity-60"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
+                {googleAuth.loading ? (
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l-3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                )}
                 Google
               </button>
+
+              {/* Sign up with Facebook — existing modal, unchanged */}
               <button
+                id="register-facebook"
                 type="button"
-                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-850 transition-colors cursor-pointer bg-white dark:bg-stone-900"
-                onClick={() => toast.success("Facebook integration demo success!")}
+                disabled={loading || googleAuth.loading}
+                onClick={() => setIsFacebookModalOpen(true)}
+                className="flex items-center justify-center gap-2.5 py-3 rounded-xl border border-gray-200 dark:border-stone-800 text-sm font-semibold text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-800 hover:border-gray-300 transition-all cursor-pointer bg-white dark:bg-stone-900 disabled:opacity-60"
               >
-                <svg className="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 shrink-0" fill="#1877F2" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
                 Facebook
               </button>
             </div>
 
-            <p className="mt-8 text-sm text-center text-gray-550 dark:text-stone-400 font-medium">
+            <p className="mt-8 text-sm text-center text-gray-500 dark:text-stone-400 font-medium">
               Already registered?{" "}
               <Link to="/login" className="font-bold text-[#D46211] hover:text-[#b04f0b] hover:underline">
                 Sign in
