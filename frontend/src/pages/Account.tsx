@@ -38,6 +38,8 @@ interface Order {
   deliveryAddress?: string;
   deliveryFee?: number;
   paymentMethod?: string;
+  paymentStatus?: "paid" | "pending" | "failed";
+  transactionId?: string;
   createdAt: string;
 }
 
@@ -393,18 +395,25 @@ function Account() {
                       </h4>
                       <div className="divide-y divide-stone-100 dark:divide-stone-850">
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="py-2 flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center text-[11px]">
-                                {item.quantity}x
-                              </span>
-                              <span className="font-semibold text-stone-800 dark:text-stone-200">
-                                {item.name}
+                          <div key={idx} className="py-2.5 border-b border-stone-100 dark:border-stone-800 last:border-b-0">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center text-[11px]">
+                                  {item.quantity}x
+                                </span>
+                                <span className="font-semibold text-stone-800 dark:text-stone-200">
+                                  {item.name}
+                                </span>
+                              </div>
+                              <span className="font-mono text-stone-600 dark:text-stone-400 font-medium">
+                                ${(item.price * item.quantity).toFixed(2)}
                               </span>
                             </div>
-                            <span className="font-mono text-stone-600 dark:text-stone-400 font-medium">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </span>
+                            {(item as any).customDetails && (
+                              <p className="mt-1 text-[11px] text-[#D46211] font-medium pl-8 italic">
+                                ✨ {(item as any).customDetails}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -422,7 +431,21 @@ function Account() {
                       <div className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400 justify-end">
                         <CreditCard size={12} className="text-[#D46211]" />
                         <span className="font-semibold uppercase">{order.paymentMethod || "card"}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${
+                            order.paymentStatus === "paid"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                          }`}
+                        >
+                          {order.paymentStatus || (order.paymentMethod === "cash" ? "pending" : "paid")}
+                        </span>
                       </div>
+                      {order.transactionId && (
+                        <div className="col-span-2 text-[11px] text-stone-400 font-mono">
+                          Ref: <span className="font-bold">{order.transactionId}</span>
+                        </div>
+                      )}
                       {order.fulfillmentType === "pickup" && order.pickupTime && (
                         <div className="col-span-2 flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
                           <Clock size={12} /> <span>{order.pickupTime}</span>

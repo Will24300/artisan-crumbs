@@ -75,6 +75,8 @@ interface OrderSummary {
   deliveryAddress?: string;
   deliveryFee?: number;
   paymentMethod?: string;
+  paymentStatus?: "paid" | "pending" | "failed";
+  transactionId?: string;
   createdAt: string;
 }
 
@@ -1416,17 +1418,24 @@ function AdminDashboard() {
                                 {order.items.map((item, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center justify-between text-sm bg-white dark:bg-[#12100f] rounded-xl px-4 py-2.5 border border-[#D46211]/20 dark:border-stone-800/80"
+                                    className="bg-white dark:bg-[#12100f] rounded-xl px-4 py-2.5 border border-[#D46211]/20 dark:border-stone-800/80"
                                   >
-                                    <span className="text-gray-800 dark:text-stone-300 font-medium">
-                                      {item.name}{" "}
-                                      <span className="text-gray-400 dark:text-stone-500 text-xs">
-                                        ×{item.quantity}
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-800 dark:text-stone-300 font-medium">
+                                        {item.name}{" "}
+                                        <span className="text-gray-400 dark:text-stone-500 text-xs">
+                                          ×{item.quantity}
+                                        </span>
                                       </span>
-                                    </span>
-                                    <span className="font-bold text-gray-900 dark:text-stone-100">
-                                      ${(item.price * item.quantity).toFixed(2)}
-                                    </span>
+                                      <span className="font-bold text-gray-900 dark:text-stone-100">
+                                        ${(item.price * item.quantity).toFixed(2)}
+                                      </span>
+                                    </div>
+                                    {(item as any).customDetails && (
+                                      <p className="mt-1 text-xs text-[#D46211] italic font-medium">
+                                        ✨ Specs: {(item as any).customDetails}
+                                      </p>
+                                    )}
                                   </div>
                                 ))}
                                 <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-[#D46211]/40 px-1">
@@ -1485,12 +1494,31 @@ function AdminDashboard() {
                                     </div>
                                   </>
                                 )}
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                   <span className="text-gray-400 dark:text-stone-500">Payment</span>
-                                  <span className="font-semibold text-gray-900 dark:text-stone-200 uppercase">
-                                    {order.paymentMethod || "card"}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-semibold text-gray-900 dark:text-stone-200 uppercase">
+                                      {order.paymentMethod || "card"}
+                                    </span>
+                                    <span
+                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${
+                                        order.paymentStatus === "paid"
+                                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                          : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                                      }`}
+                                    >
+                                      {order.paymentStatus || (order.paymentMethod === "cash" ? "pending" : "paid")}
+                                    </span>
+                                  </div>
                                 </div>
+                                {order.transactionId && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-400 dark:text-stone-500">Txn Ref</span>
+                                    <span className="font-mono text-xs font-bold text-gray-700 dark:text-stone-300">
+                                      {order.transactionId}
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="flex justify-between pt-1 border-t border-gray-50 dark:border-stone-800/50">
                                   <span className="text-gray-400 dark:text-stone-500">Order ID</span>
                                   <span className="font-mono text-xs text-gray-500 dark:text-stone-400">

@@ -12,12 +12,17 @@ import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { fetchProducts, type ApiProduct } from "../features/products";
 import { API_BASE } from "../utils/api";
+import { PaymentModal } from "./PaymentModal";
 
 interface RootState {
   cart: {
     items: Array<{
       productId: string | number;
       quantity: number;
+      customDetails?: string;
+      customName?: string;
+      customPrice?: number;
+      customImage?: string;
     }>;
   };
   auth: {
@@ -76,9 +81,21 @@ function Cart() {
 
   const cartProducts = cartItems
     .map((cartItem) => {
+      if (cartItem.customName || String(cartItem.productId).startsWith("custom-")) {
+        return {
+          _id: String(cartItem.productId),
+          name: cartItem.customName || "Custom Celebration Cake",
+          price: cartItem.customPrice || 38.0,
+          quantity: cartItem.quantity,
+          image: cartItem.customImage || "https://images.unsplash.com/photo-1535141192574-5d4897c13136?q=80&w=800&auto=format&fit=crop",
+          customDetails: cartItem.customDetails || "",
+          description: cartItem.customDetails || "Custom Bakery Creation",
+          stock: 999,
+        };
+      }
       const product = products.find((p) => p._id === cartItem.productId);
       if (!product) return null;
-      return { ...product, quantity: cartItem.quantity };
+      return { ...product, quantity: cartItem.quantity, customDetails: "" };
     })
     .filter((item) => item !== null);
 
@@ -92,10 +109,10 @@ function Cart() {
   };
 
   const handleIncrement = (productId: string | number) => {
-    const product = products.find((p) => p._id === productId);
+    const product = cartProducts.find((p) => p._id === productId);
     const cartItem = cartItems.find((item) => item.productId === productId);
     if (!product) return;
-    if (cartItem && cartItem.quantity >= product.stock) {
+    if (cartItem && cartItem.quantity >= (product.stock || 999)) {
       toast.error("Cannot add more than available stock.");
       return;
     }
@@ -111,6 +128,7 @@ function Cart() {
   };
 
   const [createdOrder, setCreatedOrder] = useState<any | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Settings & Fulfillment state
   const [storeSettings, setStoreSettings] = useState<any>({
@@ -148,7 +166,7 @@ function Cart() {
   const taxAmount = totalPrice * 0.1;
   const grandTotal = totalPrice + taxAmount + deliveryFeeAmount;
 
-  const handleCheckout = async () => {
+  const handleOpenPaymentModal = () => {
     if (!token) {
       navigate("/login");
       return;
@@ -169,19 +187,30 @@ function Cart() {
       return;
     }
 
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleFinalizeOrder = async (paymentDetails: {
+    paymentMethod: string;
+    paymentStatus: "paid" | "pending";
+    transactionId: string;
+  }) => {
     const payload = {
       items: cartProducts.map((p) => ({
         productId: p._id,
         name: p.name,
         quantity: p.quantity,
         price: p.price,
+        customDetails: p.customDetails || "",
       })),
       totalAmount: grandTotal,
       fulfillmentType,
       pickupTime: fulfillmentType === "pickup" ? pickupTime : "",
       deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
       deliveryFee: deliveryFeeAmount,
-      paymentMethod,
+      paymentMethod: paymentDetails.paymentMethod,
+      paymentStatus: paymentDetails.paymentStatus,
+      transactionId: paymentDetails.transactionId,
     };
 
     try {
@@ -204,6 +233,7 @@ function Cart() {
       toast.success("Order placed successfully! 🥖");
       dispatch(removeAllFromCart());
       setCreatedOrder(newOrder);
+      setIsPaymentModalOpen(false);
     } catch {
       toast.error("Unable to connect to the server.");
     }
@@ -213,6 +243,14 @@ function Cart() {
 
   return (
     <section className="py-9 px-4 sm:px-6 lg:px-10 min-h-screen bg-[#F9F9F8] dark:bg-[#0f0d0c] transition-colors duration-300">
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onPaymentSuccess={handleFinalizeOrder}
+        grandTotal={grandTotal}
+        fulfillmentType={fulfillmentType}
+        initialMethod={paymentMethod}
+      />
       <div className="max-w-6xl mx-auto">
         <Link
           to={`/shop?filter=${filter}`}
@@ -522,11 +560,11 @@ function Cart() {
                       toast.error("Administrators cannot place orders.");
                       return;
                     }
-                    handleCheckout();
+                    handleOpenPaymentModal();
                   }}
                   className="cursor-pointer w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3 rounded-full transition-colors shadow-sm"
                 >
-                  Confirm & Place Order
+                  Proceed to Payment
                 </button>
                 <Link
                   to="/shop"

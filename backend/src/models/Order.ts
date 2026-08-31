@@ -5,6 +5,7 @@ export interface IOrderItem {
   name: string;
   quantity: number;
   price: number;
+  customDetails?: string;
 }
 
 export interface IOrder {
@@ -17,6 +18,8 @@ export interface IOrder {
   deliveryAddress?: string;
   deliveryFee?: number;
   paymentMethod?: string;
+  paymentStatus?: "paid" | "pending" | "failed";
+  transactionId?: string;
   createdAt: Date;
 }
 
@@ -31,6 +34,7 @@ const orderSchema = new Schema<IOrderDocument>(
         name: { type: String, required: true },
         quantity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true, min: 0 },
+        customDetails: { type: String, default: "" },
       },
     ],
     totalAmount: { type: Number, required: true, min: 0 },
@@ -44,6 +48,8 @@ const orderSchema = new Schema<IOrderDocument>(
     deliveryAddress: { type: String, default: "" },
     deliveryFee: { type: Number, default: 0 },
     paymentMethod: { type: String, default: "card" },
+    paymentStatus: { type: String, enum: ["paid", "pending", "failed"], default: "paid" },
+    transactionId: { type: String, default: "" },
     createdAt: { type: Date, default: () => new Date() },
   },
   { timestamps: true },

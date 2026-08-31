@@ -1,8 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface CartItem {
+export interface CartItem {
   productId: string | number;
   quantity: number;
+  customDetails?: string;
+  customName?: string;
+  customPrice?: number;
+  customImage?: string;
 }
 
 interface CartState {
@@ -18,7 +22,6 @@ function loadCartItems(): CartItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    // Validate each entry has the expected shape
     return parsed.filter(
       (item: any) =>
         item &&
@@ -48,20 +51,55 @@ const cartSlicer = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<string | number>) => {
-      const existing = state.items.find(
-        (item) => item.productId === action.payload,
-      );
-      if (existing) {
-        existing.quantity += 1;
+    addToCart: (
+      state,
+      action: PayloadAction<
+        | string
+        | number
+        | {
+            productId: string | number;
+            quantity?: number;
+            customDetails?: string;
+            customName?: string;
+            customPrice?: number;
+            customImage?: string;
+          }
+      >
+    ) => {
+      const payload = action.payload;
+      if (typeof payload === "object") {
+        const id = payload.productId;
+        const details = payload.customDetails || "";
+        const existing = state.items.find(
+          (item) => item.productId === id && (item.customDetails || "") === details
+        );
+        if (existing) {
+          existing.quantity += payload.quantity || 1;
+        } else {
+          state.items.push({
+            productId: id,
+            quantity: payload.quantity || 1,
+            customDetails: payload.customDetails,
+            customName: payload.customName,
+            customPrice: payload.customPrice,
+            customImage: payload.customImage,
+          });
+        }
       } else {
-        state.items.push({ productId: action.payload, quantity: 1 });
+        const existing = state.items.find(
+          (item) => item.productId === payload && !item.customDetails
+        );
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          state.items.push({ productId: payload, quantity: 1 });
+        }
       }
       saveCart(state.items);
     },
     removeFromCart: (state, action: PayloadAction<string | number>) => {
       state.items = state.items.filter(
-        (item) => item.productId !== action.payload,
+        (item) => item.productId !== action.payload
       );
       saveCart(state.items);
     },
