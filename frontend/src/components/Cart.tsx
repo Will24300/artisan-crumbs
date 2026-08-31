@@ -19,6 +19,10 @@ interface RootState {
     items: Array<{
       productId: string | number;
       quantity: number;
+      customDetails?: string;
+      customName?: string;
+      customPrice?: number;
+      customImage?: string;
     }>;
   };
   auth: {
@@ -77,9 +81,21 @@ function Cart() {
 
   const cartProducts = cartItems
     .map((cartItem) => {
+      if (cartItem.customName || String(cartItem.productId).startsWith("custom-")) {
+        return {
+          _id: String(cartItem.productId),
+          name: cartItem.customName || "Custom Celebration Cake",
+          price: cartItem.customPrice || 38.0,
+          quantity: cartItem.quantity,
+          image: cartItem.customImage || "https://images.unsplash.com/photo-1535141192574-5d4897c13136?q=80&w=800&auto=format&fit=crop",
+          customDetails: cartItem.customDetails || "",
+          description: cartItem.customDetails || "Custom Bakery Creation",
+          stock: 999,
+        };
+      }
       const product = products.find((p) => p._id === cartItem.productId);
       if (!product) return null;
-      return { ...product, quantity: cartItem.quantity };
+      return { ...product, quantity: cartItem.quantity, customDetails: "" };
     })
     .filter((item) => item !== null);
 
@@ -93,10 +109,10 @@ function Cart() {
   };
 
   const handleIncrement = (productId: string | number) => {
-    const product = products.find((p) => p._id === productId);
+    const product = cartProducts.find((p) => p._id === productId);
     const cartItem = cartItems.find((item) => item.productId === productId);
     if (!product) return;
-    if (cartItem && cartItem.quantity >= product.stock) {
+    if (cartItem && cartItem.quantity >= (product.stock || 999)) {
       toast.error("Cannot add more than available stock.");
       return;
     }
@@ -185,6 +201,7 @@ function Cart() {
         name: p.name,
         quantity: p.quantity,
         price: p.price,
+        customDetails: p.customDetails || "",
       })),
       totalAmount: grandTotal,
       fulfillmentType,

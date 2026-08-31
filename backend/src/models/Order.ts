@@ -5,6 +5,7 @@ export interface IOrderItem {
   name: string;
   quantity: number;
   price: number;
+  customDetails?: string;
 }
 
 export interface IOrder {
@@ -33,6 +34,7 @@ const orderSchema = new Schema<IOrderDocument>(
         name: { type: String, required: true },
         quantity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true, min: 0 },
+        customDetails: { type: String, default: "" },
       },
     ],
     totalAmount: { type: Number, required: true, min: 0 },

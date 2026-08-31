@@ -16,6 +16,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
 import AdminDashboard from "./pages/AdminDashboard";
+import { CustomCakePage } from "./pages/CustomCake";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
       <Route path="/" element={<Layout />} errorElement={<ErrorPage />}>
         <Route index element={<Home />} />
         <Route path="shop" element={<Shop />} />
+        <Route path="custom-cake" element={<CustomCakePage />} />
         <Route path="contact" element={<Contact />} />
         <Route path="account" element={<Account />} />
         <Route path="*" element={<ErrorPage />} />

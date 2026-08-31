@@ -31,8 +31,9 @@ router.post("/", authenticateToken, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: "Cart is empty" });
     }
 
-    // Check stock availability for all items
+    // Check stock availability for non-custom items
     for (const item of items) {
+      if (String(item.productId).startsWith("custom-")) continue;
       const product = await Product.findById(item.productId);
       if (!product) {
         return res.status(404).json({ error: `Product ${item.name} not found` });
@@ -44,8 +45,9 @@ router.post("/", authenticateToken, async (req: AuthRequest, res) => {
       }
     }
 
-    // Deduct stock for each item
+    // Deduct stock for non-custom items
     for (const item of items) {
+      if (String(item.productId).startsWith("custom-")) continue;
       await Product.findByIdAndUpdate(
         item.productId,
         { $inc: { stock: -item.quantity } }

@@ -83,9 +83,8 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
 
   return (
     <nav
-      className={`sticky top-0 z-40 w-full bg-white/90 dark:bg-stone-950/95 backdrop-blur-md transition-shadow duration-300 ${
-        isScrolled ? "shadow-[0_4px_20px_rgba(36,24,18,0.06)] border-b border-transparent" : "border-b border-gray-100 dark:border-stone-800/50"
-      }`}
+      className={`sticky top-0 z-40 w-full bg-white/90 dark:bg-stone-950/95 backdrop-blur-md transition-shadow duration-300 ${isScrolled ? "shadow-[0_4px_20px_rgba(36,24,18,0.06)] border-b border-transparent" : "border-b border-gray-100 dark:border-stone-800/50"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
         <div className="flex items-center justify-between h-16">
@@ -106,6 +105,11 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
             <li>
               <Link to="/shop" className={getNavLinkClass("/shop")}>
                 Shop
+              </Link>
+            </li>
+            <li>
+              <Link to="/custom-cake" className={`flex items-center gap-1 ${getNavLinkClass("/custom-cake")}`}>
+                Custom Cake
               </Link>
             </li>
             <li>
@@ -217,7 +221,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                         <Package size={15} />
                         My Orders & History
                       </Link>
-                       {isAdmin && (
+                      {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setProfileDropdownOpen(false)}
@@ -283,6 +287,13 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
               className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/shop")} text-left`}
             >
               Shop
+            </Link>
+            <Link
+              to="/custom-cake"
+              onClick={() => setMobileOpen(false)}
+              className={`block py-2.5 px-4 rounded-xl text-sm font-medium ${getNavLinkClass("/custom-cake")} text-left`}
+            >
+              Custom Cake ✨
             </Link>
             <Link
               to="/#top-selling"

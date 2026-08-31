@@ -395,18 +395,25 @@ function Account() {
                       </h4>
                       <div className="divide-y divide-stone-100 dark:divide-stone-850">
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="py-2 flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center text-[11px]">
-                                {item.quantity}x
-                              </span>
-                              <span className="font-semibold text-stone-800 dark:text-stone-200">
-                                {item.name}
+                          <div key={idx} className="py-2.5 border-b border-stone-100 dark:border-stone-800 last:border-b-0">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center text-[11px]">
+                                  {item.quantity}x
+                                </span>
+                                <span className="font-semibold text-stone-800 dark:text-stone-200">
+                                  {item.name}
+                                </span>
+                              </div>
+                              <span className="font-mono text-stone-600 dark:text-stone-400 font-medium">
+                                ${(item.price * item.quantity).toFixed(2)}
                               </span>
                             </div>
-                            <span className="font-mono text-stone-600 dark:text-stone-400 font-medium">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </span>
+                            {(item as any).customDetails && (
+                              <p className="mt-1 text-[11px] text-[#D46211] font-medium pl-8 italic">
+                                ✨ {(item as any).customDetails}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>

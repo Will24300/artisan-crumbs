@@ -1418,17 +1418,24 @@ function AdminDashboard() {
                                 {order.items.map((item, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center justify-between text-sm bg-white dark:bg-[#12100f] rounded-xl px-4 py-2.5 border border-[#D46211]/20 dark:border-stone-800/80"
+                                    className="bg-white dark:bg-[#12100f] rounded-xl px-4 py-2.5 border border-[#D46211]/20 dark:border-stone-800/80"
                                   >
-                                    <span className="text-gray-800 dark:text-stone-300 font-medium">
-                                      {item.name}{" "}
-                                      <span className="text-gray-400 dark:text-stone-500 text-xs">
-                                        ×{item.quantity}
+                                    <div className="flex items-center justify-between text-sm">
+                                      <span className="text-gray-800 dark:text-stone-300 font-medium">
+                                        {item.name}{" "}
+                                        <span className="text-gray-400 dark:text-stone-500 text-xs">
+                                          ×{item.quantity}
+                                        </span>
                                       </span>
-                                    </span>
-                                    <span className="font-bold text-gray-900 dark:text-stone-100">
-                                      ${(item.price * item.quantity).toFixed(2)}
-                                    </span>
+                                      <span className="font-bold text-gray-900 dark:text-stone-100">
+                                        ${(item.price * item.quantity).toFixed(2)}
+                                      </span>
+                                    </div>
+                                    {(item as any).customDetails && (
+                                      <p className="mt-1 text-xs text-[#D46211] italic font-medium">
+                                        ✨ Specs: {(item as any).customDetails}
+                                      </p>
+                                    )}
                                   </div>
                                 ))}
                                 <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-[#D46211]/40 px-1">
