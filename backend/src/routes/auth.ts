@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import { authenticateToken } from "../middleware/auth.js";
+import type { AuthRequest } from "../middleware/auth.js";
 
 const router = express.Router();
 const secret = process.env.JWT_SECRET;
@@ -292,6 +294,94 @@ router.post("/reset-password", async (req, res) => {
     res.json({ message: "Password has been reset successfully. You can now log in with your new password." });
   } catch (error: any) {
     res.status(500).json({ error: "Failed to reset password", details: error.message });
+  }
+});
+
+// ── Get Current Authenticated User ──────────────────────────────────────
+router.get("/me", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.provider || "local",
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to fetch profile", details: error.message });
+  }
+});
+
+// ── Update Profile (Name) ────────────────────────────────────────────────
+router.put("/profile", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Name cannot be empty" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.name = name.trim();
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.provider || "local",
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to update profile", details: error.message });
+  }
+});
+
+// ── Change Password ──────────────────────────────────────────────────────
+router.put("/change-password", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "New password must be at least 6 characters long" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.provider && user.provider !== "local") {
+      return res.status(400).json({ error: "Social accounts (Google/Facebook) do not have a password." });
+    }
+
+    const isValid = await user.comparePassword(currentPassword);
+    if (!isValid) {
+      return res.status(400).json({ error: "Incorrect current password" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to change password", details: error.message });
   }
 });
 
