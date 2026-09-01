@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Plus,
@@ -28,6 +29,14 @@ import {
   Moon,
   ChefHat,
   MessageSquare,
+  Home,
+  ArrowLeft,
+  ExternalLink,
+  ShieldCheck,
+  Truck,
+  CreditCard,
+  Save,
+  CheckCircle,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -426,6 +435,7 @@ function AdminDashboard() {
   const [freeDelivery, setFreeDelivery] = useState(true);
   const [deliveryFee, setDeliveryFee] = useState("4.99");
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"general" | "payments" | "delivery" | "roles">("general");
 
   const [reviews, setReviews] = useState<FeedbackMessage[]>([]);
   const [reviewSearch, setReviewSearch] = useState("");
@@ -1958,178 +1968,369 @@ function AdminDashboard() {
 
   // ── SECTION: SETTINGS ─────────────────────────────────────────────────
   const renderSettings = () => (
-    <div className="space-y-5 max-w-3xl">
-      {/* Store Info */}
-      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] dark:bg-[#D46211]/20 flex items-center justify-center">
-            <Store className="w-4 h-4 text-[#D46211]" />
-          </div>
-          <h3 className="font-bold text-gray-900 dark:text-stone-100">Store Information</h3>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[
-            { label: "Store Name", value: storeName, setter: setStoreName, placeholder: "Artisan Crumbs" },
-            { label: "Contact Email", value: storeEmail, setter: setStoreEmail, placeholder: "hello@example.com" },
-            { label: "Phone Number", value: storePhone, setter: setStorePhone, placeholder: "+1 (555) 000-0000" },
-            { label: "Address", value: storeAddress, setter: setStoreAddress, placeholder: "123 Baker Street" },
-          ].map((f) => (
-            <div key={f.label}>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">{f.label}</label>
-              <input
-                value={f.value}
-                onChange={(e) => f.setter(e.target.value)}
-                type="text"
-                placeholder={f.placeholder}
-                className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-sm outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] transition-all"
-              />
-            </div>
-          ))}
-        </div>
-        {settingsSaved && (
-          <div className="mt-4 text-xs text-emerald-700 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl px-3 py-2 flex items-center gap-2">
-            <Check className="w-3.5 h-3.5" /> Settings saved successfully!
-          </div>
-        )}
-        <button
-          className="mt-4 px-6 py-2.5 rounded-xl bg-[#D46211] text-white text-sm font-bold hover:bg-[#b8540e] transition-all shadow-sm shadow-[#D46211]/30"
-          onClick={() => handleSaveSettings()}
-        >
-          Save Changes
-        </button>
+    <div className="space-y-6">
+      {/* Settings Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-stone-800 pb-3 overflow-x-auto">
+        {[
+          { id: "general", label: "Store Profile", icon: <Store className="w-4 h-4" /> },
+          { id: "payments", label: "Payment Gateways", icon: <CreditCard className="w-4 h-4" /> },
+          { id: "delivery", label: "Shipping & Fulfillment", icon: <Truck className="w-4 h-4" /> },
+          { id: "roles", label: "Team & Permissions", icon: <ShieldCheck className="w-4 h-4" /> },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setSettingsTab(t.id as any)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              settingsTab === t.id
+                ? "bg-[#D46211] text-white shadow-sm"
+                : "bg-white dark:bg-[#1c1917] text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800 border border-gray-100 dark:border-stone-800"
+            }`}
+          >
+            {t.icon}
+            <span>{t.label}</span>
+          </button>
+        ))}
       </div>
 
-      {/* Payment Methods */}
-      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-        <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-5">Payment Methods</h3>
-        <div className="space-y-3">
-          {[
-            {
-              label: "PayPal",
-              desc: "Accept PayPal payments",
-              icon: "🅿️",
-              state: paypalEnabled,
-              setter: () => {
-                const next = !paypalEnabled;
-                setPaypalEnabled(next);
-                handleSaveSettings({ paypalEnabled: next });
-              },
-            },
-            {
-              label: "Stripe / Cards",
-              desc: "Credit & debit cards via Stripe",
-              icon: "💳",
-              state: stripeEnabled,
-              setter: () => {
-                const next = !stripeEnabled;
-                setStripeEnabled(next);
-                handleSaveSettings({ stripeEnabled: next });
-              },
-            },
-            {
-              label: "Cash on Delivery",
-              desc: "Pay when your order arrives",
-              icon: "💵",
-              state: cashEnabled,
-              setter: () => {
-                const next = !cashEnabled;
-                setCashEnabled(next);
-                handleSaveSettings({ cashEnabled: next });
-              },
-            },
-          ].map((m) => (
-            <div
-              key={m.label}
-              className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{m.icon}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Settings Form Area */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* TAB 1: STORE PROFILE */}
+          {settingsTab === "general" && (
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                  <Store className="w-5 h-5 text-[#D46211]" />
+                </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">{m.label}</p>
-                  <p className="text-xs text-gray-400 dark:text-stone-500">{m.desc}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-stone-100">Store Profile & Details</h3>
+                  <p className="text-xs text-gray-400 dark:text-stone-500">Public store identity shown on receipts and customer notifications.</p>
                 </div>
               </div>
-              <Toggle on={m.state} onChange={m.setter} />
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Delivery Options */}
-      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-        <h3 className="font-bold text-gray-900 dark:text-stone-100 mb-5">Delivery Options</h3>
-        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors mb-3">
-          <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">Free Delivery</p>
-            <p className="text-xs text-gray-400 dark:text-stone-500">Enable free delivery for all orders</p>
-          </div>
-          <Toggle
-            on={freeDelivery}
-            onChange={() => {
-              const next = !freeDelivery;
-              setFreeDelivery(next);
-              handleSaveSettings({ freeDelivery: next });
-            }}
-          />
-        </div>
-        {!freeDelivery && (
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-stone-300 mb-1.5">
-              Standard Delivery Fee ($)
-            </label>
-            <input
-              value={deliveryFee}
-              onChange={(e) => setDeliveryFee(e.target.value)}
-              type="number"
-              min="0"
-              step="0.50"
-              className="w-40 rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-sm outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] transition-all"
-            />
-          </div>
-        )}
-      </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Store Name</label>
+                  <input
+                    type="text"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    placeholder="Artisan Crumbs"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Support Email</label>
+                  <input
+                    type="email"
+                    value={storeEmail}
+                    onChange={(e) => setStoreEmail(e.target.value)}
+                    placeholder="hello@artisancrumbs.com"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                  <input
+                    type="text"
+                    value={storePhone}
+                    onChange={(e) => setStorePhone(e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Physical Address</label>
+                  <input
+                    type="text"
+                    value={storeAddress}
+                    onChange={(e) => setStoreAddress(e.target.value)}
+                    placeholder="123 Baker Street, NY"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                  />
+                </div>
+              </div>
 
-      {/* User Roles & Permissions */}
-      <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-[#FFE5C8] dark:bg-[#D46211]/20 flex items-center justify-center">
-            <Users className="w-4 h-4 text-[#D46211]" />
-          </div>
-          <h3 className="font-bold text-gray-900 dark:text-stone-100">User Roles & Permissions</h3>
-        </div>
-        {users.length > 0 ? (
-          <div className="space-y-2">
-            {users.map((u) => (
-              <div
-                key={u._id}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
+              {settingsSaved && (
+                <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-3 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 shrink-0" />
+                  <span>Store profile saved successfully!</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => handleSaveSettings()}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
+                <Save className="w-4 h-4" /> Save Profile Settings
+              </button>
+            </div>
+          )}
+
+          {/* TAB 2: PAYMENT METHODS */}
+          {settingsTab === "payments" && (
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-lg ${getAvatarColor(u.name)} flex items-center justify-center text-white font-bold text-xs flex-shrink-0`}
-                  >
-                    {getInitials(u.name)}
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-[#D46211]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-stone-200">{u.name}</p>
-                    <p className="text-xs text-gray-400 dark:text-stone-500">{u.email}</p>
+                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Payment Methods</h3>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Enable or disable checkout payment gateways for your customers.</p>
                   </div>
                 </div>
-                <select
-                  value={u.role}
-                  onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
-                  className="text-xs border border-gray-200 dark:border-stone-800 rounded-lg px-2.5 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-semibold cursor-pointer"
-                >
-                  <option value="user">User</option>
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
               </div>
-            ))}
+
+              <div className="space-y-3">
+                {[
+                  {
+                    id: "stripe",
+                    label: "Credit / Debit Cards (Stripe)",
+                    desc: "Allow customers to pay securely using Visa, Mastercard, AMEX.",
+                    icon: "💳",
+                    state: stripeEnabled,
+                    toggle: () => {
+                      const next = !stripeEnabled;
+                      setStripeEnabled(next);
+                      handleSaveSettings({ stripeEnabled: next });
+                    },
+                  },
+                  {
+                    id: "paypal",
+                    label: "PayPal Express Checkout",
+                    desc: "Allow customers to pay via PayPal balance or linked bank accounts.",
+                    icon: "🅿️",
+                    state: paypalEnabled,
+                    toggle: () => {
+                      const next = !paypalEnabled;
+                      setPaypalEnabled(next);
+                      handleSaveSettings({ paypalEnabled: next });
+                    },
+                  },
+                  {
+                    id: "cash",
+                    label: "Cash on Delivery / Pickup",
+                    desc: "Allow customers to pay with cash upon receiving their baked goods.",
+                    icon: "💵",
+                    state: cashEnabled,
+                    toggle: () => {
+                      const next = !cashEnabled;
+                      setCashEnabled(next);
+                      handleSaveSettings({ cashEnabled: next });
+                    },
+                  },
+                ].map((m) => (
+                  <div
+                    key={m.id}
+                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                      m.state
+                        ? "border-[#D46211]/30 bg-[#FFF4EB]/40 dark:bg-[#D46211]/10"
+                        : "border-gray-100 dark:border-stone-800 bg-gray-50/50 dark:bg-stone-900/50 opacity-75"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{m.icon}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-gray-900 dark:text-stone-100">{m.label}</p>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              m.state
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                : "bg-gray-200 text-gray-600 dark:bg-stone-800 dark:text-stone-400"
+                            }`}
+                          >
+                            {m.state ? "ACTIVE" : "DISABLED"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-stone-400 mt-0.5">{m.desc}</p>
+                      </div>
+                    </div>
+                    <Toggle on={m.state} onChange={m.toggle} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: SHIPPING & FULFILLMENT */}
+          {settingsTab === "delivery" && (
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-[#D46211]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-stone-100">Fulfillment & Shipping Rules</h3>
+                  <p className="text-xs text-gray-400 dark:text-stone-500">Configure delivery fees and free shipping promotions.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-stone-800">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-bold text-gray-900 dark:text-stone-100">Store-wide Free Delivery</p>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                        {freeDelivery ? "FREE FOR ALL ORDERS" : "STANDARD FEE APPLIED"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                      When enabled, delivery fees are waived at checkout for all customers.
+                    </p>
+                  </div>
+                  <Toggle
+                    on={freeDelivery}
+                    onChange={() => {
+                      const next = !freeDelivery;
+                      setFreeDelivery(next);
+                      handleSaveSettings({ freeDelivery: next });
+                    }}
+                  />
+                </div>
+
+                {!freeDelivery && (
+                  <div className="p-4 rounded-2xl border border-gray-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 space-y-3">
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+                      Standard Delivery Fee ($)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.50"
+                        value={deliveryFee}
+                        onChange={(e) => setDeliveryFee(e.target.value)}
+                        className="w-36 rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveSettings({ deliveryFee: parseFloat(deliveryFee) || 0 })}
+                        className="px-4 py-2.5 rounded-xl bg-[#D46211] text-white text-xs font-bold hover:bg-[#b04f0b] transition-all cursor-pointer"
+                      >
+                        Update Fee
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: TEAM & ROLES */}
+          {settingsTab === "roles" && (
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-[#D46211]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Team Roles & Access Control</h3>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Manage administrator privileges and staff access.</p>
+                  </div>
+                </div>
+              </div>
+
+              {users.length > 0 ? (
+                <div className="space-y-2.5">
+                  {users.map((u) => (
+                    <div
+                      key={u._id}
+                      className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-9 rounded-lg ${getAvatarColor(u.name)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                        >
+                          {getInitials(u.name)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-gray-900 dark:text-stone-200">{u.name}</p>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                u.role === "admin"
+                                  ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300"
+                                  : u.role === "staff"
+                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                                  : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
+                              }`}
+                            >
+                              {u.role.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-400 dark:text-stone-500">{u.email}</p>
+                        </div>
+                      </div>
+                      <select
+                        value={u.role}
+                        onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
+                        className="text-xs border border-gray-200 dark:border-stone-800 rounded-xl px-3 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-bold cursor-pointer"
+                      >
+                        <option value="user">User (Customer)</option>
+                        <option value="staff">Staff (Baker)</option>
+                        <option value="admin">Admin (Manager)</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 dark:text-stone-500 text-center py-6">No users found</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Live Checkout Impact Preview */}
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#D46211] border-b border-gray-100 dark:border-stone-800 pb-3">
+              <Eye className="w-4 h-4" />
+              <span>Live Checkout Simulation</span>
+            </div>
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+              This preview shows how customers will experience checkout based on your settings above:
+            </p>
+
+            <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-850 border border-stone-200/70 dark:border-stone-800 space-y-3 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-stone-700 dark:text-stone-300">Storefront:</span>
+                <span className="font-bold text-[#241812] dark:text-stone-100">{storeName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-stone-700 dark:text-stone-300">Delivery Fee:</span>
+                <span className={`font-bold ${freeDelivery ? "text-emerald-600" : "text-stone-900 dark:text-stone-100"}`}>
+                  {freeDelivery ? "FREE" : `$${parseFloat(deliveryFee || "0").toFixed(2)}`}
+                </span>
+              </div>
+              <div>
+                <span className="block font-semibold text-stone-700 dark:text-stone-300 mb-1.5">Enabled Payment Methods:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {stripeEnabled && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">💳 Cards</span>}
+                  {paypalEnabled && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">🅿️ PayPal</span>}
+                  {cashEnabled && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">💵 Cash</span>}
+                  {!stripeEnabled && !paypalEnabled && !cashEnabled && (
+                    <span className="text-[10px] text-red-500 font-bold">⚠️ No payment methods active!</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                to="/cart"
+                target="_blank"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 dark:border-stone-700 hover:bg-gray-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold text-xs transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#D46211]" />
+                Test Customer Cart Page
+              </Link>
+            </div>
           </div>
-        ) : (
-          <p className="text-sm text-gray-400 dark:text-stone-500 text-center py-6">No users to manage</p>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -2198,11 +2399,23 @@ function AdminDashboard() {
         </nav>
 
         {/* Collapse Toggle */}
-        <div className="p-3 border-t border-white/20">
+        <div className="p-3 border-t border-white/20 space-y-1">
+          <Link
+            to="/"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:bg-white/15 hover:text-white transition-all text-xs font-semibold ${
+              sidebarOpen ? "" : "justify-center"
+            }`}
+            title="Return to public store"
+          >
+            <ArrowLeft className="w-[18px] h-[18px] flex-shrink-0" />
+            {sidebarOpen && <span>Back to Main Site</span>}
+          </Link>
+
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-white/15 hover:text-white transition-all ${sidebarOpen ? "" : "justify-center"
-              }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-white/15 hover:text-white transition-all ${
+              sidebarOpen ? "" : "justify-center"
+            }`}
           >
             <Menu className="w-[18px] h-[18px] flex-shrink-0" />
             {sidebarOpen && <span className="text-sm font-semibold">Collapse</span>}
@@ -2225,6 +2438,16 @@ function AdminDashboard() {
               })}
             </p>
           </div>
+
+          {/* Back to Store Button */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FFF4EB] hover:bg-[#FFE5C8] dark:bg-[#D46211]/20 dark:hover:bg-[#D46211]/30 text-[#D46211] font-bold text-xs transition-colors border border-[#D46211]/20"
+            title="Return to store homepage"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Back to Main Page</span>
+          </Link>
 
           {/* Theme Toggle */}
           <button

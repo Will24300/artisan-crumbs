@@ -7,6 +7,7 @@ interface AuthUser {
   name: string;
   email: string;
   role: UserRole;
+  provider?: string;
 }
 
 interface AuthState {

@@ -70,40 +70,41 @@ async function sendOrderStatusEmail(order) {
         console.log("[ORDER EMAIL] Skipping email notification: transporter not initialized");
         return;
     }
+    const orderIdStr = String(order._id).slice(-8).toUpperCase();
     const statusMessages = {
         pending: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} is Pending Review ⏳`,
+            subject: `Order #${orderIdStr} is Pending Review ⏳`,
             title: "Order Received",
             text: "We have received your order. Our team will review and accept it shortly.",
         },
         accepted: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} has been Accepted! 🥖`,
+            subject: `Order #${orderIdStr} has been Accepted! 🥖`,
             title: "Order Accepted",
             text: "Great news! Your order has been accepted by our bakery team.",
         },
         preparing: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} is in the Oven! 🧑‍🍳`,
+            subject: `Order #${orderIdStr} is in the Oven! 🧑‍🍳`,
             title: "Preparing & Baking",
             text: "Your delicious bakes are currently in the oven and being prepared fresh.",
         },
         ready_for_pickup: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} is Ready for Pickup! 📦`,
+            subject: `Order #${orderIdStr} is Ready for Pickup! 📦`,
             title: "Ready for Pickup",
             text: "Your fresh bakes are ready! Please head to our shop to collect your order.",
         },
         completed: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} Completed ✅`,
+            subject: `Order #${orderIdStr} Completed ✅`,
             title: "Order Completed",
             text: "Your order is complete. We hope you enjoy your freshly baked treats!",
         },
         declined: {
-            subject: `Order #${order._id.slice(-8).toUpperCase()} Update: Declined ❌`,
+            subject: `Order #${orderIdStr} Update: Declined ❌`,
             title: "Order Declined",
             text: "We regret to inform you that your order has been declined. Any payment has been voided/refunded.",
         },
     };
     const currentMsg = statusMessages[order.status] || {
-        subject: `Order #${order._id.slice(-8).toUpperCase()} Status Updated`,
+        subject: `Order #${orderIdStr} Status Updated`,
         title: "Order Status Update",
         text: `Your order status has been updated to: ${order.status}.`,
     };
