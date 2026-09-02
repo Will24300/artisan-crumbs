@@ -39,10 +39,29 @@ export async function createTransporter() {
   }
 }
 
+import jwt from "jsonwebtoken";
+
 // POST /api/contact - Submit contact message / feedback
 router.post("/", async (req, res) => {
   try {
     const { name, email, subject, message, rating } = req.body;
+
+    // Check optional token header to block admin
+    const authHeader = req.headers["authorization"];
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+      if (token) {
+        try {
+          const secret = process.env.JWT_SECRET || "default_jwt_secret";
+          const decoded: any = jwt.verify(token, secret);
+          if (decoded?.role === "admin") {
+            return res.status(403).json({ error: "Administrators cannot submit feedback messages." });
+          }
+        } catch {
+          // Token decode fail, ignore and proceed
+        }
+      }
+    }
 
     if (!name || !email || !message) {
       return res.status(400).json({ error: "Name, email, and message are required." });

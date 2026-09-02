@@ -3,6 +3,39 @@ import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import { authenticateToken } from "../middleware/auth.js";
 const router = express.Router();
+// ── Available time slots ──────────────────────────────────────────────────────
+// GET /api/orders/available-slots?date=YYYY-MM-DD
+// Returns an array of slots with slot label, total capacity, and remaining bookings.
+const DAILY_SLOTS = [
+    { id: "morning-early", label: "08:00 AM – 09:30 AM", emoji: "🌅", name: "Fresh Morning Batch", capacity: 8 },
+    { id: "morning-mid", label: "10:00 AM – 11:30 AM", emoji: "☀️", name: "Mid-Morning Batch", capacity: 8 },
+    { id: "afternoon", label: "02:00 PM – 03:30 PM", emoji: "🌇", name: "Afternoon Fresh", capacity: 8 },
+    { id: "evening", label: "04:30 PM – 06:00 PM", emoji: "🌆", name: "Evening Batch", capacity: 8 },
+];
+router.get("/available-slots", async (req, res) => {
+    try {
+        const { date } = req.query;
+        if (!date) {
+            return res.status(400).json({ error: "date query param required (YYYY-MM-DD)" });
+        }
+        // Count how many orders are already booked for each slot on this date
+        const existingOrders = await Order.find({ scheduledDate: date });
+        const slots = DAILY_SLOTS.map((slot) => {
+            const booked = existingOrders.filter((o) => o.timeSlot === slot.label).length;
+            return {
+                ...slot,
+                booked,
+                remaining: Math.max(0, slot.capacity - booked),
+                available: booked < slot.capacity,
+            };
+        });
+        res.json({ date, slots });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Unable to retrieve slots", details: error.message });
+    }
+});
+// ── Place order ───────────────────────────────────────────────────────────────
 router.post("/", authenticateToken, async (req, res) => {
     try {
         if (!req.user) {
@@ -11,9 +44,17 @@ router.post("/", authenticateToken, async (req, res) => {
         if (req.user.role === "admin") {
             return res.status(403).json({ error: "Administrators cannot place orders." });
         }
-        const { items, totalAmount, fulfillmentType, pickupTime, deliveryAddress, deliveryFee, paymentMethod, paymentStatus: requestedPaymentStatus, transactionId: requestedTransactionId, } = req.body;
+        const { items, totalAmount, fulfillmentType, pickupTime, deliveryAddress, deliveryFee, scheduledDate, timeSlot, paymentMethod, paymentStatus: requestedPaymentStatus, transactionId: requestedTransactionId, } = req.body;
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: "Cart is empty" });
+        }
+        // Validate slot still available when a slot is chosen
+        if (scheduledDate && timeSlot) {
+            const existingForSlot = await Order.countDocuments({ scheduledDate, timeSlot });
+            const slot = DAILY_SLOTS.find((s) => s.label === timeSlot);
+            if (slot && existingForSlot >= slot.capacity) {
+                return res.status(409).json({ error: `The ${timeSlot} slot is now fully booked. Please choose another slot.` });
+            }
         }
         // Check stock availability for non-custom items
         for (const item of items) {
@@ -25,7 +66,7 @@ router.post("/", authenticateToken, async (req, res) => {
             }
             if (product.stock < item.quantity) {
                 return res.status(400).json({
-                    error: `Insufficient stock for ${item.name}. Only ${product.stock} available.`
+                    error: `Insufficient stock for ${item.name}. Only ${product.stock} available.`,
                 });
             }
         }
@@ -37,9 +78,7 @@ router.post("/", authenticateToken, async (req, res) => {
         }
         const selectedMethod = paymentMethod || "card";
         const finalTransactionId = requestedTransactionId ||
-            (selectedMethod !== "cash"
-                ? `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-                : "");
+            (selectedMethod !== "cash" ? `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}` : "");
         const finalPaymentStatus = requestedPaymentStatus || (selectedMethod === "cash" ? "pending" : "paid");
         const order = await Order.create({
             user: req.user.id,
@@ -50,6 +89,8 @@ router.post("/", authenticateToken, async (req, res) => {
             pickupTime: pickupTime || "",
             deliveryAddress: deliveryAddress || "",
             deliveryFee: Number(deliveryFee) || 0,
+            scheduledDate: scheduledDate || "",
+            timeSlot: timeSlot || "",
             paymentMethod: selectedMethod,
             paymentStatus: finalPaymentStatus,
             transactionId: finalTransactionId,
@@ -60,7 +101,7 @@ router.post("/", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Unable to place order", details: error.message });
     }
 });
-// Get user's own orders
+// ── My orders ────────────────────────────────────────────────────────────────
 router.get("/my-orders", authenticateToken, async (req, res) => {
     try {
         if (!req.user) {

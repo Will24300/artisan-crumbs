@@ -7,12 +7,13 @@ import {
 } from "../features/cart";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils, Truck, MapPin, CreditCard } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, AlertTriangle, ArrowLeft, Clock, CheckCircle2, Package, Utensils, Truck, MapPin } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { fetchProducts, type ApiProduct } from "../features/products";
 import { API_BASE } from "../utils/api";
 import { PaymentModal } from "./PaymentModal";
+import { FulfillmentScheduler, type ScheduleSelection } from "./FulfillmentScheduler";
 
 interface RootState {
   cart: {
@@ -143,6 +144,7 @@ function Cart() {
   const [pickupTime, setPickupTime] = useState<string>("As soon as possible (in 30 mins)");
   const [deliveryAddress, setDeliveryAddress] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
+  const [scheduleSelection, setScheduleSelection] = useState<ScheduleSelection | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/settings`)
@@ -182,8 +184,8 @@ function Cart() {
       return;
     }
 
-    if (fulfillmentType === "pickup" && !pickupTime.trim()) {
-      toast.error("Please enter or select a pickup time.");
+    if (!scheduleSelection) {
+      toast.error("Please select a pickup/delivery date and time slot.");
       return;
     }
 
@@ -208,6 +210,8 @@ function Cart() {
       pickupTime: fulfillmentType === "pickup" ? pickupTime : "",
       deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
       deliveryFee: deliveryFeeAmount,
+      scheduledDate: scheduleSelection?.scheduledDate || "",
+      timeSlot: scheduleSelection?.timeSlot || "",
       paymentMethod: paymentDetails.paymentMethod,
       paymentStatus: paymentDetails.paymentStatus,
       transactionId: paymentDetails.transactionId,
@@ -429,8 +433,8 @@ function Cart() {
                   </div>
                 </div>
 
-                {/* Conditional Inputs */}
-                {fulfillmentType === "delivery" ? (
+                {/* Conditional Delivery Address Input */}
+                {fulfillmentType === "delivery" && (
                   <div>
                     <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-1.5">
                       Delivery Address *
@@ -442,80 +446,18 @@ function Cart() {
                         placeholder="Street address, Apt, City..."
                         value={deliveryAddress}
                         onChange={(e) => setDeliveryAddress(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 dark:border-stone-800 text-xs outline-none bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-200 focus:border-[#D46211]"
+                        className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 dark:border-stone-700 text-xs outline-none bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-[#D46211] dark:focus:border-[#D46211]"
                       />
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-1.5">
-                      Desired Pickup Time *
-                    </label>
-                    <select
-                      value={pickupTime}
-                      onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-stone-800 text-xs outline-none bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-200 focus:border-[#D46211]"
-                    >
-                      <option value="As soon as possible (in 30 mins)">As soon as possible (in 30 mins)</option>
-                      <option value="Today at 3:00 PM">Today at 3:00 PM</option>
-                      <option value="Today at 5:00 PM">Today at 5:00 PM</option>
-                      <option value="Tomorrow morning (9:00 AM)">Tomorrow morning (9:00 AM)</option>
-                    </select>
-                  </div>
                 )}
 
-                {/* Payment Method Selector */}
-                <div>
-                  <label className="block text-xs font-bold text-[#64748B] dark:text-stone-400 uppercase tracking-wider mb-2">
-                    Payment Method
-                  </label>
-                  <div className="space-y-1.5">
-                    {storeSettings.stripeEnabled && (
-                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
-                        <span className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="payment"
-                            value="card"
-                            checked={paymentMethod === "card"}
-                            onChange={() => setPaymentMethod("card")}
-                            className="accent-[#D46211]"
-                          />
-                          <CreditCard size={14} className="text-[#D46211]" /> Credit / Debit Card
-                        </span>
-                      </label>
-                    )}
-                    {storeSettings.paypalEnabled && (
-                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
-                        <span className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="payment"
-                            value="paypal"
-                            checked={paymentMethod === "paypal"}
-                            onChange={() => setPaymentMethod("paypal")}
-                            className="accent-[#D46211]"
-                          />
-                          🅿️ PayPal
-                        </span>
-                      </label>
-                    )}
-                    {storeSettings.cashEnabled && (
-                      <label className="flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-stone-800 cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-200 hover:bg-gray-50 dark:hover:bg-stone-850">
-                        <span className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="payment"
-                            value="cash"
-                            checked={paymentMethod === "cash"}
-                            onChange={() => setPaymentMethod("cash")}
-                            className="accent-[#D46211]"
-                          />
-                          💵 Cash on {fulfillmentType === "pickup" ? "Pickup" : "Delivery"}
-                        </span>
-                      </label>
-                    )}
-                  </div>
+                {/* Baking Batch Scheduler */}
+                <div className="pt-1 border-t border-gray-100 dark:border-stone-850">
+                  <FulfillmentScheduler
+                    value={scheduleSelection}
+                    onChange={setScheduleSelection}
+                  />
                 </div>
 
                 {/* Price Breakdown */}

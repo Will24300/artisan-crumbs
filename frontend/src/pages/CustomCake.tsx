@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -411,7 +411,13 @@ export function CustomCakePage() {
     return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
   }, [selectedSize, selectedFlavor, selectedFilling]);
 
+  const authUser = useSelector((state: any) => state.auth?.user);
+
   const handleAddToCart = () => {
+    if (authUser?.role === "admin") {
+      toast.error("Administrators cannot place orders or customize cakes.");
+      return;
+    }
     const summaryLines = [
       `Size: ${selectedSize.name}`,
       `Sponge: ${selectedFlavor.name}`,

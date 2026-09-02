@@ -83,6 +83,8 @@ interface OrderSummary {
   pickupTime?: string;
   deliveryAddress?: string;
   deliveryFee?: number;
+  scheduledDate?: string;
+  timeSlot?: string;
   paymentMethod?: string;
   paymentStatus?: "paid" | "pending" | "failed";
   transactionId?: string;
@@ -426,9 +428,9 @@ function AdminDashboard() {
 
   // ── Settings State ─────────────────────────────────────────────────────
   const [storeName, setStoreName] = useState("Artisan Crumbs");
-  const [storeEmail, setStoreEmail] = useState("hello@artisancrumbs.com");
-  const [storePhone, setStorePhone] = useState("+1 (555) 123-4567");
-  const [storeAddress, setStoreAddress] = useState("123 Baker Street, NY");
+  const [storeEmail, setStoreEmail] = useState("volonterwicha123@gmail.com");
+  const [storePhone, setStorePhone] = useState("+250 791954372");
+  const [storeAddress, setStoreAddress] = useState("Kigali,Rwanda");
   const [paypalEnabled, setPaypalEnabled] = useState(true);
   const [stripeEnabled, setStripeEnabled] = useState(true);
   const [cashEnabled, setCashEnabled] = useState(false);
@@ -438,6 +440,9 @@ function AdminDashboard() {
   const [settingsTab, setSettingsTab] = useState<"general" | "payments" | "delivery" | "roles">("general");
 
   const [reviews, setReviews] = useState<FeedbackMessage[]>([]);
+  const [productReviews, setProductReviews] = useState<any[]>([]);
+  const [reviewsSubTab, setReviewsSubTab] = useState<"product" | "contact">("product");
+  const [adminLightboxImage, setAdminLightboxImage] = useState<string | null>(null);
   const [reviewSearch, setReviewSearch] = useState("");
   const [reviewFilter, setReviewFilter] = useState<"all" | "approved" | "testimonials" | "pending">("all");
 
@@ -464,9 +469,9 @@ function AdminDashboard() {
       if (settingsRes.ok) {
         const sData = await settingsRes.json();
         setStoreName(sData.storeName || "Artisan Crumbs");
-        setStoreEmail(sData.storeEmail || "hello@artisancrumbs.com");
-        setStorePhone(sData.storePhone || "+1 (555) 123-4567");
-        setStoreAddress(sData.storeAddress || "123 Baker Street, NY");
+        setStoreEmail(sData.storeEmail || "volonterwicha123@gmail.com");
+        setStorePhone(sData.storePhone || "+250 791954372");
+        setStoreAddress(sData.storeAddress || "Kigali,Rwanda");
         setPaypalEnabled(Boolean(sData.paypalEnabled));
         setStripeEnabled(Boolean(sData.stripeEnabled));
         setCashEnabled(Boolean(sData.cashEnabled));
@@ -474,7 +479,7 @@ function AdminDashboard() {
         setDeliveryFee(String(sData.deliveryFee ?? 4.99));
       }
 
-      // Fetch Reviews / Feedback
+      // Fetch Contact Reviews / Feedback
       const reviewsRes = await fetch(`${API_BASE}/api/contact`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -482,10 +487,38 @@ function AdminDashboard() {
         const rData = await reviewsRes.json();
         setReviews(rData || []);
       }
+
+      // Fetch Product Ratings & Reviews
+      const prodReviewsRes = await fetch(`${API_BASE}/api/reviews/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (prodReviewsRes.ok) {
+        const prData = await prodReviewsRes.json();
+        setProductReviews(prData || []);
+      }
     } catch {
       setMessage("Unable to connect to the backend. Is the server running?");
     }
     setLoading(false);
+  };
+
+  const handleDeleteProductReview = async (id: string) => {
+    if (!token) return;
+    if (!window.confirm("Are you sure you want to delete this product review?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setProductReviews((prev) => prev.filter((r) => r._id !== id));
+        toast.success("Product review deleted");
+      } else {
+        toast.error("Failed to delete review");
+      }
+    } catch {
+      toast.error("Failed to delete review");
+    }
   };
 
   const handleToggleReviewStatus = async (
@@ -869,7 +902,7 @@ function AdminDashboard() {
     { id: "products", label: "Products", icon: <Package className="w-[18px] h-[18px]" />, badge: products.length },
     { id: "orders", label: "Orders", icon: <ShoppingBag className="w-[18px] h-[18px]" />, badge: pendingOrders.length || undefined },
     { id: "customers", label: "Customers", icon: <Users className="w-[18px] h-[18px]" />, badge: users.length },
-    { id: "reviews", label: "Reviews", icon: <MessageSquare className="w-[18px] h-[18px]" />, badge: reviews.length || undefined },
+    { id: "reviews", label: "Reviews", icon: <MessageSquare className="w-[18px] h-[18px]" />, badge: (productReviews.length + reviews.length) || undefined },
     { id: "analytics", label: "Analytics", icon: <BarChart2 className="w-[18px] h-[18px]" /> },
     { id: "settings", label: "Settings", icon: <Settings className="w-[18px] h-[18px]" /> },
   ];
@@ -969,10 +1002,10 @@ function AdminDashboard() {
               <div key={o._id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors">
                 <div
                   className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${o.status === "pending"
-                      ? "bg-[#D46211]"
-                      : o.status === "accepted"
-                        ? "bg-emerald-400"
-                        : "bg-red-400"
+                    ? "bg-[#D46211]"
+                    : o.status === "accepted"
+                      ? "bg-emerald-400"
+                      : "bg-red-400"
                     }`}
                 />
                 <div className="flex-1 min-w-0">
@@ -988,10 +1021,10 @@ function AdminDashboard() {
                 </div>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${o.status === "pending"
-                      ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211]"
-                      : o.status === "accepted"
-                        ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400"
-                        : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
+                    ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211]"
+                    : o.status === "accepted"
+                      ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400"
+                      : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
                     }`}
                 >
                   {o.status}
@@ -1024,8 +1057,8 @@ function AdminDashboard() {
                   key={p}
                   onClick={() => setSalesPeriod(p)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${salesPeriod === p
-                      ? "bg-white dark:bg-[#1c1917] text-[#D46211] shadow-sm"
-                      : "text-gray-500 dark:text-stone-400 hover:text-gray-700 dark:hover:text-stone-300"
+                    ? "bg-white dark:bg-[#1c1917] text-[#D46211] shadow-sm"
+                    : "text-gray-500 dark:text-stone-400 hover:text-gray-700 dark:hover:text-stone-300"
                     }`}
                 >
                   {p}
@@ -1081,8 +1114,8 @@ function AdminDashboard() {
               key={f.key}
               onClick={() => setProductFilter(f.key)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${productFilter === f.key
-                  ? "bg-[#D46211] text-white shadow-sm shadow-[#D46211]/30"
-                  : "bg-white dark:bg-[#1c1917] border border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-[#D46211]/60 dark:hover:border-[#D46211]/80"
+                ? "bg-[#D46211] text-white shadow-sm shadow-[#D46211]/30"
+                : "bg-white dark:bg-[#1c1917] border border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-[#D46211]/60 dark:hover:border-[#D46211]/80"
                 }`}
             >
               {f.label}
@@ -1296,8 +1329,7 @@ function AdminDashboard() {
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            order.status === "pending"
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${order.status === "pending"
                               ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 text-[#D46211] border border-[#D46211]/40"
                               : order.status === "accepted"
                                 ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 border border-emerald-200 dark:border-emerald-900/30"
@@ -1504,6 +1536,15 @@ function AdminDashboard() {
                                     </div>
                                   </>
                                 )}
+                                {order.scheduledDate && order.timeSlot && (
+                                  <div className="flex justify-between items-start mt-1 pt-1 border-t border-stone-100 dark:border-stone-800">
+                                    <span className="text-gray-400 dark:text-stone-500">🗓 Baking Slot</span>
+                                    <span className="font-semibold text-[#D46211] text-xs text-right ml-3">
+                                      {new Date(order.scheduledDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                      {" · "}{order.timeSlot}
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-400 dark:text-stone-500">Payment</span>
                                   <div className="flex items-center gap-1.5">
@@ -1511,11 +1552,10 @@ function AdminDashboard() {
                                       {order.paymentMethod || "card"}
                                     </span>
                                     <span
-                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${
-                                        order.paymentStatus === "paid"
+                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${order.paymentStatus === "paid"
                                           ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                                           : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-                                      }`}
+                                        }`}
                                     >
                                       {order.paymentStatus || (order.paymentMethod === "cash" ? "pending" : "paid")}
                                     </span>
@@ -1605,8 +1645,8 @@ function AdminDashboard() {
                   </div>
                   <span
                     className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${u.role === "admin"
-                        ? "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400"
-                        : "bg-gray-100 dark:bg-stone-800 text-gray-500 dark:text-stone-400"
+                      ? "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400"
+                      : "bg-gray-100 dark:bg-stone-800 text-gray-500 dark:text-stone-400"
                       }`}
                   >
                     {u.role}
@@ -1677,142 +1717,296 @@ function AdminDashboard() {
     });
   }, [reviews, reviewSearch, reviewFilter]);
 
-  const renderReviews = () => (
-    <div className="space-y-5">
-      {/* Search & Filter Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+  const renderReviews = () => {
+    const filteredProdReviews = productReviews.filter((r) => {
+      const q = reviewSearch.toLowerCase();
+      const pName = r.productId?.name ? r.productId.name.toLowerCase() : "";
+      return r.userName?.toLowerCase().includes(q) || r.comment?.toLowerCase().includes(q) || pName.includes(q);
+    });
+
+    return (
+      <div className="space-y-6">
+        {/* Main Review Section Sub-Tabs */}
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-stone-800 pb-3 flex-wrap gap-3">
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-stone-850 p-1.5 rounded-2xl text-xs font-bold">
+            <button
+              onClick={() => setReviewsSubTab("product")}
+              className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${reviewsSubTab === "product"
+                  ? "bg-[#D46211] text-white shadow-md shadow-[#D46211]/20"
+                  : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100"
+                }`}
+            >
+              <Star className="w-3.5 h-3.5 fill-current" />
+              <span>Product Ratings & Photos ({productReviews.length})</span>
+            </button>
+
+            <button
+              onClick={() => setReviewsSubTab("contact")}
+              className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${reviewsSubTab === "contact"
+                  ? "bg-[#D46211] text-white shadow-md shadow-[#D46211]/20"
+                  : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100"
+                }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Contact Messages ({reviews.length})</span>
+            </button>
+          </div>
+
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-stone-500" />
             <input
               value={reviewSearch}
               onChange={(e) => setReviewSearch(e.target.value)}
               type="text"
-              placeholder="Search reviews & feedback..."
-              className="pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-stone-800 text-sm outline-none focus:border-[#D46211] bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 w-72 transition-all"
+              placeholder={reviewsSubTab === "product" ? "Search product reviews..." : "Search contact messages..."}
+              className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-stone-800 text-xs outline-none focus:border-[#D46211] bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 w-64 transition-all"
             />
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5 bg-white dark:bg-[#1c1917] p-1 rounded-xl border border-gray-200 dark:border-stone-800 text-xs">
-            {(
-              [
-                { id: "all", label: `All (${reviews.length})` },
-                { id: "pending", label: `Pending (${reviews.filter((r) => !r.isApproved).length})` },
-                { id: "approved", label: `Approved (${reviews.filter((r) => r.isApproved).length})` },
-                { id: "testimonials", label: `Testimonials (${reviews.filter((r) => r.isTestimonial).length})` },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setReviewFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  reviewFilter === tab.id
-                    ? "bg-[#D46211] text-white shadow-sm"
-                    : "text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        {/* ── SUB-TAB 1: PRODUCT REVIEWS & CUSTOMER PHOTOS ───────────────── */}
+        {reviewsSubTab === "product" && (
+          <div className="space-y-4">
+            {filteredProdReviews.length === 0 ? (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
+                <Star className="w-10 h-10 text-stone-300 dark:text-stone-700 mx-auto mb-3" />
+                <p className="text-stone-500 font-medium">No product reviews found</p>
+                <p className="text-xs text-stone-400 mt-1">Customer reviews and photos will appear here as they are published.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredProdReviews.map((rev) => (
+                  <div
+                    key={rev._id}
+                    className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-200 dark:border-stone-800 p-5 shadow-sm space-y-3 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Product Header Info */}
+                      <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-stone-850">
+                        {rev.productId?.image ? (
+                          <img
+                            src={rev.productId.image}
+                            alt={rev.productId.name}
+                            className="w-12 h-12 rounded-xl object-cover border border-stone-200 dark:border-stone-700"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-stone-800 flex items-center justify-center text-xs font-bold text-[#D46211]">
+                            Bakery
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate">
+                            {rev.productId?.name || "Artisan Product"}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-stone-600 dark:text-stone-400 font-medium">
+                              By {rev.userName}
+                            </span>
+                            {rev.isVerifiedPurchase && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600" /> Verified Buyer
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stars & Date */}
+                      <div className="flex items-center justify-between mt-3 mb-2">
+                        <div className="flex items-center gap-1 text-amber-400">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              size={14}
+                              className={s <= rev.rating ? "fill-amber-400 text-amber-400" : "text-stone-300 dark:text-stone-700"}
+                            />
+                          ))}
+                          <span className="text-xs font-bold text-stone-700 dark:text-stone-300 ml-1">
+                            {rev.rating} / 5
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-400">
+                          {new Date(rev.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                      </div>
+
+                      {/* Comment */}
+                      <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed italic bg-stone-50 dark:bg-[#12100f] p-3 rounded-xl border border-stone-100 dark:border-stone-850">
+                        "{rev.comment}"
+                      </p>
+
+                      {/* Customer Photo */}
+                      {rev.photo && (
+                        <div className="mt-3">
+                          <span className="text-[11px] font-semibold text-stone-400 block mb-1">
+                            Uploaded Photo:
+                          </span>
+                          <img
+                            src={rev.photo}
+                            alt="Customer upload"
+                            onClick={() => setAdminLightboxImage(rev.photo)}
+                            className="w-20 h-20 rounded-xl object-cover border border-stone-200 dark:border-stone-700 cursor-pointer hover:opacity-90 transition-opacity"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-3 border-t border-stone-100 dark:border-stone-850 flex justify-end">
+                      <button
+                        onClick={() => handleDeleteProductReview(rev._id)}
+                        className="px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Review
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
-        <div className="text-sm text-gray-400 dark:text-stone-500">
-          <strong className="text-gray-700 dark:text-stone-300">{filteredReviews.length}</strong> reviews
-        </div>
-      </div>
-
-      {filteredReviews.length === 0 ? (
-        <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
-          <MessageSquare className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
-          <p className="text-gray-400 dark:text-stone-500 font-medium">No reviews match your filters</p>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-2 gap-4">
-          {filteredReviews.map((review) => (
-            <div
-              key={review._id}
-              className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-3 flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div>
-                    <h4 className="font-bold text-gray-900 dark:text-stone-100 text-base">
-                      {review.name}
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-stone-500">{review.email}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[11px] font-semibold bg-gray-100 dark:bg-stone-850 px-2 py-0.5 rounded-full text-stone-600 dark:text-stone-400">
-                      {review.subject}
-                    </span>
-                    <p className="text-[10px] text-gray-400 dark:text-stone-500 mt-1">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Rating stars */}
-                <div className="flex items-center gap-1 my-2">
-                  {[1, 2, 3, 4, 5].map((starIdx) => (
-                    <Star
-                      key={starIdx}
-                      size={15}
-                      className={
-                        starIdx <= (review.rating || 0)
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-stone-300 dark:text-stone-700"
-                      }
-                    />
-                  ))}
-                  <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 ml-1">
-                    {review.rating ? `${review.rating}/5` : "No rating"}
-                  </span>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-[#12100f] p-3 rounded-xl border border-gray-100 dark:border-stone-850 text-xs text-gray-700 dark:text-stone-300 italic">
-                  "{review.message}"
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-stone-850 text-xs font-semibold">
+        {/* ── SUB-TAB 2: CONTACT MESSAGES & FEEDBACK ────────────────────── */}
+        {reviewsSubTab === "contact" && (
+          <div className="space-y-5">
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 bg-white dark:bg-[#1c1917] p-1 rounded-xl border border-gray-200 dark:border-stone-800 text-xs w-fit">
+              {(
+                [
+                  { id: "all", label: `All (${reviews.length})` },
+                  { id: "pending", label: `Pending (${reviews.filter((r) => !r.isApproved).length})` },
+                  { id: "approved", label: `Approved (${reviews.filter((r) => r.isApproved).length})` },
+                  { id: "testimonials", label: `Testimonials (${reviews.filter((r) => r.isTestimonial).length})` },
+                ] as const
+              ).map((tab) => (
                 <button
-                  onClick={() =>
-                    handleToggleReviewStatus(review._id, { isApproved: !review.isApproved })
-                  }
-                  className={`flex-1 py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    review.isApproved
-                      ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
-                      : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
-                  }`}
+                  key={tab.id}
+                  onClick={() => setReviewFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${reviewFilter === tab.id
+                      ? "bg-[#D46211] text-white shadow-sm"
+                      : "text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800"
+                    }`}
                 >
-                  <Check size={14} /> {review.isApproved ? "Approved" : "Approve Review"}
+                  {tab.label}
                 </button>
-
-                <button
-                  onClick={() =>
-                    handleToggleReviewStatus(review._id, {
-                      isTestimonial: !review.isTestimonial,
-                      isApproved: true,
-                    })
-                  }
-                  className={`flex-1 py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    review.isTestimonial
-                      ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 border-[#D46211] text-[#D46211]"
-                      : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
-                  }`}
-                >
-                  <Star size={14} className={review.isTestimonial ? "fill-[#D46211]" : ""} />
-                  {review.isTestimonial ? "Featured" : "Feature on Homepage"}
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+
+            {filteredReviews.length === 0 ? (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-16 text-center">
+                <MessageSquare className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
+                <p className="text-gray-400 dark:text-stone-500 font-medium">No contact messages match your filters</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {filteredReviews.map((review) => (
+                  <div
+                    key={review._id}
+                    className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-3 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <h4 className="font-bold text-gray-900 dark:text-stone-100 text-base">
+                            {review.name}
+                          </h4>
+                          <p className="text-xs text-gray-400 dark:text-stone-500">{review.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[11px] font-semibold bg-gray-100 dark:bg-stone-850 px-2 py-0.5 rounded-full text-stone-600 dark:text-stone-400">
+                            {review.subject}
+                          </span>
+                          <p className="text-[10px] text-gray-400 dark:text-stone-500 mt-1">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Rating stars */}
+                      <div className="flex items-center gap-1 my-2">
+                        {[1, 2, 3, 4, 5].map((starIdx) => (
+                          <Star
+                            key={starIdx}
+                            size={15}
+                            className={
+                              starIdx <= (review.rating || 0)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-stone-300 dark:text-stone-700"
+                            }
+                          />
+                        ))}
+                        <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 ml-1">
+                          {review.rating ? `${review.rating}/5` : "No rating"}
+                        </span>
+                      </div>
+
+                      <div className="bg-gray-50 dark:bg-[#12100f] p-3 rounded-xl border border-gray-100 dark:border-stone-850 text-xs text-gray-700 dark:text-stone-300 italic">
+                        "{review.message}"
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-stone-850 text-xs font-semibold">
+                      <button
+                        onClick={() =>
+                          handleToggleReviewStatus(review._id, { isApproved: !review.isApproved })
+                        }
+                        className={`flex-1 py-2 px-3 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${review.isApproved
+                            ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                            : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                          }`}
+                      >
+                        <Check size={14} /> {review.isApproved ? "Approved" : "Approve Review"}
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleToggleReviewStatus(review._id, {
+                            isTestimonial: !review.isTestimonial,
+                            isApproved: true,
+                          })
+                        }
+                        className={`flex-1 py-2 px-[#D46211] rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${review.isTestimonial
+                            ? "bg-[#FFF4EB] dark:bg-[#D46211]/20 border-[#D46211] text-[#D46211]"
+                            : "border-gray-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-850"
+                          }`}
+                      >
+                        <Star size={14} className={review.isTestimonial ? "fill-[#D46211]" : ""} />
+                        {review.isTestimonial ? "Featured" : "Feature on Homepage"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Lightbox for Admin Photo Zoom */}
+        {adminLightboxImage && (
+          <div
+            onClick={() => setAdminLightboxImage(null)}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <div className="relative max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl">
+              <img
+                src={adminLightboxImage}
+                alt="Zoomed customer photo"
+                className="w-full h-full object-contain max-h-[85vh]"
+              />
+              <button
+                onClick={() => setAdminLightboxImage(null)}
+                className="absolute top-4 right-4 bg-black/60 text-white p-2 rounded-full hover:bg-black/80"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // ── SECTION: ANALYTICS ────────────────────────────────────────────────
   const renderAnalytics = () => {
@@ -1980,11 +2174,10 @@ function AdminDashboard() {
           <button
             key={t.id}
             onClick={() => setSettingsTab(t.id as any)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              settingsTab === t.id
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${settingsTab === t.id
                 ? "bg-[#D46211] text-white shadow-sm"
                 : "bg-white dark:bg-[#1c1917] text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800 border border-gray-100 dark:border-stone-800"
-            }`}
+              }`}
           >
             {t.icon}
             <span>{t.label}</span>
@@ -2124,11 +2317,10 @@ function AdminDashboard() {
                 ].map((m) => (
                   <div
                     key={m.id}
-                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                      m.state
+                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${m.state
                         ? "border-[#D46211]/30 bg-[#FFF4EB]/40 dark:bg-[#D46211]/10"
                         : "border-gray-100 dark:border-stone-800 bg-gray-50/50 dark:bg-stone-900/50 opacity-75"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{m.icon}</span>
@@ -2136,11 +2328,10 @@ function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <p className="text-xs font-bold text-gray-900 dark:text-stone-100">{m.label}</p>
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              m.state
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.state
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
                                 : "bg-gray-200 text-gray-600 dark:bg-stone-800 dark:text-stone-400"
-                            }`}
+                              }`}
                           >
                             {m.state ? "ACTIVE" : "DISABLED"}
                           </span>
@@ -2251,13 +2442,12 @@ function AdminDashboard() {
                           <div className="flex items-center gap-2">
                             <p className="text-xs font-bold text-gray-900 dark:text-stone-200">{u.name}</p>
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                u.role === "admin"
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === "admin"
                                   ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300"
                                   : u.role === "staff"
-                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                                  : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
-                              }`}
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                                    : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
+                                }`}
                             >
                               {u.role.toUpperCase()}
                             </span>
@@ -2369,8 +2559,8 @@ function AdminDashboard() {
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left relative group ${isActive
-                    ? "bg-white text-[#D46211] shadow-lg shadow-black/10"
-                    : "text-white/70 hover:bg-white/15 hover:text-white"
+                  ? "bg-white text-[#D46211] shadow-lg shadow-black/10"
+                  : "text-white/70 hover:bg-white/15 hover:text-white"
                   } ${sidebarOpen ? "" : "justify-center"}`}
                 title={!sidebarOpen ? item.label : ""}
               >
@@ -2402,9 +2592,8 @@ function AdminDashboard() {
         <div className="p-3 border-t border-white/20 space-y-1">
           <Link
             to="/"
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:bg-white/15 hover:text-white transition-all text-xs font-semibold ${
-              sidebarOpen ? "" : "justify-center"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:bg-white/15 hover:text-white transition-all text-xs font-semibold ${sidebarOpen ? "" : "justify-center"
+              }`}
             title="Return to public store"
           >
             <ArrowLeft className="w-[18px] h-[18px] flex-shrink-0" />
@@ -2413,9 +2602,8 @@ function AdminDashboard() {
 
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-white/15 hover:text-white transition-all ${
-              sidebarOpen ? "" : "justify-center"
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 hover:bg-white/15 hover:text-white transition-all ${sidebarOpen ? "" : "justify-center"
+              }`}
           >
             <Menu className="w-[18px] h-[18px] flex-shrink-0" />
             {sidebarOpen && <span className="text-sm font-semibold">Collapse</span>}
