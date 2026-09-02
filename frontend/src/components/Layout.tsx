@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer2 from "./Footer2";
+import { LiveOrderFloatingWidget } from "./LiveOrderFloatingWidget";
 
 const pageVariants = {
   initial: { opacity: 0, x: -20 },
@@ -30,7 +31,7 @@ function Layout() {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-[#FBF8F4] dark:bg-[#0f0d0c] transition-colors duration-300">
+    <div className="min-h-screen bg-[#FBF8F4] dark:bg-[#0f0d0c] transition-colors duration-300 relative">
       <Navbar />
       <div className="px-5 md:px-10 lg:px-15">
         <AnimatePresence mode="wait">
@@ -46,7 +47,8 @@ function Layout() {
           </motion.div>
         </AnimatePresence>
       </div>
-      {/* <Footer /> */}
+      {/* Persistent Live Order Tracker Widget mounted globally */}
+      <LiveOrderFloatingWidget />
       <Footer2 />
     </div>
   );

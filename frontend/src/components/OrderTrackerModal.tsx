@@ -21,6 +21,8 @@ export interface OrderData {
   pickupTime?: string;
   deliveryAddress?: string;
   deliveryFee?: number;
+  scheduledDate?: string;
+  timeSlot?: string;
   items: OrderItem[];
   createdAt: string;
   paymentMethod?: string;
@@ -241,7 +243,25 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order: ini
                 </p>
               </div>
             </div>
+
+            {currentOrder.scheduledDate && currentOrder.timeSlot && (
+              <div className="flex items-start gap-2.5 sm:col-span-2">
+                <Clock className="w-4 h-4 text-[#D46211] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-stone-700 dark:text-stone-300">Scheduled Baking Slot</p>
+                  <p className="text-stone-500 dark:text-stone-400 mt-0.5">
+                    {new Date(currentOrder.scheduledDate + "T12:00:00").toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })}{" "}
+                    · <span className="font-semibold text-[#D46211]">{currentOrder.timeSlot}</span>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
 
           {/* Order Items */}
           <div className="space-y-3">

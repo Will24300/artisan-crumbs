@@ -17,6 +17,8 @@ export interface IOrder {
   pickupTime?: string;
   deliveryAddress?: string;
   deliveryFee?: number;
+  scheduledDate?: string;
+  timeSlot?: string;
   paymentMethod?: string;
   paymentStatus?: "paid" | "pending" | "failed";
   transactionId?: string;
@@ -47,6 +49,8 @@ const orderSchema = new Schema<IOrderDocument>(
     pickupTime: { type: String, default: "" },
     deliveryAddress: { type: String, default: "" },
     deliveryFee: { type: Number, default: 0 },
+    scheduledDate: { type: String, default: "" },
+    timeSlot: { type: String, default: "" },
     paymentMethod: { type: String, default: "card" },
     paymentStatus: { type: String, enum: ["paid", "pending", "failed"], default: "paid" },
     transactionId: { type: String, default: "" },

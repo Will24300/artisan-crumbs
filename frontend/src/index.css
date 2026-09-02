@@ -56,3 +56,33 @@ html {
 .float-slow {
   animation: floatSlow 3s ease-in-out infinite;
 }
+
+/* ── Dark mode: native form elements ────────────────────────────────────────
+   Browsers (especially Chrome on Linux/Windows) don't always apply CSS
+   color rules to <option> elements inside a <select>. Setting color-scheme
+   on the root ensures the OS renders native controls in the right mode. */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+/* Ensure all inputs/selects/textareas show readable text in dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #e7e5e4; /* stone-200 */
+  background-color: #292524; /* stone-800 */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #78716c; /* stone-500 */
+}
+
+/* Option elements inside a select — overridden in supporting browsers */
+.dark select option {
+  background-color: #292524;
+  color: #e7e5e4;
+}

@@ -3,9 +3,32 @@ import mongoose from "mongoose";
 import Review from "../models/Review.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
-import { authenticateToken } from "../middleware/auth.js";
+import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
+
+// GET all product reviews for Admin Dashboard
+router.get("/all", authenticateToken, requireAdmin, async (_req, res) => {
+  try {
+    const reviews = await Review.find().populate("productId", "name image price").sort({ createdAt: -1 }).lean();
+    res.json(reviews);
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to fetch all reviews", details: error.message });
+  }
+});
+
+// DELETE a product review by ID (Admin only)
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const review = await Review.findByIdAndDelete(req.params.id);
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+    res.json({ success: true, message: "Review deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to delete review", details: error.message });
+  }
+});
 
 // GET batch summary of rating averages and counts for all products
 router.get("/summary", async (_req, res) => {
@@ -95,6 +118,10 @@ router.post("/product/:productId", authenticateToken, async (req: any, res: any)
     const { productId } = req.params;
     const { rating, comment, photo } = req.body;
     const user = req.user;
+
+    if (user?.role === "admin") {
+      return res.status(403).json({ error: "Administrators cannot post product reviews." });
+    }
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ error: "Rating must be between 1 and 5 stars" });

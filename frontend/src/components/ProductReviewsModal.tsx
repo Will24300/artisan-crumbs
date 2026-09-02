@@ -128,6 +128,11 @@ export const ProductReviewsModal: React.FC<ProductReviewsModalProps> = ({
       return;
     }
 
+    if (authUser?.role === "admin") {
+      toast.error("Administrators cannot post product reviews.");
+      return;
+    }
+
     if (!comment.trim()) {
       toast.error("Please enter your thoughts about this baked item");
       return;
@@ -299,7 +304,12 @@ export const ProductReviewsModal: React.FC<ProductReviewsModalProps> = ({
 
             {/* Write Review Trigger / Form Section */}
             <div className="border-t border-stone-100 dark:border-stone-800 pt-4">
-              {!showForm ? (
+              {authUser?.role === "admin" ? (
+                <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Logged in as Administrator. Product review submission is disabled for admin accounts.</span>
+                </div>
+              ) : !showForm ? (
                 <div className="flex items-center justify-between bg-orange-50/50 dark:bg-[#D46211]/10 p-4 rounded-2xl border border-orange-100 dark:border-[#D46211]/20">
                   <div>
                     <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">

@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { toast } from "react-toastify";
 import { API_BASE } from "../utils/api";
 
+import { useSelector } from "react-redux";
+
 const hoursData = [
   { label: "Mon – Fri", time: "7:00 AM – 6:00 PM", days: [1, 2, 3, 4, 5] },
   { label: "Saturday", time: "8:00 AM – 4:00 PM", days: [6] },
@@ -26,6 +28,9 @@ const rowVariants = {
 } as const;
 
 function Contact() {
+  const authUser = useSelector((state: any) => state.auth?.user);
+  const token = useSelector((state: any) => state.auth?.token);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("General Inquiry");
@@ -42,6 +47,13 @@ function Contact() {
     e.preventDefault();
     setError(null);
 
+    if (authUser?.role === "admin") {
+      const msg = "Administrators cannot submit feedback messages.";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
     if (!name.trim() || !email.trim() || !message.trim()) {
       setError("Please fill out all required fields.");
       return;
@@ -50,9 +62,12 @@ function Contact() {
     setLoading(true);
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       const response = await fetch(`${API_BASE}/api/contact`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ name, email, subject, rating, message }),
       });
 

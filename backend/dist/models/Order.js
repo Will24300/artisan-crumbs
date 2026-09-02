@@ -20,6 +20,8 @@ const orderSchema = new Schema({
     pickupTime: { type: String, default: "" },
     deliveryAddress: { type: String, default: "" },
     deliveryFee: { type: Number, default: 0 },
+    scheduledDate: { type: String, default: "" },
+    timeSlot: { type: String, default: "" },
     paymentMethod: { type: String, default: "card" },
     paymentStatus: { type: String, enum: ["paid", "pending", "failed"], default: "paid" },
     transactionId: { type: String, default: "" },
