@@ -7,7 +7,6 @@ import {
   Sparkles,
   Upload,
   MessageSquare,
-  Image as ImageIcon,
   Check,
   User,
 } from "lucide-react";

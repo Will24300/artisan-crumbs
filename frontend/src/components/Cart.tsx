@@ -141,7 +141,7 @@ function Cart() {
   });
 
   const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">("delivery");
-  const [pickupTime, setPickupTime] = useState<string>("As soon as possible (in 30 mins)");
+  const [pickupTime] = useState<string>("As soon as possible (in 30 mins)");
   const [deliveryAddress, setDeliveryAddress] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
   const [scheduleSelection, setScheduleSelection] = useState<ScheduleSelection | null>(null);
