@@ -6,7 +6,7 @@ export interface IUser {
   email: string;
   passwordHash: string;
   role: "admin" | "customer";
-  provider?: "local" | "google" | "facebook";
+  provider?: "local";
   providerId?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -19,7 +19,6 @@ export interface IUserDocument extends IUser, Document {
 
 interface IUserModel extends Model<IUserDocument> {
   createUser(name: string, email: string, password: string, role: "admin" | "customer"): Promise<IUserDocument>;
-  createSocialUser(name: string, email: string, provider: "google" | "facebook", providerId?: string): Promise<IUserDocument>;
   findByEmail(email: string): Promise<IUserDocument | null>;
 }
 
@@ -29,7 +28,7 @@ const userSchema = new Schema<IUserDocument, IUserModel>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["admin", "customer"], default: "customer" },
-    provider: { type: String, enum: ["local", "google", "facebook"], default: "local" },
+    provider: { type: String, enum: ["local"], default: "local" },
     providerId: { type: String, default: null },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
@@ -53,17 +52,7 @@ userSchema.statics.createUser = async function (
   return this.create({ name, email, passwordHash, role, provider: "local" });
 };
 
-userSchema.statics.createSocialUser = async function (
-  name: string,
-  email: string,
-  provider: "google" | "facebook",
-  providerId?: string
-) {
-  const randomPassword = `social_${Math.random().toString(36).slice(-8)}_${Date.now()}`;
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(randomPassword, salt);
-  return this.create({ name, email, passwordHash, role: "customer", provider, providerId });
-};
+
 
 userSchema.statics.findByEmail = function (email: string) {
   return this.findOne({ email: email.toLowerCase().trim() });
