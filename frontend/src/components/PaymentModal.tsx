@@ -295,7 +295,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       </label>
                       <input
                         type="text"
-                        placeholder="John Doe"
+                        placeholder="Volonte Rwicha"
                         value={cardName}
                         onChange={(e) => {
                           setCardName(e.target.value);
