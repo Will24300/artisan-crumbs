@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock,
   Check,
-  ChefHat,
   Package,
   CheckCircle2,
   X,
@@ -12,7 +11,6 @@ import {
   ChevronDown,
   Sparkles,
   ArrowRight,
-  Eye,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { API_BASE } from "../utils/api";
@@ -38,7 +36,7 @@ const STATUS_CONFIG: Record<
   preparing: {
     label: "In the Oven",
     subtext: "Baking & decorating fresh",
-    icon: ChefHat,
+    icon: Package,
     colorClass: "bg-[#D46211] text-white shadow-[#D46211]/25 ring-4 ring-[#D46211]/20",
   },
   ready_for_pickup: {
@@ -55,20 +53,6 @@ const STATUS_CONFIG: Record<
   },
 };
 
-// Fallback demo order if user wants to test live tracker before placing an order
-const DEMO_ORDER: OrderData = {
-  _id: "demo-order-883921",
-  status: "preparing",
-  totalAmount: 42.5,
-  fulfillmentType: "pickup",
-  pickupTime: "10:30 AM",
-  createdAt: new Date().toISOString(),
-  items: [
-    { name: "Artisan Sourdough Loaf", price: 8.5, quantity: 2 },
-    { name: "French Butter Croissant", price: 4.5, quantity: 3 },
-  ],
-};
-
 export const LiveOrderFloatingWidget: React.FC = () => {
   const authUser = useSelector((state: RootState) => (state as any).auth?.user);
   const token = useSelector((state: RootState) => (state as any).auth?.token);
@@ -77,25 +61,12 @@ export const LiveOrderFloatingWidget: React.FC = () => {
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [dismissedOrderId, setDismissedOrderId] = useState<string | null>(null);
-  const [isDemoActive, setIsDemoActive] = useState(false);
 
   const prevStatusRef = useRef<string | null>(null);
 
   const fetchActiveOrders = useCallback(async () => {
     if (!token || !authUser) {
-      // Check localStorage for offline/guest demo order
-      const saved = localStorage.getItem("artisan_latest_order");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && ["pending", "accepted", "preparing", "ready_for_pickup"].includes(parsed.status)) {
-            setActiveOrder(parsed);
-            return;
-          }
-        } catch {
-          // Ignore parse error
-        }
-      }
+      setActiveOrder(null);
       return;
     }
 
@@ -121,7 +92,6 @@ export const LiveOrderFloatingWidget: React.FC = () => {
           }
           prevStatusRef.current = foundActive.status;
           setActiveOrder(foundActive);
-          setIsDemoActive(false);
         } else {
           setActiveOrder(null);
           prevStatusRef.current = null;
@@ -148,32 +118,12 @@ export const LiveOrderFloatingWidget: React.FC = () => {
     return () => window.removeEventListener("artisan_order_placed", handleOrderPlaced);
   }, [fetchActiveOrders]);
 
-  const currentOrder = activeOrder || (isDemoActive ? DEMO_ORDER : null);
-
-  // If no real order & demo not explicitly triggered, show a subtle "Live Bakery Status" button to test
-  if (!currentOrder || dismissedOrderId === currentOrder._id) {
-    return (
-      <div className="fixed bottom-6 right-6 z-40">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            setIsDemoActive(true);
-            setDismissedOrderId(null);
-          }}
-          className="flex items-center gap-2 bg-[#241812] dark:bg-stone-800 text-white text-xs font-bold px-3.5 py-2 rounded-full shadow-xl border border-stone-700/60 hover:bg-[#D46211] transition-all cursor-pointer"
-        >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-          </span>
-          <ChefHat className="w-3.5 h-3.5 text-amber-400" />
-          <span>Live Bakery Tracker</span>
-          <Eye className="w-3 h-3 text-stone-400 ml-1" />
-        </motion.button>
-      </div>
-    );
+  // If user is not logged in, has no active order, or widget was dismissed, render nothing
+  if (!authUser || !token || !activeOrder || dismissedOrderId === activeOrder._id) {
+    return null;
   }
+
+  const currentOrder = activeOrder;
 
   const statusConfig = STATUS_CONFIG[currentOrder.status] || STATUS_CONFIG.pending;
   const StatusIcon = statusConfig.icon;
@@ -234,7 +184,6 @@ export const LiveOrderFloatingWidget: React.FC = () => {
                   <button
                     onClick={() => {
                       setDismissedOrderId(currentOrder._id);
-                      setIsDemoActive(false);
                     }}
                     className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-600 transition-colors"
                     title="Dismiss widget"
