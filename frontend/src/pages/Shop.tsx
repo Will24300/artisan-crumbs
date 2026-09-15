@@ -162,11 +162,10 @@ export const Shop: React.FC<ShopProps> = ({
               <button
                 key={cat.value}
                 onClick={() => onFilterChange(cat.value)}
-                className={`py-1.5 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
-                  activeFilter === cat.value
+                className={`py-1.5 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer ${activeFilter === cat.value
                     ? "bg-[#D46211] text-white"
                     : "bg-[#F8F7F5] dark:bg-stone-800 text-[#475569] dark:text-stone-400 hover:bg-[#FFF4EB] dark:hover:bg-[#D46211]/10 hover:text-[#D46211]"
-                }`}
+                  }`}
               >
                 {cat.label}
               </button>
@@ -304,11 +303,10 @@ export const Shop: React.FC<ShopProps> = ({
                     <button
                       onClick={() => onAddToCart(product._id)}
                       disabled={product.stock === 0}
-                      className={`w-full rounded-full py-2.5 text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                        product.stock === 0
+                      className={`w-full rounded-full py-2.5 text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${product.stock === 0
                           ? "bg-gray-100 dark:bg-stone-800 text-gray-400 dark:text-stone-500 cursor-not-allowed"
                           : "bg-[#FFF4EB] dark:bg-[#D46211]/10 text-[#D46211] hover:bg-[#D46211] hover:text-white shadow-sm"
-                      }`}
+                        }`}
                     >
                       <ShoppingCart size={14} />
                       {product.stock === 0 ? "Unavailable" : "Add to Cart"}
