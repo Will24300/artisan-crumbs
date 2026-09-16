@@ -192,7 +192,7 @@ function Cart() {
 
   const handleFinalizeOrder = async (paymentDetails: {
     paymentMethod: string;
-    paymentStatus: "paid" | "pending";
+    paymentStatus: "paid" | "pending" | "failed";
     transactionId: string;
   }) => {
     const payload = {
@@ -216,7 +216,9 @@ function Cart() {
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for safety
+
+    let createdOrderId: string | null = null;
 
     try {
       const res = await fetch(`${API_BASE}/api/orders`, {
@@ -234,23 +236,43 @@ function Cart() {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         const message = errorData.error || "Failed to place order.";
-        toast.error(message);
-        throw new Error(message); // ← throw so PaymentModal resets
+        toast.error(`Order Failed: ${message}`);
+        throw new Error(message);
       }
 
       const newOrder = await res.json();
+      createdOrderId = newOrder._id;
+
+      // If for any reason payment status was requested as failed
+      if (paymentDetails.paymentStatus === "failed") {
+        await fetch(`${API_BASE}/api/orders/${newOrder._id}/cancel`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.error("Payment failed. Order has been cancelled.");
+        throw new Error("Payment failed.");
+      }
+
       toast.success("Order placed successfully! 🥖");
       dispatch(removeAllFromCart());
       setCreatedOrder(newOrder);
       setIsPaymentModalOpen(false);
     } catch (err: any) {
       clearTimeout(timeoutId);
-      if (err?.name === "AbortError") {
-        toast.error("Request timed out. Please try again.");
-      } else if (!err?.message?.includes("Failed to place order")) {
-        toast.error("Unable to connect to the server.");
+      if (createdOrderId) {
+        // Automatically attempt to cancel the order on backend and restore stock
+        fetch(`${API_BASE}/api/orders/${createdOrderId}/cancel`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
       }
-      throw err; // ← re-throw so PaymentModal's catch block resets state
+
+      if (err?.name === "AbortError") {
+        toast.error("Request timed out. Order cancelled.");
+      } else if (!err?.message?.includes("Failed to place order")) {
+        toast.error(err?.message || "Payment or server error. Order cancelled.");
+      }
+      throw err;
     }
   };
 
