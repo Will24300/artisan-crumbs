@@ -430,8 +430,7 @@ function AdminDashboard() {
   const [storeName, setStoreName] = useState("Artisan Crumbs");
   const [storeEmail, setStoreEmail] = useState("volonterwicha123@gmail.com");
   const [storePhone, setStorePhone] = useState("+250 791954372");
-  const [storeAddress, setStoreAddress] = useState("Kigali,Rwanda");
-  const [paypalEnabled, setPaypalEnabled] = useState(true);
+  const [storeAddress, setStoreAddress] = useState("ULK, 102 KG 14 Ave, Kigali");
   const [stripeEnabled, setStripeEnabled] = useState(true);
   const [cashEnabled, setCashEnabled] = useState(false);
   const [freeDelivery, setFreeDelivery] = useState(true);
@@ -471,8 +470,7 @@ function AdminDashboard() {
         setStoreName(sData.storeName || "Artisan Crumbs");
         setStoreEmail(sData.storeEmail || "volonterwicha123@gmail.com");
         setStorePhone(sData.storePhone || "+250 791954372");
-        setStoreAddress(sData.storeAddress || "Kigali,Rwanda");
-        setPaypalEnabled(Boolean(sData.paypalEnabled));
+        setStoreAddress(sData.storeAddress || "ULK, 102 KG 14 Ave, Kigali");
         setStripeEnabled(Boolean(sData.stripeEnabled));
         setCashEnabled(Boolean(sData.cashEnabled));
         setFreeDelivery(Boolean(sData.freeDelivery));
@@ -552,7 +550,6 @@ function AdminDashboard() {
       storeEmail,
       storePhone,
       storeAddress,
-      paypalEnabled,
       stripeEnabled,
       cashEnabled,
       freeDelivery,
@@ -574,7 +571,6 @@ function AdminDashboard() {
         setStoreEmail(data.storeEmail);
         setStorePhone(data.storePhone);
         setStoreAddress(data.storeAddress);
-        setPaypalEnabled(data.paypalEnabled);
         setStripeEnabled(data.stripeEnabled);
         setCashEnabled(data.cashEnabled);
         setFreeDelivery(data.freeDelivery);
@@ -2291,18 +2287,6 @@ function AdminDashboard() {
                     },
                   },
                   {
-                    id: "paypal",
-                    label: "PayPal Express Checkout",
-                    desc: "Allow customers to pay via PayPal balance or linked bank accounts.",
-                    icon: "🅿️",
-                    state: paypalEnabled,
-                    toggle: () => {
-                      const next = !paypalEnabled;
-                      setPaypalEnabled(next);
-                      handleSaveSettings({ paypalEnabled: next });
-                    },
-                  },
-                  {
                     id: "cash",
                     label: "Cash on Delivery / Pickup",
                     desc: "Allow customers to pay with cash upon receiving their baked goods.",
@@ -2420,7 +2404,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-stone-100">Team Roles & Access Control</h3>
-                    <p className="text-xs text-gray-400 dark:text-stone-500">Manage administrator privileges and staff access.</p>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Manage administrator and customer access levels.</p>
                   </div>
                 </div>
               </div>
@@ -2444,9 +2428,7 @@ function AdminDashboard() {
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === "admin"
                                   ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300"
-                                  : u.role === "staff"
-                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                                    : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
+                                  : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
                                 }`}
                             >
                               {u.role.toUpperCase()}
@@ -2460,9 +2442,8 @@ function AdminDashboard() {
                         onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
                         className="text-xs border border-gray-200 dark:border-stone-800 rounded-xl px-3 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-bold cursor-pointer"
                       >
-                        <option value="user">User (Customer)</option>
-                        <option value="staff">Staff (Baker)</option>
-                        <option value="admin">Admin (Manager)</option>
+                        <option value="customer">Customer</option>
+                        <option value="admin">Admin</option>
                       </select>
                     </div>
                   ))}
@@ -2500,9 +2481,8 @@ function AdminDashboard() {
                 <span className="block font-semibold text-stone-700 dark:text-stone-300 mb-1.5">Enabled Payment Methods:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {stripeEnabled && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">💳 Cards</span>}
-                  {paypalEnabled && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">🅿️ PayPal</span>}
                   {cashEnabled && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">💵 Cash</span>}
-                  {!stripeEnabled && !paypalEnabled && !cashEnabled && (
+                  {!stripeEnabled && !cashEnabled && (
                     <span className="text-[10px] text-red-500 font-bold">⚠️ No payment methods active!</span>
                   )}
                 </div>

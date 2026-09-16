@@ -135,7 +135,6 @@ function Cart() {
   const [storeSettings, setStoreSettings] = useState<any>({
     freeDelivery: true,
     deliveryFee: 4.99,
-    paypalEnabled: true,
     stripeEnabled: true,
     cashEnabled: false,
   });
@@ -153,7 +152,6 @@ function Cart() {
         if (data) {
           setStoreSettings(data);
           if (data.stripeEnabled) setPaymentMethod("card");
-          else if (data.paypalEnabled) setPaymentMethod("paypal");
           else if (data.cashEnabled) setPaymentMethod("cash");
         }
       })
@@ -217,6 +215,9 @@ function Cart() {
       transactionId: paymentDetails.transactionId,
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     try {
       const res = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
@@ -225,12 +226,16 @@ function Cart() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!res.ok) {
-        const errorData = await res.json();
-        toast.error(errorData.error || "Failed to place order.");
-        return;
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.error || "Failed to place order.";
+        toast.error(message);
+        throw new Error(message); // ← throw so PaymentModal resets
       }
 
       const newOrder = await res.json();
@@ -238,8 +243,14 @@ function Cart() {
       dispatch(removeAllFromCart());
       setCreatedOrder(newOrder);
       setIsPaymentModalOpen(false);
-    } catch {
-      toast.error("Unable to connect to the server.");
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err?.name === "AbortError") {
+        toast.error("Request timed out. Please try again.");
+      } else if (!err?.message?.includes("Failed to place order")) {
+        toast.error("Unable to connect to the server.");
+      }
+      throw err; // ← re-throw so PaymentModal's catch block resets state
     }
   };
 

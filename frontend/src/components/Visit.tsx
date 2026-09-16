@@ -1,14 +1,42 @@
-import { MapPin, Clock, Phone, ArrowUpRight } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowUpRight, Navigation } from "lucide-react";
+
+// Store location: ULK, 102 KG 14 Ave, Kigali
+const STORE_ADDRESS = "ULK, 102 KG 14 Ave, Kigali";
+const ULK_DESTINATION = encodeURIComponent(STORE_ADDRESS);
 
 function Visit() {
-  const address = encodeURIComponent("123 Baker's Lane, Kigali City");
-  const viewOnMapUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
-  const getDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${address}`;
+  const viewOnMapUrl = `https://www.google.com/maps/search/?api=1&query=${ULK_DESTINATION}`;
 
   const openHour = 6;
   const closeHour = 16;
   const currentHour = new Date().getHours();
   const isOpen = currentHour >= openHour && currentHour < closeHour;
+
+  const handleGetDirections = () => {
+    if (!navigator.geolocation) {
+      // Fallback: open maps with just the destination if geolocation not supported
+      window.open(
+        `https://www.google.com/maps/dir/?api=1&destination=${ULK_DESTINATION}`,
+        "_blank"
+      );
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${ULK_DESTINATION}&travelmode=driving`;
+        window.open(url, "_blank");
+      },
+      () => {
+        // Permission denied or error — open with just destination
+        window.open(
+          `https://www.google.com/maps/dir/?api=1&destination=${ULK_DESTINATION}`,
+          "_blank"
+        );
+      }
+    );
+  };
 
   return (
     <section className="relative bg-[#FFF4EB] dark:bg-[#D46211]/5 flex flex-col gap-8 p-8 sm:p-10 my-10 rounded-3xl border-2 border-dashed border-[#D46211]/25 lg:flex-row lg:items-center lg:justify-between overflow-hidden transition-colors duration-300">
@@ -27,7 +55,7 @@ function Visit() {
         </div>
 
         <p className="text-[#475569] dark:text-stone-300 text-[16px] leading-relaxed">
-          123 Baker's Lane, Kigali City
+          {STORE_ADDRESS}
         </p>
 
         <div className="flex items-center gap-2 mt-2 mb-4">
@@ -62,14 +90,13 @@ function Visit() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <a
-          href={getDirectionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleGetDirections}
           className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#D46211] py-3 px-6 rounded-2xl font-semibold text-[16px] text-center text-white hover:bg-[#b04f0b] transition-colors"
         >
+          <Navigation size={16} />
           Get Directions
-        </a>
+        </button>
 
         <a
           href="tel:+250791954372"
@@ -84,3 +111,4 @@ function Visit() {
 }
 
 export default Visit;
+
