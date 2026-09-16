@@ -91,8 +91,23 @@ function Contact() {
     }
   };
 
-  const directionsUrl =
-    "https://www.google.com/maps/dir/?api=1&destination=University+of+Kigali+ULK+Kigali+Rwanda";
+  const STORE_ADDRESS = "ULK, 102 KG 14 Ave, Kigali";
+  const ULK_DESTINATION = encodeURIComponent(STORE_ADDRESS);
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${ULK_DESTINATION}`;
+
+  const handleGetDirections = () => {
+    if (!navigator.geolocation) {
+      window.open(directionsUrl, "_blank");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${coords.latitude},${coords.longitude}&destination=${ULK_DESTINATION}&travelmode=driving`;
+        window.open(url, "_blank");
+      },
+      () => window.open(directionsUrl, "_blank")
+    );
+  };
 
   return (
     <div className="min-h-screen py-10 md:py-14">
@@ -344,19 +359,15 @@ function Contact() {
                   </span>
                 </div>
                 <p className="text-sm text-[#475569] dark:text-stone-300 leading-relaxed mb-4">
-                  Independent University of Kigali (ULK)
-                  <br />
-                  Kigali, Rwanda
+                  ULK, 102 KG 14 Ave, Kigali
                 </p>
                 
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=Independent+University+of+Kigali+Kigali+Rwanda"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleGetDirections}
                   className="inline-flex cursor-pointer justify-center rounded-full bg-[#D46211] px-4 py-2 text-sm font-bold text-white hover:bg-[#b04f0b] transition-colors"
                 >
                   Get Directions
-                </a>
+                </button>
               </motion.div>
             </div>
 
@@ -373,7 +384,7 @@ function Contact() {
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-[#241812] dark:text-stone-100 truncate">Artisan Crumbs</p>
-                    <p className="text-xs text-[#64748B] dark:text-stone-400 truncate">Independent University of Kigali (ULK), Kigali</p>
+                    <p className="text-xs text-[#64748B] dark:text-stone-400 truncate">ULK, 102 KG 14 Ave, Kigali</p>
                   </div>
                 </div>
                 

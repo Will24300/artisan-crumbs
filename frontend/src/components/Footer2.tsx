@@ -114,7 +114,7 @@ export default function Footer2() {
                 <MapPin className="text-[#D46211] w-4 h-4" />
               </span>
               <span className="pt-1.5">
-                123 Baker Street, Kigali City
+                ULK, 102 KG 14 Ave
                 <br />
                 Kigali, Rwanda
               </span>

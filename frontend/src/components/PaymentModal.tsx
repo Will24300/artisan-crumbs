@@ -8,7 +8,6 @@ import {
   X,
   Building2,
   DollarSign,
-  Smartphone,
   Sparkles,
 } from "lucide-react";
 
@@ -81,16 +80,61 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     if (errors.cvc) setErrors((prev) => ({ ...prev, cvc: "" }));
   };
 
+  // Luhn algorithm for credit card number check
+  const luhnCheck = (num: string): boolean => {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let digit = parseInt(num.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  };
+
   // Client Validation
   const validateForm = () => {
     const errs: Record<string, string> = {};
     if (selectedMethod === "card") {
-      if (!cardName.trim()) errs.cardName = "Cardholder name is required";
+      if (!cardName.trim()) {
+        errs.cardName = "Cardholder name is required";
+      }
+
       const cleanNum = cardNumber.replace(/\s+/g, "");
-      if (cleanNum.length < 15) errs.cardNumber = "Enter a valid card number";
-      if (!/^\d{2}\/\d{2}$/.test(expiry)) errs.expiry = "MM/YY format required";
-      if (cvc.length < 3) errs.cvc = "Valid CVC required";
-      if (!zipCode.trim()) errs.zipCode = "ZIP / Postal Code required";
+      if (!cleanNum || /^0+$/.test(cleanNum) || !/^\d{13,19}$/.test(cleanNum) || !luhnCheck(cleanNum)) {
+        errs.cardNumber = "Enter a valid credit card number";
+      }
+
+      if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+        errs.expiry = "MM/YY format required";
+      } else {
+        const [mmStr, yyStr] = expiry.split("/");
+        const mm = parseInt(mmStr, 10);
+        const yy = parseInt(yyStr, 10);
+        const now = new Date();
+        const currentYear = now.getFullYear() % 100;
+        const currentMonth = now.getMonth() + 1;
+        if (mm < 1 || mm > 12) {
+          errs.expiry = "Invalid month (01-12)";
+        } else if (yy < currentYear || (yy === currentYear && mm < currentMonth)) {
+          errs.expiry = "Card has expired";
+        }
+      }
+
+      if (!/^\d{3,4}$/.test(cvc)) {
+        errs.cvc = "Valid CVC required (3-4 digits)";
+      }
+
+      const cleanZip = zipCode.trim();
+      if (!cleanZip) {
+        errs.zipCode = "ZIP Code required";
+      } else if (cleanZip !== "000" && cleanZip !== "00000" && !/^\d{5}(-\d{4})?$/.test(cleanZip)) {
+        errs.zipCode = "Invalid ZIP code (000 or valid ZIP required)";
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -111,10 +155,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         await new Promise((r) => setTimeout(r, 700));
         setProcessingStep("Encrypting authorization & token...");
         await new Promise((r) => setTimeout(r, 800));
-      } else if (selectedMethod === "paypal") {
-        await new Promise((r) => setTimeout(r, 800));
-        setProcessingStep("Authenticating PayPal Express session...");
-        await new Promise((r) => setTimeout(r, 900));
       } else {
         await new Promise((r) => setTimeout(r, 500));
         setProcessingStep("Confirming order payment status...");
@@ -237,7 +277,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <label className="block text-xs font-bold uppercase text-gray-500 dark:text-stone-400 mb-2.5">
                     Select Payment Method
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setSelectedMethod("card")}
@@ -249,19 +289,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     >
                       <CreditCard className="w-5 h-5" />
                       <span>Credit Card</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMethod("paypal")}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-semibold transition-all ${
-                        selectedMethod === "paypal"
-                          ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
-                          : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
-                      }`}
-                    >
-                      <Smartphone className="w-5 h-5" />
-                      <span>PayPal</span>
                     </button>
 
                     <button
@@ -318,7 +345,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       <div className="relative">
                         <input
                           type="text"
-                          placeholder="4000 0000 0000 0000"
+                          placeholder="4242 4242 4242 4242"
                           value={cardNumber}
                           onChange={handleCardNumberChange}
                           className={`w-full pl-3.5 pr-16 py-2.5 rounded-xl border text-sm font-mono bg-gray-50 dark:bg-stone-800/60 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#D46211] ${
@@ -384,7 +411,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         </label>
                         <input
                           type="text"
-                          placeholder="10001"
+                          placeholder="000 or 10001"
                           value={zipCode}
                           onChange={(e) => {
                             setZipCode(e.target.value);
@@ -402,18 +429,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   </div>
                 )}
 
-                {/* PayPal Option */}
-                {selectedMethod === "paypal" && (
-                  <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-center space-y-2">
-                    <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 font-bold">
-                      <Smartphone className="w-5 h-5" />
-                      <span>PayPal One-Touch Checkout</span>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-stone-400">
-                      Click below to authorize simulated payment with your saved PayPal account.
-                    </p>
-                  </div>
-                )}
 
                 {/* Cash Option */}
                 {selectedMethod === "cash" && (
