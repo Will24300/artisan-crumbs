@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import express from "express";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
@@ -107,7 +108,15 @@ router.get("/my-orders", authenticateToken, async (req, res) => {
         if (!req.user) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
+        const { orderId } = req.query;
+        const query = { user: req.user.id };
+        if (orderId && orderId.trim()) {
+            const cleanId = orderId.trim().replace(/^#/, "");
+            if (mongoose.Types.ObjectId.isValid(cleanId)) {
+                query._id = cleanId;
+            }
+        }
+        const orders = await Order.find(query).sort({ createdAt: -1 });
         res.json(orders);
     }
     catch (error) {

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
 import { useTheme } from "../features/theme";
 import { API_BASE } from "../utils/api";
+import { validatePassword } from "../utils/passwordValidation";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -25,14 +26,34 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const { darkMode, toggleDarkMode } = useTheme();
 
+  const validation = validatePassword(password);
+
   const passwordChecks = [
-    { label: "At least 8 characters", met: password.length >= 8 },
-    { label: "One number", met: /\d/.test(password) },
+    { label: "At least 8 characters", met: validation.checks.minLength },
+    { label: "Uppercase & Lowercase", met: validation.checks.hasUppercase && validation.checks.hasLowercase },
+    { label: "One number", met: validation.checks.hasNumber },
+    { label: "Not common (e.g. 0000, 123456)", met: validation.checks.notCommon },
   ];
+
+  const getStrengthLabel = () => {
+    if (!password) return null;
+    if (!validation.checks.notCommon) return { label: "Weak (Common)", color: "bg-red-500", text: "text-red-600 dark:text-red-400" };
+    if (validation.score <= 1) return { label: "Weak", color: "bg-red-500", text: "text-red-600 dark:text-red-400" };
+    if (validation.score <= 2) return { label: "Medium", color: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" };
+    return { label: "Strong", color: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" };
+  };
+
+  const strength = getStrengthLabel();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    if (!validation.isValid) {
+      setError(validation.error || "Please meet all password requirements before signing up.");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
@@ -199,25 +220,40 @@ function Register() {
                   </button>
                 </div>
 
-                {password.length > 0 && (
-                  <div className="flex items-center gap-3 mt-2">
-                    {passwordChecks.map((check) => (
-                      <span
-                        key={check.label}
-                        className={`flex items-center gap-1 text-[11px] font-medium ${
-                          check.met ? "text-green-600 dark:text-green-400" : "text-[#94A3B8] dark:text-stone-500"
-                        }`}
-                      >
+                {password.length > 0 && strength && (
+                  <div className="mt-2.5 space-y-2">
+                    {/* Strength Bar */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-medium text-gray-500 dark:text-stone-400">Password strength:</span>
+                      <span className={`text-[11px] font-bold ${strength.text}`}>{strength.label}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden flex gap-1">
+                      <div className={`h-full flex-1 transition-all duration-300 ${validation.score >= 1 ? strength.color : "bg-transparent"}`} />
+                      <div className={`h-full flex-1 transition-all duration-300 ${validation.score >= 2 ? strength.color : "bg-transparent"}`} />
+                      <div className={`h-full flex-1 transition-all duration-300 ${validation.score >= 3 ? strength.color : "bg-transparent"}`} />
+                      <div className={`h-full flex-1 transition-all duration-300 ${validation.score >= 4 ? strength.color : "bg-transparent"}`} />
+                    </div>
+
+                    {/* Requirements Grid */}
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-1">
+                      {passwordChecks.map((check) => (
                         <span
-                          className={`flex items-center justify-center w-3.5 h-3.5 rounded-full ${
-                            check.met ? "bg-green-100 dark:bg-green-950/45" : "bg-gray-100 dark:bg-stone-800"
+                          key={check.label}
+                          className={`flex items-center gap-1.5 text-[11px] font-medium ${
+                            check.met ? "text-green-600 dark:text-green-400" : "text-[#94A3B8] dark:text-stone-500"
                           }`}
                         >
-                          {check.met && <Check size={9} strokeWidth={3} />}
+                          <span
+                            className={`flex items-center justify-center w-3.5 h-3.5 rounded-full shrink-0 ${
+                              check.met ? "bg-green-100 dark:bg-green-950/45 text-green-600 dark:text-green-400" : "bg-gray-100 dark:bg-stone-800"
+                            }`}
+                          >
+                            {check.met ? <Check size={9} strokeWidth={3} /> : <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-stone-600" />}
+                          </span>
+                          {check.label}
                         </span>
-                        {check.label}
-                      </span>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

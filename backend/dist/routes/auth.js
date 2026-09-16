@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import { validatePassword } from "../utils/passwordValidation.js";
 import { authenticateToken } from "../middleware/auth.js";
 const router = express.Router();
 const secret = process.env.JWT_SECRET;
@@ -17,6 +18,10 @@ router.post("/register", async (req, res) => {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
             return res.status(400).json({ error: "Name, email and password are required" });
+        }
+        const pwdValidation = validatePassword(password);
+        if (!pwdValidation.isValid) {
+            return res.status(400).json({ error: pwdValidation.error });
         }
         const existingUser = await User.findByEmail(email);
         if (existingUser) {
@@ -90,8 +95,9 @@ router.post("/reset-password", async (req, res) => {
         if (!token || !newPassword) {
             return res.status(400).json({ error: "Reset token and new password are required" });
         }
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: "Password must be at least 6 characters long" });
+        const pwdValidation = validatePassword(newPassword);
+        if (!pwdValidation.isValid) {
+            return res.status(400).json({ error: pwdValidation.error });
         }
         const user = await User.findOne({
             resetPasswordToken: token,
@@ -173,8 +179,9 @@ router.put("/change-password", authenticateToken, async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({ error: "Current password and new password are required" });
         }
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: "New password must be at least 6 characters long" });
+        const pwdValidation = validatePassword(newPassword);
+        if (!pwdValidation.isValid) {
+            return res.status(400).json({ error: pwdValidation.error });
         }
         const user = await User.findById(req.user.id);
         if (!user)

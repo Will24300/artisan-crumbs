@@ -32,10 +32,10 @@ describe('Admin System Workflow Tests', () => {
     await Order.deleteMany({});
 
     // Seed Admin User with hashed password via createUser
-    await User.createUser('Test Admin', 'admin@artisancrumbs.com', 'password123', 'admin');
+    await User.createUser('Test Admin', 'admin@artisancrumbs.com', 'AdminPass123!', 'admin');
 
     // Seed Initial Customer & Pending Order
-    const customer = await User.createUser('Jane Customer', 'jane@example.com', 'password123', 'customer');
+    const customer = await User.createUser('Jane Customer', 'jane@example.com', 'CustomerPass123!', 'customer');
 
     const pendingOrder = await Order.create({
       user: customer._id,
@@ -59,7 +59,7 @@ describe('Admin System Workflow Tests', () => {
     // 1. Admin Login & Auth Guard Check
     const loginRes = await request.post('/api/auth/login').send({
       email: 'admin@artisancrumbs.com',
-      password: 'password123',
+      password: 'AdminPass123!',
     });
 
     adminToken = loginRes.body.token;

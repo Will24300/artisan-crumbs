@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import iconImg from "../assets/Icon.png";
 import { useTheme } from "../features/theme";
 import { API_BASE } from "../utils/api";
+import { validatePassword } from "../utils/passwordValidation";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 16 },
@@ -26,7 +27,7 @@ function ResetPassword() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const { darkMode, toggleDarkMode } = useTheme();
 
-  const isLengthValid = useMemo(() => newPassword.length >= 6, [newPassword]);
+  const validation = useMemo(() => validatePassword(newPassword), [newPassword]);
   const isMatchValid = useMemo(() => newPassword === confirmPassword && confirmPassword.length > 0, [newPassword, confirmPassword]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -38,8 +39,8 @@ function ResetPassword() {
       return;
     }
 
-    if (!isLengthValid) {
-      setError("Password must be at least 6 characters long.");
+    if (!validation.isValid) {
+      setError(validation.error || "Please choose a stronger password.");
       return;
     }
 
@@ -192,8 +193,8 @@ function ResetPassword() {
                         </button>
                       </div>
                       {newPassword.length > 0 && (
-                        <p className={`text-[11px] mt-1 font-medium ${isLengthValid ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                          {isLengthValid ? "✓ At least 6 characters" : "Must be at least 6 characters"}
+                        <p className={`text-[11px] mt-1 font-medium ${validation.isValid ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                          {validation.isValid ? "✓ Meets strong password criteria" : (validation.error || "Must meet strong password criteria")}
                         </p>
                       )}
                     </div>
@@ -240,7 +241,7 @@ function ResetPassword() {
 
                     <button
                       type="submit"
-                      disabled={loading || !isLengthValid || !isMatchValid}
+                      disabled={loading || !validation.isValid || !isMatchValid}
                       className="w-full bg-[#D46211] hover:bg-[#b04f0b] text-white font-bold py-3.5 rounded-xl transition-colors duration-200 shadow-md shadow-[#D46211]/15 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm tracking-wide"
                     >
                       {loading ? (

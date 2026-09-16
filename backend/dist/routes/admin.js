@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import express from "express";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
@@ -8,9 +9,17 @@ const router = express.Router();
 router.use(authenticateToken, requireAdmin);
 router.get("/dashboard", async (req, res) => {
     try {
+        const { orderId } = req.query;
+        let orderFilter = {};
+        if (orderId && orderId.trim()) {
+            const cleanId = orderId.trim().replace(/^#/, "");
+            if (mongoose.Types.ObjectId.isValid(cleanId)) {
+                orderFilter._id = cleanId;
+            }
+        }
         const users = await User.find().select("name email role createdAt");
         const products = await Product.find().select("-image").lean();
-        const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
+        const orders = await Order.find(orderFilter).populate("user", "name email").sort({ createdAt: -1 });
         const protocol = req.headers["x-forwarded-proto"] || req.protocol;
         const host = req.get("host");
         const lightProducts = products.map((p) => ({
