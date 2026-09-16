@@ -403,11 +403,38 @@ function AdminDashboard() {
   const [salesPeriod, setSalesPeriod] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [productFilter, setProductFilter] = useState("all");
   const [customerSearch, setCustomerSearch] = useState("");
+  const [orderIdSearch, setOrderIdSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("admin-theme") === "dark";
   });
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      // Status filter
+      if (orderStatusFilter !== "all" && order.status !== orderStatusFilter) {
+        return false;
+      }
+      // ID Search filter (supports full ID, short 6-char hash #..., customer name, email)
+      if (orderIdSearch.trim()) {
+        const query = orderIdSearch.trim().toLowerCase().replace(/^#/, "");
+        const fullId = order._id.toLowerCase();
+        const shortCode = order._id.slice(-6).toLowerCase();
+        const customerName = (order.user?.name || "").toLowerCase();
+        const customerEmail = (order.user?.email || "").toLowerCase();
+
+        return (
+          fullId.includes(query) ||
+          shortCode.includes(query) ||
+          customerName.includes(query) ||
+          customerEmail.includes(query)
+        );
+      }
+      return true;
+    });
+  }, [orders, orderIdSearch, orderStatusFilter]);
 
   useEffect(() => {
     localStorage.setItem("admin-theme", darkMode ? "dark" : "light");
@@ -1242,33 +1269,134 @@ function AdminDashboard() {
   // ── SECTION: ORDERS ───────────────────────────────────────────────────
   const renderOrders = () => (
     <div className="space-y-5">
-      {/* Status Summary Pills */}
-      <div className="flex gap-3 flex-wrap">
+      {/* Header with Search and Status Filter Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1c1917] p-4 rounded-2xl border border-gray-100 dark:border-stone-800 shadow-sm">
+        {/* Order ID Search Input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-stone-500" />
+          <input
+            type="text"
+            value={orderIdSearch}
+            onChange={(e) => setOrderIdSearch(e.target.value)}
+            placeholder="Search by Order ID (e.g. #1A2B3C or full ID)..."
+            className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-stone-850 rounded-xl border border-gray-200 dark:border-stone-800 text-sm outline-none focus:border-[#D46211] focus:ring-2 focus:ring-[#D46211]/20 text-gray-800 dark:text-stone-200 transition-all font-mono"
+          />
+          {orderIdSearch && (
+            <button
+              onClick={() => setOrderIdSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-stone-300"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter Counts Banner */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-stone-400">
+          <span>Showing <strong className="text-[#D46211] font-bold">{filteredOrders.length}</strong> of {orders.length} orders</span>
+          {(orderIdSearch || orderStatusFilter !== "all") && (
+            <button
+              onClick={() => {
+                setOrderIdSearch("");
+                setOrderStatusFilter("all");
+              }}
+              className="ml-2 text-[11px] font-bold text-[#D46211] hover:underline"
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Status Summary Pills (Clickable Filter Buttons with Matching Status Colors) */}
+      <div className="flex gap-2.5 flex-wrap">
         {[
-          { label: "All Orders", count: orders.length, cls: "bg-gray-100 dark:bg-[#24211e] text-gray-700 dark:text-stone-300" },
-          { label: "Pending", count: orders.filter((o) => o.status === "pending").length, cls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211]" },
-          { label: "Accepted", count: orders.filter((o) => o.status === "accepted").length, cls: "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450" },
-          { label: "Preparing", count: orders.filter((o) => o.status === "preparing").length, cls: "bg-purple-100 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400" },
-          { label: "Ready for Pickup", count: orders.filter((o) => o.status === "ready_for_pickup").length, cls: "bg-blue-100 dark:bg-blue-950/20 text-blue-700 dark:text-blue-450" },
-          { label: "Completed", count: orders.filter((o) => o.status === "completed").length, cls: "bg-teal-100 dark:bg-teal-950/20 text-teal-700 dark:text-teal-400" },
           {
+            key: "all",
+            label: "All Orders",
+            count: orders.length,
+            activeCls: "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 ring-2 ring-stone-900 dark:ring-stone-100 shadow-md",
+            inactiveCls: "bg-gray-100 dark:bg-[#24211e] text-gray-700 dark:text-stone-300 hover:bg-gray-200 dark:hover:bg-stone-800 border-gray-200 dark:border-stone-800",
+          },
+          {
+            key: "pending",
+            label: "Pending",
+            count: orders.filter((o) => o.status === "pending").length,
+            activeCls: "bg-[#D46211] text-white ring-2 ring-[#D46211] shadow-md shadow-[#D46211]/30",
+            inactiveCls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211] hover:bg-[#ffd6aa] dark:hover:bg-[#D46211]/30 border-[#D46211]/30",
+          },
+          {
+            key: "accepted",
+            label: "Accepted",
+            count: orders.filter((o) => o.status === "accepted").length,
+            activeCls: "bg-emerald-600 text-white ring-2 ring-emerald-600 shadow-md shadow-emerald-600/30",
+            inactiveCls: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 border-emerald-300 dark:border-emerald-800",
+          },
+          {
+            key: "preparing",
+            label: "Preparing",
+            count: orders.filter((o) => o.status === "preparing").length,
+            activeCls: "bg-purple-600 text-white ring-2 ring-purple-600 shadow-md shadow-purple-600/30",
+            inactiveCls: "bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 border-purple-300 dark:border-purple-800",
+          },
+          {
+            key: "ready_for_pickup",
+            label: "Ready for Pickup",
+            count: orders.filter((o) => o.status === "ready_for_pickup").length,
+            activeCls: "bg-blue-600 text-white ring-2 ring-blue-600 shadow-md shadow-blue-600/30",
+            inactiveCls: "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 border-blue-300 dark:border-blue-800",
+          },
+          {
+            key: "completed",
+            label: "Completed",
+            count: orders.filter((o) => o.status === "completed").length,
+            activeCls: "bg-teal-600 text-white ring-2 ring-teal-600 shadow-md shadow-teal-600/30",
+            inactiveCls: "bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 hover:bg-teal-200 dark:hover:bg-teal-900/50 border-teal-300 dark:border-teal-800",
+          },
+          {
+            key: "declined",
             label: "Declined",
             count: orders.filter((o) => o.status === "declined").length,
-            cls: "bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-400",
+            activeCls: "bg-red-600 text-white ring-2 ring-red-600 shadow-md shadow-red-600/30",
+            inactiveCls: "bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 border-red-300 dark:border-red-800",
           },
-        ].map((s) => (
-          <div key={s.label} className={`${s.cls} px-4 py-1.5 rounded-full text-sm font-semibold`}>
-            {s.label}:{" "}
-            <strong>{s.count}</strong>
-          </div>
-        ))}
+        ].map((s) => {
+          const isActive = orderStatusFilter === s.key;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setOrderStatusFilter(s.key)}
+              className={`${isActive ? s.activeCls : s.inactiveCls} px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all duration-200 border ${
+                isActive ? "scale-105 font-bold" : "opacity-90 hover:opacity-100"
+              }`}
+            >
+              {s.label}: <strong>{s.count}</strong>
+            </button>
+          );
+        })}
       </div>
 
       <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 shadow-sm overflow-hidden">
-        {orders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="p-16 text-center">
             <ShoppingBag className="w-10 h-10 text-gray-200 dark:text-stone-700 mx-auto mb-3" />
-            <p className="text-gray-400 dark:text-stone-500 font-medium">No orders have been placed yet</p>
+            <p className="text-gray-400 dark:text-stone-500 font-medium">
+              {orders.length === 0
+                ? "No orders have been placed yet"
+                : `No orders match your filter "${orderIdSearch || orderStatusFilter}"`}
+            </p>
+            {orders.length > 0 && (
+              <button
+                onClick={() => {
+                  setOrderIdSearch("");
+                  setOrderStatusFilter("all");
+                }}
+                className="mt-3 text-xs font-bold text-[#D46211] hover:underline inline-flex items-center gap-1"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1288,7 +1416,7 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-stone-800/60">
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <>
                     <tr
                       key={order._id}

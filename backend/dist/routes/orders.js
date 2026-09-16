@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import express from "express";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
@@ -56,25 +57,25 @@ router.post("/", authenticateToken, async (req, res) => {
                 return res.status(409).json({ error: `The ${timeSlot} slot is now fully booked. Please choose another slot.` });
             }
         }
-        // Check stock availability for non-custom items
-        for (const item of items) {
-            if (String(item.productId).startsWith("custom-"))
-                continue;
-            const product = await Product.findById(item.productId);
-            if (!product) {
-                return res.status(404).json({ error: `Product ${item.name} not found` });
+        // Check stock availability and deduct for non-custom items
+        const nonCustomItems = items.filter((item) => !String(item.productId).startsWith("custom-"));
+        if (nonCustomItems.length > 0) {
+            const productIds = nonCustomItems.map((item) => item.productId);
+            const dbProducts = await Product.find({ _id: { $in: productIds } });
+            const productMap = new Map(dbProducts.map((p) => [p._id.toString(), p]));
+            for (const item of nonCustomItems) {
+                const product = productMap.get(String(item.productId));
+                if (!product) {
+                    return res.status(404).json({ error: `Product "${item.name}" not found` });
+                }
+                if (product.stock < item.quantity) {
+                    return res.status(400).json({
+                        error: `Insufficient stock for ${item.name}. Only ${product.stock} available.`,
+                    });
+                }
             }
-            if (product.stock < item.quantity) {
-                return res.status(400).json({
-                    error: `Insufficient stock for ${item.name}. Only ${product.stock} available.`,
-                });
-            }
-        }
-        // Deduct stock for non-custom items
-        for (const item of items) {
-            if (String(item.productId).startsWith("custom-"))
-                continue;
-            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } });
+            // Concurrently deduct stock
+            await Promise.all(nonCustomItems.map((item) => Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } })));
         }
         const selectedMethod = paymentMethod || "card";
         const finalTransactionId = requestedTransactionId ||
@@ -107,11 +108,77 @@ router.get("/my-orders", authenticateToken, async (req, res) => {
         if (!req.user) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
+        const { orderId } = req.query;
+        const query = { user: req.user.id };
+        if (orderId && orderId.trim()) {
+            const cleanId = orderId.trim().replace(/^#/, "");
+            if (mongoose.Types.ObjectId.isValid(cleanId)) {
+                query._id = cleanId;
+            }
+        }
+        const orders = await Order.find(query).sort({ createdAt: -1 });
         res.json(orders);
     }
     catch (error) {
         res.status(500).json({ error: "Unable to retrieve orders", details: error.message });
+    }
+});
+// ── Cancel Order & Restore Inventory Stock ────────────────────────────────────
+router.post("/:id/cancel", authenticateToken, async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        if (order.user.toString() !== req.user.id && req.user.role !== "admin") {
+            return res.status(403).json({ error: "Unauthorized to cancel this order" });
+        }
+        if (order.status === "declined" || order.status === "completed") {
+            return res.status(400).json({ error: `Cannot cancel an order that is already ${order.status}.` });
+        }
+        // Restore inventory stock for non-custom items
+        for (const item of order.items) {
+            if (String(item.productId).startsWith("custom-"))
+                continue;
+            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+        }
+        order.status = "declined";
+        order.paymentStatus = "failed";
+        await order.save();
+        res.json({ message: "Order cancelled successfully and stock restored.", order });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to cancel order", details: error.message });
+    }
+});
+router.delete("/:id/cancel", authenticateToken, async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        if (order.user.toString() !== req.user.id && req.user.role !== "admin") {
+            return res.status(403).json({ error: "Unauthorized to cancel this order" });
+        }
+        // Restore stock
+        for (const item of order.items) {
+            if (String(item.productId).startsWith("custom-"))
+                continue;
+            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+        }
+        order.status = "declined";
+        order.paymentStatus = "failed";
+        await order.save();
+        res.json({ message: "Order cancelled successfully and stock restored.", order });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to cancel order", details: error.message });
     }
 });
 export default router;

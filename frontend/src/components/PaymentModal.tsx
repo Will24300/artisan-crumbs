@@ -16,7 +16,7 @@ interface PaymentModalProps {
   onClose: () => void;
   onPaymentSuccess: (paymentDetails: {
     paymentMethod: string;
-    paymentStatus: "paid" | "pending";
+    paymentStatus: "paid" | "pending" | "failed";
     transactionId: string;
   }) => Promise<void>;
   grandTotal: number;
@@ -150,18 +150,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
     try {
       if (selectedMethod === "card") {
-        await new Promise((r) => setTimeout(r, 600));
+        await new Promise((r) => setTimeout(r, 200));
         setProcessingStep("Verifying card credentials...");
-        await new Promise((r) => setTimeout(r, 700));
-        setProcessingStep("Encrypting authorization & token...");
-        await new Promise((r) => setTimeout(r, 800));
+        await new Promise((r) => setTimeout(r, 200));
+        setProcessingStep("Finalizing transaction...");
       } else {
-        await new Promise((r) => setTimeout(r, 500));
-        setProcessingStep("Confirming order payment status...");
+        await new Promise((r) => setTimeout(r, 150));
+        setProcessingStep("Confirming order status...");
       }
-
-      setProcessingStep("Finalizing transaction...");
-      await new Promise((r) => setTimeout(r, 500));
 
       const mockTxnId =
         selectedMethod !== "cash"
@@ -169,7 +165,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           : "";
 
       setIsSuccess(true);
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 250));
 
       await onPaymentSuccess({
         paymentMethod: selectedMethod,

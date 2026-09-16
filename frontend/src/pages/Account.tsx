@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -18,8 +19,11 @@ import {
   Truck,
   MapPin,
   CreditCard,
+  Search,
+  X,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
+import { toast } from "react-toastify";
 
 interface OrderItem {
   productId: string;
@@ -60,9 +64,27 @@ function Account() {
   const token = useSelector((state: RootState) => state.auth.token);
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderIdSearch, setOrderIdSearch] = useState<string>("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      if (orderStatusFilter !== "all" && order.status !== orderStatusFilter) {
+        return false;
+      }
+      if (orderIdSearch.trim()) {
+        const query = orderIdSearch.trim().toLowerCase().replace(/^#/, "");
+        const fullId = order._id.toLowerCase();
+        const shortCode = order._id.slice(-8).toLowerCase();
+        const itemNames = order.items.map((i) => i.name.toLowerCase()).join(" ");
+        return fullId.includes(query) || shortCode.includes(query) || itemNames.includes(query);
+      }
+      return true;
+    });
+  }, [orders, orderIdSearch, orderStatusFilter]);
 
   const fetchOrders = async (isManualRefresh = false) => {
     if (!token) {
@@ -101,6 +123,29 @@ function Account() {
   useEffect(() => {
     fetchOrders();
   }, [token]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!token) return;
+    if (!window.confirm("Are you sure you want to cancel this order? Item stock will be returned.")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/cancel`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        toast.success("Order cancelled successfully. Inventory stock restored!");
+        fetchOrders(true);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "Unable to cancel order.");
+      }
+    } catch {
+      toast.error("Failed to connect to server.");
+    }
+  };
 
   if (!user) {
     return (
@@ -218,7 +263,7 @@ function Account() {
         </motion.div>
 
         {/* Order History Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <Package className="w-6 h-6 text-[#D46211]" />
             <h2 className="font-serif text-2xl font-bold text-stone-900 dark:text-stone-100">
@@ -226,15 +271,108 @@ function Account() {
             </h2>
           </div>
 
-          <button
-            onClick={() => fetchOrders(true)}
-            disabled={refreshing}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
-          >
-            <RefreshCw size={13} className={refreshing ? "animate-spin text-[#D46211]" : ""} />
-            <span>{refreshing ? "Refreshing..." : "Refresh Orders"}</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {orders.length > 0 && (
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <input
+                  type="text"
+                  value={orderIdSearch}
+                  onChange={(e) => setOrderIdSearch(e.target.value)}
+                  placeholder="Filter by Order ID..."
+                  className="w-full pl-9 pr-8 py-2 text-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-full outline-none focus:border-[#D46211] focus:ring-2 focus:ring-[#D46211]/20 font-mono text-stone-800 dark:text-stone-200 shadow-sm"
+                />
+                {orderIdSearch && (
+                  <button
+                    onClick={() => setOrderIdSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => fetchOrders(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm shrink-0"
+            >
+              <RefreshCw size={13} className={refreshing ? "animate-spin text-[#D46211]" : ""} />
+              <span>{refreshing ? "Refreshing..." : "Refresh Orders"}</span>
+            </button>
+          </div>
         </div>
+
+        {/* Status Filter Pills with Matching Theme Colors */}
+        {orders.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            {[
+              {
+                key: "all",
+                label: "All Orders",
+                count: orders.length,
+                activeCls: "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 ring-2 ring-stone-900 dark:ring-stone-100 shadow-sm",
+                inactiveCls: "bg-stone-100 dark:bg-stone-850 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 border-stone-200 dark:border-stone-800",
+              },
+              {
+                key: "pending",
+                label: "Pending",
+                count: orders.filter((o) => o.status === "pending").length,
+                activeCls: "bg-[#D46211] text-white ring-2 ring-[#D46211] shadow-md shadow-[#D46211]/30",
+                inactiveCls: "bg-[#FFE5C8] dark:bg-[#D46211]/20 text-[#D46211] hover:bg-[#ffd6aa] dark:hover:bg-[#D46211]/30 border-[#D46211]/30",
+              },
+              {
+                key: "accepted",
+                label: "Accepted",
+                count: orders.filter((o) => o.status === "accepted").length,
+                activeCls: "bg-emerald-600 text-white ring-2 ring-emerald-600 shadow-md shadow-emerald-600/30",
+                inactiveCls: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 border-emerald-300 dark:border-emerald-800",
+              },
+              {
+                key: "preparing",
+                label: "Preparing",
+                count: orders.filter((o) => o.status === "preparing").length,
+                activeCls: "bg-purple-600 text-white ring-2 ring-purple-600 shadow-md shadow-purple-600/30",
+                inactiveCls: "bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 border-purple-300 dark:border-purple-800",
+              },
+              {
+                key: "ready_for_pickup",
+                label: "Ready for Pickup",
+                count: orders.filter((o) => o.status === "ready_for_pickup").length,
+                activeCls: "bg-blue-600 text-white ring-2 ring-blue-600 shadow-md shadow-blue-600/30",
+                inactiveCls: "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 border-blue-300 dark:border-blue-800",
+              },
+              {
+                key: "completed",
+                label: "Completed",
+                count: orders.filter((o) => o.status === "completed").length,
+                activeCls: "bg-teal-600 text-white ring-2 ring-teal-600 shadow-md shadow-teal-600/30",
+                inactiveCls: "bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 hover:bg-teal-200 dark:hover:bg-teal-900/50 border-teal-300 dark:border-teal-800",
+              },
+              {
+                key: "declined",
+                label: "Declined",
+                count: orders.filter((o) => o.status === "declined").length,
+                activeCls: "bg-red-600 text-white ring-2 ring-red-600 shadow-md shadow-red-600/30",
+                inactiveCls: "bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 border-red-300 dark:border-red-800",
+              },
+            ].map((s) => {
+              const isActive = orderStatusFilter === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setOrderStatusFilter(s.key)}
+                  className={`${isActive ? s.activeCls : s.inactiveCls} px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all duration-200 border ${
+                    isActive ? "scale-105 font-bold" : "opacity-90 hover:opacity-100"
+                  }`}
+                >
+                  {s.label} ({s.count})
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Order History List */}
         {loading ? (
@@ -280,10 +418,30 @@ function Account() {
               Browse Shop & Order <ChevronRight size={14} />
             </Link>
           </motion.div>
+        ) : filteredOrders.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 rounded-3xl p-10 text-center space-y-3 shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center mx-auto">
+              <Search size={20} />
+            </div>
+            <h3 className="font-serif text-lg font-bold text-stone-900 dark:text-stone-100">No matching orders</h3>
+            <p className="text-xs text-stone-500 dark:text-stone-400 max-w-xs mx-auto">
+              No orders match your filter &quot;{orderIdSearch}&quot;.
+            </p>
+            <button
+              onClick={() => setOrderIdSearch("")}
+              className="text-xs font-bold text-[#D46211] hover:underline"
+            >
+              Clear Search
+            </button>
+          </motion.div>
         ) : (
           <div className="space-y-5">
             <AnimatePresence>
-              {orders.map((order, index) => {
+              {filteredOrders.map((order, index) => {
                 const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
                   dateStyle: "medium",
                   timeStyle: "short",
@@ -464,12 +622,23 @@ function Account() {
                       )}
                     </div>
 
-                    {/* Footer / Total */}
+                    {/* Footer / Total & Cancel Action */}
                     <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800 text-xs">
-                      <span className="font-medium text-stone-500 dark:text-stone-400">Total Price (incl. tax & fees)</span>
-                      <span className="font-serif font-bold text-[#D46211] text-base">
-                        ${order.totalAmount.toFixed(2)}
-                      </span>
+                      <div>
+                        <span className="font-medium text-stone-500 dark:text-stone-400">Total Price: </span>
+                        <span className="font-serif font-bold text-[#D46211] text-base">
+                          ${order.totalAmount.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {order.status === "pending" && (
+                        <button
+                          onClick={() => handleCancelOrder(order._id)}
+                          className="px-3.5 py-1.5 rounded-full text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-900/50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <XCircle size={13} /> Cancel Order
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 );
