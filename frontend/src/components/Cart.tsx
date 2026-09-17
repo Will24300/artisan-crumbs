@@ -136,7 +136,12 @@ function Cart() {
     freeDelivery: true,
     deliveryFee: 4.99,
     stripeEnabled: true,
+    paypalEnabled: true,
     cashEnabled: false,
+    taxRate: 10,
+    currencySymbol: "$",
+    minOrderAmount: 0,
+    maintenanceMode: false,
   });
 
   const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">("delivery");
@@ -152,6 +157,7 @@ function Cart() {
         if (data) {
           setStoreSettings(data);
           if (data.stripeEnabled) setPaymentMethod("card");
+          else if (data.paypalEnabled) setPaymentMethod("paypal");
           else if (data.cashEnabled) setPaymentMethod("cash");
         }
       })
@@ -163,10 +169,18 @@ function Cart() {
       ? 0
       : Number(storeSettings.deliveryFee) || 0;
 
-  const taxAmount = totalPrice * 0.1;
+  const taxRatePercent = Math.max(0, Number(storeSettings.taxRate ?? 10)) / 100;
+  const taxAmount = totalPrice * taxRatePercent;
   const grandTotal = totalPrice + taxAmount + deliveryFeeAmount;
+  const currencySymbol = storeSettings.currencySymbol || "$";
+  const minOrder = Number(storeSettings.minOrderAmount) || 0;
 
   const handleOpenPaymentModal = () => {
+    if (storeSettings.maintenanceMode) {
+      toast.warning("The bakery checkout is currently in maintenance mode. Please check back shortly!");
+      return;
+    }
+
     if (!token) {
       navigate("/login");
       return;
@@ -174,6 +188,11 @@ function Cart() {
 
     if (cartProducts.length === 0) {
       toast.error("Your cart is empty.");
+      return;
+    }
+
+    if (totalPrice < minOrder) {
+      toast.error(`Minimum order amount for checkout is ${currencySymbol}${minOrder.toFixed(2)}.`);
       return;
     }
 
@@ -287,6 +306,10 @@ function Cart() {
         grandTotal={grandTotal}
         fulfillmentType={fulfillmentType}
         initialMethod={paymentMethod}
+        stripeEnabled={Boolean(storeSettings.stripeEnabled ?? true)}
+        paypalEnabled={Boolean(storeSettings.paypalEnabled ?? true)}
+        cashEnabled={Boolean(storeSettings.cashEnabled)}
+        currencySymbol={currencySymbol}
       />
       <div className="max-w-6xl mx-auto">
         <Link
@@ -498,7 +521,7 @@ function Cart() {
                   <div className="flex justify-between">
                     <span className="text-[#64748B] dark:text-stone-400">Subtotal</span>
                     <span className="font-semibold text-[#241812] dark:text-stone-200">
-                      ${totalPrice.toFixed(2)}
+                      {currencySymbol}{totalPrice.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -506,13 +529,13 @@ function Cart() {
                       Delivery {fulfillmentType === "pickup" ? "(Pickup)" : ""}
                     </span>
                     <span className={`font-semibold ${deliveryFeeAmount === 0 ? "text-emerald-600" : "text-[#241812] dark:text-stone-200"}`}>
-                      {deliveryFeeAmount === 0 ? "Free" : `$${deliveryFeeAmount.toFixed(2)}`}
+                      {deliveryFeeAmount === 0 ? "Free" : `${currencySymbol}${deliveryFeeAmount.toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#64748B] dark:text-stone-400">Tax (10%)</span>
+                    <span className="text-[#64748B] dark:text-stone-400">Tax ({Math.round(taxRatePercent * 100)}%)</span>
                     <span className="font-semibold text-[#241812] dark:text-stone-200">
-                      ${taxAmount.toFixed(2)}
+                      {currencySymbol}{taxAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -520,7 +543,7 @@ function Cart() {
                 <div className="flex justify-between items-baseline pt-2 border-t border-gray-100 dark:border-stone-850">
                   <span className="font-bold text-sm text-[#241812] dark:text-stone-100">Total</span>
                   <span className="font-serif font-bold text-[#D46211] text-2xl">
-                    ${grandTotal.toFixed(2)}
+                    {currencySymbol}{grandTotal.toFixed(2)}
                   </span>
                 </div>
 

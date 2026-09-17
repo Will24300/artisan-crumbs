@@ -37,6 +37,8 @@ import {
   CreditCard,
   Save,
   CheckCircle,
+  Percent,
+  Loader2,
 } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
@@ -458,12 +460,25 @@ function AdminDashboard() {
   const [storeEmail, setStoreEmail] = useState("volonterwicha123@gmail.com");
   const [storePhone, setStorePhone] = useState("+250 791954372");
   const [storeAddress, setStoreAddress] = useState("ULK, 102 KG 14 Ave, Kigali");
+  const [businessTagline, setBusinessTagline] = useState("Handcrafted Fresh Baked Goods & Artisanal Pastries");
+  const [paypalEnabled, setPaypalEnabled] = useState(true);
   const [stripeEnabled, setStripeEnabled] = useState(true);
   const [cashEnabled, setCashEnabled] = useState(false);
   const [freeDelivery, setFreeDelivery] = useState(true);
   const [deliveryFee, setDeliveryFee] = useState("4.99");
+  const [minOrderAmount, setMinOrderAmount] = useState("0");
+  const [taxRate, setTaxRate] = useState("10");
+  const [currency, setCurrency] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [orderNotificationEmail, setOrderNotificationEmail] = useState("alerts@artisancrumbs.com");
+  const [enableLowStockAlerts, setEnableLowStockAlerts] = useState(true);
+
   const [settingsSaved, setSettingsSaved] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<"general" | "payments" | "delivery" | "roles">("general");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<
+    "general" | "payments" | "delivery" | "tax" | "notifications" | "roles"
+  >("general");
 
   const [reviews, setReviews] = useState<FeedbackMessage[]>([]);
   const [productReviews, setProductReviews] = useState<any[]>([]);
@@ -498,10 +513,19 @@ function AdminDashboard() {
         setStoreEmail(sData.storeEmail || "volonterwicha123@gmail.com");
         setStorePhone(sData.storePhone || "+250 791954372");
         setStoreAddress(sData.storeAddress || "ULK, 102 KG 14 Ave, Kigali");
-        setStripeEnabled(Boolean(sData.stripeEnabled));
+        setBusinessTagline(sData.businessTagline || "Handcrafted Fresh Baked Goods & Artisanal Pastries");
+        setPaypalEnabled(Boolean(sData.paypalEnabled ?? true));
+        setStripeEnabled(Boolean(sData.stripeEnabled ?? true));
         setCashEnabled(Boolean(sData.cashEnabled));
         setFreeDelivery(Boolean(sData.freeDelivery));
         setDeliveryFee(String(sData.deliveryFee ?? 4.99));
+        setMinOrderAmount(String(sData.minOrderAmount ?? 0));
+        setTaxRate(String(sData.taxRate ?? 10));
+        setCurrency(sData.currency || "USD");
+        setCurrencySymbol(sData.currencySymbol || "$");
+        setMaintenanceMode(Boolean(sData.maintenanceMode));
+        setOrderNotificationEmail(sData.orderNotificationEmail || "alerts@artisancrumbs.com");
+        setEnableLowStockAlerts(Boolean(sData.enableLowStockAlerts ?? true));
       }
 
       // Fetch Contact Reviews / Feedback
@@ -572,15 +596,25 @@ function AdminDashboard() {
 
   const handleSaveSettings = async (overrides?: Record<string, any>) => {
     if (!token) return;
+    setIsSavingSettings(true);
     const payload = {
       storeName,
       storeEmail,
       storePhone,
       storeAddress,
+      businessTagline,
+      paypalEnabled,
       stripeEnabled,
       cashEnabled,
       freeDelivery,
-      deliveryFee: parseFloat(deliveryFee) || 0,
+      deliveryFee: Math.max(0, parseFloat(deliveryFee) || 0),
+      minOrderAmount: Math.max(0, parseFloat(minOrderAmount) || 0),
+      taxRate: Math.max(0, parseFloat(taxRate) || 0),
+      currency,
+      currencySymbol,
+      maintenanceMode,
+      orderNotificationEmail,
+      enableLowStockAlerts,
       ...overrides,
     };
     try {
@@ -598,15 +632,31 @@ function AdminDashboard() {
         setStoreEmail(data.storeEmail);
         setStorePhone(data.storePhone);
         setStoreAddress(data.storeAddress);
+        setBusinessTagline(data.businessTagline || "Handcrafted Fresh Baked Goods & Artisanal Pastries");
+        setPaypalEnabled(data.paypalEnabled);
         setStripeEnabled(data.stripeEnabled);
         setCashEnabled(data.cashEnabled);
         setFreeDelivery(data.freeDelivery);
         setDeliveryFee(String(data.deliveryFee));
+        setMinOrderAmount(String(data.minOrderAmount ?? 0));
+        setTaxRate(String(data.taxRate ?? 10));
+        setCurrency(data.currency || "USD");
+        setCurrencySymbol(data.currencySymbol || "$");
+        setMaintenanceMode(data.maintenanceMode);
+        setOrderNotificationEmail(data.orderNotificationEmail || "alerts@artisancrumbs.com");
+        setEnableLowStockAlerts(data.enableLowStockAlerts);
+
         setSettingsSaved(true);
-        setTimeout(() => setSettingsSaved(false), 3000);
+        toast.success("Settings updated successfully!");
+        setTimeout(() => setSettingsSaved(false), 3500);
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to save settings");
       }
     } catch {
       toast.error("Failed to save settings");
+    } finally {
+      setIsSavingSettings(false);
     }
   };
 
@@ -2285,353 +2335,633 @@ function AdminDashboard() {
   };
 
   // ── SECTION: SETTINGS ─────────────────────────────────────────────────
-  const renderSettings = () => (
-    <div className="space-y-6">
-      {/* Settings Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-stone-800 pb-3 overflow-x-auto">
-        {[
-          { id: "general", label: "Store Profile", icon: <Store className="w-4 h-4" /> },
-          { id: "payments", label: "Payment Gateways", icon: <CreditCard className="w-4 h-4" /> },
-          { id: "delivery", label: "Shipping & Fulfillment", icon: <Truck className="w-4 h-4" /> },
-          { id: "roles", label: "Team & Permissions", icon: <ShieldCheck className="w-4 h-4" /> },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setSettingsTab(t.id as any)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${settingsTab === t.id
-                ? "bg-[#D46211] text-white shadow-sm"
-                : "bg-white dark:bg-[#1c1917] text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800 border border-gray-100 dark:border-stone-800"
+  const renderSettings = () => {
+    const taxValue = Math.max(0, parseFloat(taxRate) || 0);
+    const feeValue = freeDelivery ? 0 : Math.max(0, parseFloat(deliveryFee) || 0);
+    const mockSubtotal = 25.0;
+    const mockTax = (mockSubtotal * taxValue) / 100;
+    const mockTotal = mockSubtotal + mockTax + feeValue;
+
+    return (
+      <div className="space-y-6">
+        {/* Settings Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-stone-800 pb-3 overflow-x-auto">
+          {[
+            { id: "general", label: "Store Profile", icon: <Store className="w-4 h-4" /> },
+            { id: "payments", label: "Payment Gateways", icon: <CreditCard className="w-4 h-4" /> },
+            { id: "delivery", label: "Shipping & Delivery", icon: <Truck className="w-4 h-4" /> },
+            { id: "tax", label: "Tax & Regional", icon: <Percent className="w-4 h-4" /> },
+            { id: "notifications", label: "Alerts & Notifications", icon: <Bell className="w-4 h-4" /> },
+            { id: "roles", label: "Team & Permissions", icon: <ShieldCheck className="w-4 h-4" /> },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSettingsTab(t.id as any)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                settingsTab === t.id
+                  ? "bg-[#D46211] text-white shadow-sm"
+                  : "bg-white dark:bg-[#1c1917] text-stone-600 dark:text-stone-400 hover:bg-gray-100 dark:hover:bg-stone-800 border border-gray-100 dark:border-stone-800"
               }`}
-          >
-            {t.icon}
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </div>
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Settings Form Area */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* TAB 1: STORE PROFILE */}
-          {settingsTab === "general" && (
-            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
-              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
-                  <Store className="w-5 h-5 text-[#D46211]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-stone-100">Store Profile & Details</h3>
-                  <p className="text-xs text-gray-400 dark:text-stone-500">Public store identity shown on receipts and customer notifications.</p>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Store Name</label>
-                  <input
-                    type="text"
-                    value={storeName}
-                    onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="Artisan Crumbs"
-                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Support Email</label>
-                  <input
-                    type="email"
-                    value={storeEmail}
-                    onChange={(e) => setStoreEmail(e.target.value)}
-                    placeholder="hello@artisancrumbs.com"
-                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                  <input
-                    type="text"
-                    value={storePhone}
-                    onChange={(e) => setStorePhone(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">Physical Address</label>
-                  <input
-                    type="text"
-                    value={storeAddress}
-                    onChange={(e) => setStoreAddress(e.target.value)}
-                    placeholder="123 Baker Street, NY"
-                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
-                  />
-                </div>
-              </div>
-
-              {settingsSaved && (
-                <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-3 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>Store profile saved successfully!</span>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => handleSaveSettings()}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
-              >
-                <Save className="w-4 h-4" /> Save Profile Settings
-              </button>
-            </div>
-          )}
-
-          {/* TAB 2: PAYMENT METHODS */}
-          {settingsTab === "payments" && (
-            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 text-[#D46211]" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Payment Methods</h3>
-                    <p className="text-xs text-gray-400 dark:text-stone-500">Enable or disable checkout payment gateways for your customers.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    id: "stripe",
-                    label: "Credit / Debit Cards (Stripe)",
-                    desc: "Allow customers to pay securely using Visa, Mastercard, AMEX.",
-                    icon: "💳",
-                    state: stripeEnabled,
-                    toggle: () => {
-                      const next = !stripeEnabled;
-                      setStripeEnabled(next);
-                      handleSaveSettings({ stripeEnabled: next });
-                    },
-                  },
-                  {
-                    id: "cash",
-                    label: "Cash on Delivery / Pickup",
-                    desc: "Allow customers to pay with cash upon receiving their baked goods.",
-                    icon: "💵",
-                    state: cashEnabled,
-                    toggle: () => {
-                      const next = !cashEnabled;
-                      setCashEnabled(next);
-                      handleSaveSettings({ cashEnabled: next });
-                    },
-                  },
-                ].map((m) => (
-                  <div
-                    key={m.id}
-                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${m.state
-                        ? "border-[#D46211]/30 bg-[#FFF4EB]/40 dark:bg-[#D46211]/10"
-                        : "border-gray-100 dark:border-stone-800 bg-gray-50/50 dark:bg-stone-900/50 opacity-75"
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{m.icon}</span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-gray-900 dark:text-stone-100">{m.label}</p>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.state
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                                : "bg-gray-200 text-gray-600 dark:bg-stone-800 dark:text-stone-400"
-                              }`}
-                          >
-                            {m.state ? "ACTIVE" : "DISABLED"}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-500 dark:text-stone-400 mt-0.5">{m.desc}</p>
-                      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Settings Form Area */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* TAB 1: STORE PROFILE */}
+            {settingsTab === "general" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                      <Store className="w-5 h-5 text-[#D46211]" />
                     </div>
-                    <Toggle on={m.state} onChange={m.toggle} />
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-stone-100">Store Profile & Identity</h3>
+                      <p className="text-xs text-gray-400 dark:text-stone-500">Public store identity shown on receipts, emails, and checkout.</p>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: SHIPPING & FULFILLMENT */}
-          {settingsTab === "delivery" && (
-            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
-              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
-                <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-[#D46211]" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-stone-100">Fulfillment & Shipping Rules</h3>
-                  <p className="text-xs text-gray-400 dark:text-stone-500">Configure delivery fees and free shipping promotions.</p>
-                </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-stone-800">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Store Name
+                    </label>
+                    <input
+                      type="text"
+                      value={storeName}
+                      onChange={(e) => setStoreName(e.target.value)}
+                      placeholder="Artisan Crumbs"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Support Email
+                    </label>
+                    <input
+                      type="email"
+                      value={storeEmail}
+                      onChange={(e) => setStoreEmail(e.target.value)}
+                      placeholder="hello@artisancrumbs.com"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      value={storePhone}
+                      onChange={(e) => setStorePhone(e.target.value)}
+                      placeholder="+1 (555) 123-4567"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Physical Address
+                    </label>
+                    <input
+                      type="text"
+                      value={storeAddress}
+                      onChange={(e) => setStoreAddress(e.target.value)}
+                      placeholder="123 Baker Street, NY"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                    Business Motto / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={businessTagline}
+                    onChange={(e) => setBusinessTagline(e.target.value)}
+                    placeholder="Handcrafted Fresh Baked Goods & Artisanal Pastries"
+                    className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                  />
+                </div>
+
+                {/* Maintenance Mode Option */}
+                <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 flex items-center justify-between">
+                  <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold text-gray-900 dark:text-stone-100">Store-wide Free Delivery</p>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                        {freeDelivery ? "FREE FOR ALL ORDERS" : "STANDARD FEE APPLIED"}
-                      </span>
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <p className="text-xs font-bold text-gray-900 dark:text-stone-100">Store Maintenance Mode</p>
                     </div>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                      When enabled, delivery fees are waived at checkout for all customers.
+                    <p className="text-[11px] text-gray-500 dark:text-stone-400">
+                      When active, a friendly maintenance message is displayed on customer checkout.
                     </p>
                   </div>
                   <Toggle
-                    on={freeDelivery}
+                    on={maintenanceMode}
                     onChange={() => {
-                      const next = !freeDelivery;
-                      setFreeDelivery(next);
-                      handleSaveSettings({ freeDelivery: next });
+                      const next = !maintenanceMode;
+                      setMaintenanceMode(next);
+                      handleSaveSettings({ maintenanceMode: next });
                     }}
                   />
                 </div>
 
-                {!freeDelivery && (
-                  <div className="p-4 rounded-2xl border border-gray-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 space-y-3">
-                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-                      Standard Delivery Fee ($)
-                    </label>
-                    <div className="flex items-center gap-3">
+                {settingsSaved && (
+                  <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-3 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>Store profile saved successfully!</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  disabled={isSavingSettings}
+                  onClick={() => handleSaveSettings()}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  <span>Save Profile Settings</span>
+                </button>
+              </div>
+            )}
+
+            {/* TAB 2: PAYMENT METHODS */}
+            {settingsTab === "payments" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-[#D46211]" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-stone-100">Payment Methods & Gateways</h3>
+                      <p className="text-xs text-gray-400 dark:text-stone-500">Enable or disable checkout payment options available to customers.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      id: "stripe",
+                      label: "Credit / Debit Cards (Stripe)",
+                      desc: "Allow customers to pay securely using Visa, Mastercard, AMEX, or Discover.",
+                      icon: "💳",
+                      state: stripeEnabled,
+                      toggle: () => {
+                        const next = !stripeEnabled;
+                        setStripeEnabled(next);
+                        handleSaveSettings({ stripeEnabled: next });
+                      },
+                    },
+                    {
+                      id: "paypal",
+                      label: "PayPal Express Checkout",
+                      desc: "Allow customers to log in and pay instantly via PayPal account or cards.",
+                      icon: "🅿️",
+                      state: paypalEnabled,
+                      toggle: () => {
+                        const next = !paypalEnabled;
+                        setPaypalEnabled(next);
+                        handleSaveSettings({ paypalEnabled: next });
+                      },
+                    },
+                    {
+                      id: "cash",
+                      label: "Cash on Delivery / Store Pickup",
+                      desc: "Allow customers to pay with cash upon receiving their freshly baked order.",
+                      icon: "💵",
+                      state: cashEnabled,
+                      toggle: () => {
+                        const next = !cashEnabled;
+                        setCashEnabled(next);
+                        handleSaveSettings({ cashEnabled: next });
+                      },
+                    },
+                  ].map((m) => (
+                    <div
+                      key={m.id}
+                      className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                        m.state
+                          ? "border-[#D46211]/30 bg-[#FFF4EB]/40 dark:bg-[#D46211]/10"
+                          : "border-gray-100 dark:border-stone-800 bg-gray-50/50 dark:bg-stone-900/50 opacity-75"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{m.icon}</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-gray-900 dark:text-stone-100">{m.label}</p>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                m.state
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                  : "bg-gray-200 text-gray-600 dark:bg-stone-800 dark:text-stone-400"
+                              }`}
+                            >
+                              {m.state ? "ACTIVE" : "DISABLED"}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 dark:text-stone-400 mt-0.5">{m.desc}</p>
+                        </div>
+                      </div>
+                      <Toggle on={m.state} onChange={m.toggle} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: SHIPPING & FULFILLMENT */}
+            {settingsTab === "delivery" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                    <Truck className="w-5 h-5 text-[#D46211]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Fulfillment & Shipping Rules</h3>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Configure delivery fees, minimum order rules, and free shipping options.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-stone-800">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-gray-900 dark:text-stone-100">Store-wide Free Delivery</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                          {freeDelivery ? "FREE FOR ALL ORDERS" : "STANDARD FEE APPLIED"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                        When enabled, delivery fees are waived at checkout for all customers.
+                      </p>
+                    </div>
+                    <Toggle
+                      on={freeDelivery}
+                      onChange={() => {
+                        const next = !freeDelivery;
+                        setFreeDelivery(next);
+                        handleSaveSettings({ freeDelivery: next });
+                      }}
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl border border-gray-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 space-y-2">
+                      <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+                        Standard Delivery Fee ({currencySymbol})
+                      </label>
                       <input
                         type="number"
                         min="0"
                         step="0.50"
+                        disabled={freeDelivery}
                         value={deliveryFee}
                         onChange={(e) => setDeliveryFee(e.target.value)}
-                        className="w-36 rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                        className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211] disabled:opacity-50"
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveSettings({ deliveryFee: parseFloat(deliveryFee) || 0 })}
-                        className="px-4 py-2.5 rounded-xl bg-[#D46211] text-white text-xs font-bold hover:bg-[#b04f0b] transition-all cursor-pointer"
-                      >
-                        Update Fee
-                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-gray-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 space-y-2">
+                      <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+                        Minimum Order Amount ({currencySymbol})
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1.00"
+                        value={minOrderAmount}
+                        onChange={(e) => setMinOrderAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                      />
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* TAB 4: TEAM & ROLES */}
-          {settingsTab === "roles" && (
-            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
-                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={isSavingSettings}
+                    onClick={() =>
+                      handleSaveSettings({
+                        deliveryFee: parseFloat(deliveryFee) || 0,
+                        minOrderAmount: parseFloat(minOrderAmount) || 0,
+                      })
+                    }
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                  >
+                    {isSavingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Update Shipping Rules</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: TAX & REGIONAL */}
+            {settingsTab === "tax" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
                   <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5 text-[#D46211]" />
+                    <Percent className="w-5 h-5 text-[#D46211]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Team Roles & Access Control</h3>
-                    <p className="text-xs text-gray-400 dark:text-stone-500">Manage administrator and customer access levels.</p>
+                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Tax & Regional Configuration</h3>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Configure checkout sales tax percentages and store currency symbols.</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Sales Tax Rate (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(e.target.value)}
+                      placeholder="10"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Currency Symbol
+                    </label>
+                    <input
+                      type="text"
+                      value={currencySymbol}
+                      onChange={(e) => setCurrencySymbol(e.target.value)}
+                      placeholder="$"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Currency Code
+                    </label>
+                    <input
+                      type="text"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                      placeholder="USD"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isSavingSettings}
+                  onClick={() =>
+                    handleSaveSettings({
+                      taxRate: parseFloat(taxRate) || 0,
+                      currencySymbol,
+                      currency,
+                    })
+                  }
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  <span>Save Tax & Currency Settings</span>
+                </button>
+              </div>
+            )}
+
+            {/* TAB 5: ALERTS & NOTIFICATIONS */}
+            {settingsTab === "notifications" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center gap-3 border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-[#D46211]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-stone-100">Alerts & Notification Preferences</h3>
+                    <p className="text-xs text-gray-400 dark:text-stone-500">Configure email destinations for new orders and stock updates.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1.5 uppercase tracking-wider">
+                      Admin Order Alert Email
+                    </label>
+                    <input
+                      type="email"
+                      value={orderNotificationEmail}
+                      onChange={(e) => setOrderNotificationEmail(e.target.value)}
+                      placeholder="alerts@artisancrumbs.com"
+                      className="w-full rounded-xl border border-gray-200 dark:border-stone-800 px-3.5 py-2.5 text-xs outline-none bg-white dark:bg-[#12100f] text-gray-900 dark:text-stone-100 focus:border-[#D46211]"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-stone-800">
+                    <div>
+                      <p className="text-xs font-bold text-gray-900 dark:text-stone-100">Low Stock Inventory Warnings</p>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                        Receive instant alerts on the dashboard when product stock falls below 5 items.
+                      </p>
+                    </div>
+                    <Toggle
+                      on={enableLowStockAlerts}
+                      onChange={() => {
+                        const next = !enableLowStockAlerts;
+                        setEnableLowStockAlerts(next);
+                        handleSaveSettings({ enableLowStockAlerts: next });
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isSavingSettings}
+                    onClick={() => handleSaveSettings({ orderNotificationEmail, enableLowStockAlerts })}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D46211] hover:bg-[#b04f0b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                  >
+                    {isSavingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save Alert Preferences</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: TEAM & ROLES */}
+            {settingsTab === "roles" && (
+              <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800/80 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFF4EB] dark:bg-[#D46211]/20 flex items-center justify-center">
+                      <ShieldCheck className="w-5 h-5 text-[#D46211]" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-stone-100">Team Roles & Access Control</h3>
+                      <p className="text-xs text-gray-400 dark:text-stone-500">Manage administrator and customer permissions.</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
+                    {users.length} Registered Users
+                  </span>
+                </div>
+
+                {users.length > 0 ? (
+                  <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                    {users.map((u) => (
+                      <div
+                        key={u._id}
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-9 h-9 rounded-lg ${getAvatarColor(
+                              u.name
+                            )} flex items-center justify-center text-white font-bold text-xs shrink-0`}
+                          >
+                            {getInitials(u.name)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs font-bold text-gray-900 dark:text-stone-200">{u.name}</p>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  u.role === "admin"
+                                    ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300"
+                                    : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
+                                }`}
+                              >
+                                {u.role.toUpperCase()}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-400 dark:text-stone-500">{u.email}</p>
+                          </div>
+                        </div>
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
+                          className="text-xs border border-gray-200 dark:border-stone-800 rounded-xl px-3 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-bold cursor-pointer"
+                        >
+                          <option value="customer">Customer</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 dark:text-stone-500 text-center py-6">No users found</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Live Checkout Impact Preview */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-4 sticky top-6">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-stone-800 pb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#D46211]">
+                  <Eye className="w-4 h-4" />
+                  <span>Live Checkout Simulation</span>
+                </div>
+                {maintenanceMode && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                    MAINTENANCE
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                Real-time preview of how store settings are applied on the customer checkout page:
+              </p>
+
+              <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-850 border border-stone-200/70 dark:border-stone-800 space-y-3 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-stone-700 dark:text-stone-300">Store Name:</span>
+                  <span className="font-bold text-[#241812] dark:text-stone-100">{storeName}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-stone-700 dark:text-stone-300">Tax Rate:</span>
+                  <span className="font-bold text-stone-900 dark:text-stone-100">{taxValue}%</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-stone-700 dark:text-stone-300">Delivery Fee:</span>
+                  <span className={`font-bold ${freeDelivery ? "text-emerald-600" : "text-stone-900 dark:text-stone-100"}`}>
+                    {freeDelivery ? "FREE" : `${currencySymbol}${feeValue.toFixed(2)}`}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="block font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                    Active Payment Methods:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {stripeEnabled && (
+                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 text-[10px] font-bold">
+                        💳 Cards (Stripe)
+                      </span>
+                    )}
+                    {paypalEnabled && (
+                      <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 text-[10px] font-bold">
+                        🅿️ PayPal
+                      </span>
+                    )}
+                    {cashEnabled && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold">
+                        💵 Cash
+                      </span>
+                    )}
+                    {!stripeEnabled && !paypalEnabled && !cashEnabled && (
+                      <span className="text-[10px] text-red-500 font-bold">⚠️ No active payment gateways!</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-stone-200 dark:border-stone-700 space-y-1 text-[11px]">
+                  <p className="font-bold text-stone-600 dark:text-stone-400">Sample $25 Order Breakdown:</p>
+                  <div className="flex justify-between text-stone-500 dark:text-stone-400">
+                    <span>Subtotal:</span>
+                    <span>{currencySymbol}25.00</span>
+                  </div>
+                  <div className="flex justify-between text-stone-500 dark:text-stone-400">
+                    <span>Sales Tax ({taxValue}%):</span>
+                    <span>+{currencySymbol}{mockTax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-stone-500 dark:text-stone-400">
+                    <span>Delivery:</span>
+                    <span>{freeDelivery ? "FREE" : `+${currencySymbol}${feeValue.toFixed(2)}`}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-stone-900 dark:text-stone-100 pt-1 border-t border-stone-200/50 dark:border-stone-800">
+                    <span>Estimated Total:</span>
+                    <span className="text-[#D46211] font-mono">{currencySymbol}{mockTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              {users.length > 0 ? (
-                <div className="space-y-2.5">
-                  {users.map((u) => (
-                    <div
-                      key={u._id}
-                      className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-stone-800 hover:bg-gray-50 dark:hover:bg-[#2e2a27]/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-lg ${getAvatarColor(u.name)} flex items-center justify-center text-white font-bold text-xs shrink-0`}
-                        >
-                          {getInitials(u.name)}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs font-bold text-gray-900 dark:text-stone-200">{u.name}</p>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === "admin"
-                                  ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300"
-                                  : "bg-gray-100 text-gray-700 dark:bg-stone-800 dark:text-stone-300"
-                                }`}
-                            >
-                              {u.role.toUpperCase()}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-gray-400 dark:text-stone-500">{u.email}</p>
-                        </div>
-                      </div>
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
-                        className="text-xs border border-gray-200 dark:border-stone-800 rounded-xl px-3 py-1.5 outline-none bg-white dark:bg-[#12100f] text-gray-700 dark:text-stone-200 focus:border-[#D46211] font-bold cursor-pointer"
-                      >
-                        <option value="customer">Customer</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 dark:text-stone-500 text-center py-6">No users found</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Live Checkout Impact Preview */}
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-gray-100 dark:border-stone-800 p-5 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#D46211] border-b border-gray-100 dark:border-stone-800 pb-3">
-              <Eye className="w-4 h-4" />
-              <span>Live Checkout Simulation</span>
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
-              This preview shows how customers will experience checkout based on your settings above:
-            </p>
-
-            <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-850 border border-stone-200/70 dark:border-stone-800 space-y-3 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-stone-700 dark:text-stone-300">Storefront:</span>
-                <span className="font-bold text-[#241812] dark:text-stone-100">{storeName}</span>
+              <div className="pt-2">
+                <Link
+                  to="/cart"
+                  target="_blank"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 dark:border-stone-700 hover:bg-gray-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold text-xs transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-[#D46211]" />
+                  Open Live Customer Cart Page
+                </Link>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-stone-700 dark:text-stone-300">Delivery Fee:</span>
-                <span className={`font-bold ${freeDelivery ? "text-emerald-600" : "text-stone-900 dark:text-stone-100"}`}>
-                  {freeDelivery ? "FREE" : `$${parseFloat(deliveryFee || "0").toFixed(2)}`}
-                </span>
-              </div>
-              <div>
-                <span className="block font-semibold text-stone-700 dark:text-stone-300 mb-1.5">Enabled Payment Methods:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {stripeEnabled && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">💳 Cards</span>}
-                  {cashEnabled && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">💵 Cash</span>}
-                  {!stripeEnabled && !cashEnabled && (
-                    <span className="text-[10px] text-red-500 font-bold">⚠️ No payment methods active!</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                to="/cart"
-                target="_blank"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 dark:border-stone-700 hover:bg-gray-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold text-xs transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-[#D46211]" />
-                Test Customer Cart Page
-              </Link>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ── RENDER ─────────────────────────────────────────────────────────────
   return (

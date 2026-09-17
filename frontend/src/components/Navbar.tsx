@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth";
 import { useTheme } from "../features/theme";
 import iconImg from "../assets/Icon.png";
+import { API_BASE } from "../utils/api";
 
 interface NavbarProps {
   cartCount?: number;
@@ -35,9 +36,19 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [storeName, setStoreName] = useState("Artisan Crumbs");
   const location = useLocation();
   const currentHash = location.hash;
   const { darkMode, toggleDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/settings`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.storeName) setStoreName(data.storeName);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -95,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount: propCartCount }) => {
                 <img src={iconImg} alt="" className="h-6 w-6 object-contain" />
               </span>
               <span className="font-serif font-bold text-lg text-[#241812] dark:text-stone-100">
-                Artisan Crumbs
+                {storeName}
               </span>
             </Link>
           </div>
