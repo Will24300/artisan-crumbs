@@ -22,6 +22,10 @@ interface PaymentModalProps {
   grandTotal: number;
   fulfillmentType: "delivery" | "pickup";
   initialMethod?: string;
+  stripeEnabled?: boolean;
+  paypalEnabled?: boolean;
+  cashEnabled?: boolean;
+  currencySymbol?: string;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -31,8 +35,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   grandTotal,
   fulfillmentType,
   initialMethod = "card",
+  stripeEnabled = true,
+  paypalEnabled = true,
+  cashEnabled = true,
+  currencySymbol = "$",
 }) => {
-  const [selectedMethod, setSelectedMethod] = useState<string>(initialMethod);
+  const [selectedMethod, setSelectedMethod] = useState<string>(
+    initialMethod === "paypal" && paypalEnabled
+      ? "paypal"
+      : initialMethod === "cash" && cashEnabled
+      ? "cash"
+      : stripeEnabled
+      ? "card"
+      : paypalEnabled
+      ? "paypal"
+      : "cash"
+  );
   
   // Card Form State
   const [cardName, setCardName] = useState("");
@@ -229,7 +247,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               Total Due ({fulfillmentType === "pickup" ? "Pickup" : "Delivery"})
             </span>
             <span className="text-lg font-bold font-mono text-[#D46211]">
-              ${grandTotal.toFixed(2)}
+              {currencySymbol}{grandTotal.toFixed(2)}
             </span>
           </div>
 
@@ -273,32 +291,51 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <label className="block text-xs font-bold uppercase text-gray-500 dark:text-stone-400 mb-2.5">
                     Select Payment Method
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMethod("card")}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-semibold transition-all ${
-                        selectedMethod === "card"
-                          ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
-                          : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
-                      }`}
-                    >
-                      <CreditCard className="w-5 h-5" />
-                      <span>Credit Card</span>
-                    </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    {stripeEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMethod("card")}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border text-xs font-semibold transition-all ${
+                          selectedMethod === "card"
+                            ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
+                            : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
+                        }`}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        <span>Card</span>
+                      </button>
+                    )}
 
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMethod("cash")}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border text-xs font-semibold transition-all ${
-                        selectedMethod === "cash"
-                          ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
-                          : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
-                      }`}
-                    >
-                      <DollarSign className="w-5 h-5" />
-                      <span>Pay on {fulfillmentType === "pickup" ? "Pickup" : "Delivery"}</span>
-                    </button>
+                    {paypalEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMethod("paypal")}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border text-xs font-semibold transition-all ${
+                          selectedMethod === "paypal"
+                            ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
+                            : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
+                        }`}
+                      >
+                        <span className="text-sm">🅿️</span>
+                        <span>PayPal</span>
+                      </button>
+                    )}
+
+                    {cashEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMethod("cash")}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border text-xs font-semibold transition-all ${
+                          selectedMethod === "cash"
+                            ? "border-[#D46211] bg-[#D46211]/5 text-[#D46211] shadow-sm"
+                            : "border-gray-200 dark:border-stone-800 text-gray-600 dark:text-stone-400 hover:border-gray-300"
+                        }`}
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        <span>Cash</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -426,6 +463,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 )}
 
 
+                {/* PayPal Option */}
+                {selectedMethod === "paypal" && (
+                  <div className="p-4 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 text-center space-y-2">
+                    <div className="flex items-center justify-center gap-2 text-sky-700 dark:text-sky-400 font-bold text-sm">
+                      <span>🅿️ PayPal Express Checkout</span>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-stone-400">
+                      You will be securely authenticated with PayPal to confirm payment.
+                    </p>
+                  </div>
+                )}
+
                 {/* Cash Option */}
                 {selectedMethod === "cash" && (
                   <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-center space-y-2">
@@ -444,13 +493,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Submit Action */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-4 bg-[#D46211] hover:bg-[#b8530e] text-white font-bold rounded-2xl shadow-lg shadow-[#D46211]/25 flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3.5 px-4 bg-[#D46211] hover:bg-[#b8530e] text-white font-bold rounded-2xl shadow-lg shadow-[#D46211]/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>
                     {selectedMethod === "cash"
-                      ? `Confirm Order ($${grandTotal.toFixed(2)})`
-                      : `Authorize & Pay $${grandTotal.toFixed(2)}`}
+                      ? `Confirm Order (${currencySymbol}${grandTotal.toFixed(2)})`
+                      : `Authorize & Pay ${currencySymbol}${grandTotal.toFixed(2)}`}
                   </span>
                 </button>
 

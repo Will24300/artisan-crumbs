@@ -41,7 +41,21 @@ function Contact() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [storeAddress, setStoreAddress] = useState("ULK, 102 KG 14 Ave, Kigali");
+  const [storeEmail, setStoreEmail] = useState("hello@artisancrumbs.com");
+  const [storePhone, setStorePhone] = useState("+250 791954372");
   const today = new Date().getDay();
+
+  useState(() => {
+    fetch(`${API_BASE}/api/settings`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.storeAddress) setStoreAddress(data.storeAddress);
+        if (data.storeEmail) setStoreEmail(data.storeEmail);
+        if (data.storePhone) setStorePhone(data.storePhone);
+      })
+      .catch(() => {});
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -254,11 +268,11 @@ function Contact() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Sending to volonterwicha123@gmail.com...
+                    Sending to {storeEmail}...
                   </>
                 ) : sent ? (
                   <>
-                    <CheckCircle2 size={16} /> Sent to volonterwicha123@gmail.com!
+                    <CheckCircle2 size={16} /> Sent to {storeEmail}!
                   </>
                 ) : (
                   <>
@@ -359,7 +373,7 @@ function Contact() {
                   </span>
                 </div>
                 <p className="text-sm text-[#475569] dark:text-stone-300 leading-relaxed mb-4">
-                  ULK, 102 KG 14 Ave, Kigali
+                  {storeAddress}
                 </p>
                 
                 <button
@@ -384,7 +398,7 @@ function Contact() {
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-[#241812] dark:text-stone-100 truncate">Artisan Crumbs</p>
-                    <p className="text-xs text-[#64748B] dark:text-stone-400 truncate">ULK, 102 KG 14 Ave, Kigali</p>
+                    <p className="text-xs text-[#64748B] dark:text-stone-400 truncate">{storeAddress} · Call {storePhone}</p>
                   </div>
                 </div>
                 

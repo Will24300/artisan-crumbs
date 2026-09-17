@@ -22,24 +22,44 @@ router.put("/", authenticateToken, requireAdmin, async (req, res) => {
       storeEmail,
       storePhone,
       storeAddress,
+      businessTagline,
       paypalEnabled,
       stripeEnabled,
       cashEnabled,
       freeDelivery,
       deliveryFee,
+      minOrderAmount,
+      taxRate,
+      currency,
+      currencySymbol,
+      maintenanceMode,
+      orderNotificationEmail,
+      enableLowStockAlerts,
     } = req.body;
 
     let settings = await getOrCreateSettings();
 
-    if (storeName !== undefined) settings.storeName = storeName;
-    if (storeEmail !== undefined) settings.storeEmail = storeEmail;
-    if (storePhone !== undefined) settings.storePhone = storePhone;
-    if (storeAddress !== undefined) settings.storeAddress = storeAddress;
+    if (storeName !== undefined) settings.storeName = String(storeName).trim();
+    if (storeEmail !== undefined) settings.storeEmail = String(storeEmail).trim();
+    if (storePhone !== undefined) settings.storePhone = String(storePhone).trim();
+    if (storeAddress !== undefined) settings.storeAddress = String(storeAddress).trim();
+    if (businessTagline !== undefined) settings.businessTagline = String(businessTagline).trim();
+
     if (paypalEnabled !== undefined) settings.paypalEnabled = Boolean(paypalEnabled);
     if (stripeEnabled !== undefined) settings.stripeEnabled = Boolean(stripeEnabled);
     if (cashEnabled !== undefined) settings.cashEnabled = Boolean(cashEnabled);
     if (freeDelivery !== undefined) settings.freeDelivery = Boolean(freeDelivery);
-    if (deliveryFee !== undefined) settings.deliveryFee = Number(deliveryFee) || 0;
+
+    if (deliveryFee !== undefined) settings.deliveryFee = Math.max(0, Number(deliveryFee) || 0);
+    if (minOrderAmount !== undefined) settings.minOrderAmount = Math.max(0, Number(minOrderAmount) || 0);
+    if (taxRate !== undefined) settings.taxRate = Math.max(0, Number(taxRate) || 0);
+
+    if (currency !== undefined) settings.currency = String(currency).trim();
+    if (currencySymbol !== undefined) settings.currencySymbol = String(currencySymbol).trim();
+
+    if (maintenanceMode !== undefined) settings.maintenanceMode = Boolean(maintenanceMode);
+    if (orderNotificationEmail !== undefined) settings.orderNotificationEmail = String(orderNotificationEmail).trim();
+    if (enableLowStockAlerts !== undefined) settings.enableLowStockAlerts = Boolean(enableLowStockAlerts);
 
     await settings.save();
     res.json(settings);

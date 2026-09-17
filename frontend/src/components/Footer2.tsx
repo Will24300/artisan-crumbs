@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import type { OpeningHour } from "../types";
 import iconImg from "../assets/Icon.png";
 import { MapPin, Phone, Mail, Globe, Share2, ThumbsUp, ArrowUpRight } from "lucide-react";
+import { API_BASE } from "../utils/api";
 
 const openingHours: OpeningHour[] = [
   { label: "Mon - Fri", hours: "6:00 AM - 6:00 PM" },
@@ -31,6 +33,23 @@ export default function Footer2() {
   const today = now.getDay();
   const currentHour = now.getHours();
 
+  const [storeName, setStoreName] = useState("Artisan Crumbs");
+  const [storeAddress, setStoreAddress] = useState("ULK, 102 KG 14 Ave, Kigali");
+  const [storePhone, setStorePhone] = useState("+250 791954372");
+  const [storeEmail, setStoreEmail] = useState("hello@artisancrumbs.com");
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/settings`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.storeName) setStoreName(data.storeName);
+        if (data.storeAddress) setStoreAddress(data.storeAddress);
+        if (data.storePhone) setStorePhone(data.storePhone);
+        if (data.storeEmail) setStoreEmail(data.storeEmail);
+      })
+      .catch(() => {});
+  }, []);
+
   const todayEntry = openingHours.find((entry) => dayRanges[entry.label]?.includes(today));
   const isOpen = todayEntry
     ? (() => {
@@ -52,10 +71,10 @@ export default function Footer2() {
             <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 overflow-hidden shrink-0">
               <img src={iconImg} alt="" className="w-6 h-6 object-contain" />
             </span>
-            <h2 className="font-serif text-2xl font-bold tracking-tight">Artisan Crumbs</h2>
+            <h2 className="font-serif text-2xl font-bold tracking-tight">{storeName}</h2>
           </div>
           <p className="text-sm leading-relaxed">
-            Crafting artisan pastries and breads with tradition and love since 1995. Your daily source of baked
+            Crafting artisan pastries and breads with tradition and love. Your daily source of baked
             happiness.
           </p>
 
@@ -114,25 +133,23 @@ export default function Footer2() {
                 <MapPin className="text-[#D46211] w-4 h-4" />
               </span>
               <span className="pt-1.5">
-                ULK, 102 KG 14 Ave
-                <br />
-                Kigali, Rwanda
+                {storeAddress}
               </span>
             </li>
             <li className="flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 shrink-0">
                 <Phone className="text-[#D46211] w-4 h-4" />
               </span>
-              <a href="tel:+250791954372" className="hover:text-[#F2A469] transition-colors">
-                +250 791 954 372
+              <a href={`tel:${storePhone}`} className="hover:text-[#F2A469] transition-colors">
+                {storePhone}
               </a>
             </li>
             <li className="flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 shrink-0">
                 <Mail className="text-[#D46211] w-4 h-4" />
               </span>
-              <a href="mailto:[volonterwich123@gmail.com]" className="hover:text-[#F2A469] transition-colors">
-                volonterwicha123@gmail.com
+              <a href={`mailto:${storeEmail}`} className="hover:text-[#F2A469] transition-colors">
+                {storeEmail}
               </a>
             </li>
           </ul>

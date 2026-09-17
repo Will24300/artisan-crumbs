@@ -15,16 +15,18 @@ router.get("/", async (_req, res) => {
 // PUT /api/settings - Admin route to update store settings
 router.put("/", authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const { storeName, storeEmail, storePhone, storeAddress, paypalEnabled, stripeEnabled, cashEnabled, freeDelivery, deliveryFee, } = req.body;
+        const { storeName, storeEmail, storePhone, storeAddress, businessTagline, paypalEnabled, stripeEnabled, cashEnabled, freeDelivery, deliveryFee, minOrderAmount, taxRate, currency, currencySymbol, maintenanceMode, orderNotificationEmail, enableLowStockAlerts, } = req.body;
         let settings = await getOrCreateSettings();
         if (storeName !== undefined)
-            settings.storeName = storeName;
+            settings.storeName = String(storeName).trim();
         if (storeEmail !== undefined)
-            settings.storeEmail = storeEmail;
+            settings.storeEmail = String(storeEmail).trim();
         if (storePhone !== undefined)
-            settings.storePhone = storePhone;
+            settings.storePhone = String(storePhone).trim();
         if (storeAddress !== undefined)
-            settings.storeAddress = storeAddress;
+            settings.storeAddress = String(storeAddress).trim();
+        if (businessTagline !== undefined)
+            settings.businessTagline = String(businessTagline).trim();
         if (paypalEnabled !== undefined)
             settings.paypalEnabled = Boolean(paypalEnabled);
         if (stripeEnabled !== undefined)
@@ -34,7 +36,21 @@ router.put("/", authenticateToken, requireAdmin, async (req, res) => {
         if (freeDelivery !== undefined)
             settings.freeDelivery = Boolean(freeDelivery);
         if (deliveryFee !== undefined)
-            settings.deliveryFee = Number(deliveryFee) || 0;
+            settings.deliveryFee = Math.max(0, Number(deliveryFee) || 0);
+        if (minOrderAmount !== undefined)
+            settings.minOrderAmount = Math.max(0, Number(minOrderAmount) || 0);
+        if (taxRate !== undefined)
+            settings.taxRate = Math.max(0, Number(taxRate) || 0);
+        if (currency !== undefined)
+            settings.currency = String(currency).trim();
+        if (currencySymbol !== undefined)
+            settings.currencySymbol = String(currencySymbol).trim();
+        if (maintenanceMode !== undefined)
+            settings.maintenanceMode = Boolean(maintenanceMode);
+        if (orderNotificationEmail !== undefined)
+            settings.orderNotificationEmail = String(orderNotificationEmail).trim();
+        if (enableLowStockAlerts !== undefined)
+            settings.enableLowStockAlerts = Boolean(enableLowStockAlerts);
         await settings.save();
         res.json(settings);
     }
